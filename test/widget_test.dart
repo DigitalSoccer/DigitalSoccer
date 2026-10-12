@@ -1,30 +1,192 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:anfa_chiguayante/main.dart';
+import 'package:anfa_chiguayante/models/club.dart';
+import 'package:anfa_chiguayante/pages/club_detail_page.dart';
+import 'package:anfa_chiguayante/pages/home_page.dart';
+import 'package:anfa_chiguayante/pages/my_club_page.dart';
+import 'package:anfa_chiguayante/pages/standings_page.dart';
+import 'package:anfa_chiguayante/services/club_service.dart';
+import 'package:anfa_chiguayante/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:anfa_chiguayante/main.dart';
+import 'helpers/fake_asset_bundle.dart';
+
+const standingsPath = 'assets/data/standings.json';
+
+Widget wrap(Widget child, AssetBundle bundle) {
+  return MaterialApp(
+    theme: buildAppTheme(),
+    home: DefaultAssetBundle(
+      bundle: bundle,
+      child: Scaffold(body: child),
+    ),
+  );
+}
+
+Club club(String id, String name) =>
+    Club(id: id, name: name, shortName: name, field: '');
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  testWidgets('la app arranca y muestra el fixture', (tester) async {
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Fixture'), findsOneWidget);
+    expect(find.text('Tabla'), findsOneWidget);
+    expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('el tema usa el verde provisional y no el morado por defecto',
+      (tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final context = tester.element(find.byType(Scaffold).first);
+    final primary = Theme.of(context).colorScheme.primary;
+
+    expect(
+      primary,
+      ColorScheme.fromSeed(seedColor: provisionalSeedColor).primary,
+    );
+    expect(
+      primary,
+      isNot(ColorScheme.fromSeed(seedColor: const Color(0xFF6750A4)).primary),
+    );
+  });
+
+  group('Detalle de club', () {
+    testWidgets('Arturo Prat muestra su posición y puntos', (tester) async {
+      await tester.pumpWidget(wrap(
+        ClubDetailPage(club: club('arturo-prat', 'Arturo Prat')),
+        realDataBundle(),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Posición: 17'), findsOneWidget);
+      expect(find.textContaining('Puntos: 42'), findsOneWidget);
+      expect(find.text('Arturo Prat vs El Valle'), findsWidgets);
+    });
+
+    testWidgets("Bdo. O'Higgins muestra su posición y puntos",
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        ClubDetailPage(club: club('bdo-ohiggins', "Bdo. O'Higgins")),
+        realDataBundle(),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Posición: 5'), findsOneWidget);
+      expect(find.textContaining('Puntos: 90'), findsOneWidget);
+    });
+
+    testWidgets('un club fuera de la tabla no inventa posición',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        ClubDetailPage(club: club('club-nuevo', 'Club Nuevo')),
+        realDataBundle(),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Posición'), findsNothing);
+      expect(
+        find.text('Sin información en la tabla de posiciones.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Este club no tiene partidos en la fecha cargada.'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('Tabla: estados de carga', () {
+    testWidgets('error de lectura muestra mensaje y permite reintentar',
+        (tester) async {
+      final bundle = FakeAssetBundle({});
+
+      await tester.pumpWidget(wrap(const StandingsPage(), bundle));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No se pudo cargar la información.'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      bundle.files[standingsPath] = realDataFiles()[standingsPath]!;
+      await tester.tap(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No se pudo cargar la información.'), findsNothing);
+      expect(find.text('Chiguayante Sur'), findsOneWidget);
+    });
+
+    testWidgets('JSON mal formado no deja la pantalla cargando',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        const StandingsPage(),
+        FakeAssetBundle({standingsPath: '{ esto no es json'}),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('Reintentar'), findsOneWidget);
+    });
+
+    testWidgets('tabla vacía muestra mensaje de ausencia de datos',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        const StandingsPage(),
+        FakeAssetBundle({standingsPath: '[]'}),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('La tabla de posiciones aún no está disponible.'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('Fixture y Mi Club', () {
+    testWidgets('búsqueda sin resultados muestra mensaje', (tester) async {
+      await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'zzz');
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('No hay partidos para mostrar el Sábado.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('sin club favorito invita a elegir uno', (tester) async {
+      await tester.pumpWidget(wrap(const MyClubPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Selecciona un club en la pestaña Clubes'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Mi Club filtra el fixture por id del club', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(wrap(const MyClubPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mi Club: Arturo Prat'), findsOneWidget);
+      // Arturo Prat juega el sábado solo en Cancha Chiguayante Sur.
+      expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
+      expect(find.text('Cancha Mario Osben'), findsNothing);
+      expect(find.text('2 partidos programados'), findsOneWidget);
+    });
   });
 }
