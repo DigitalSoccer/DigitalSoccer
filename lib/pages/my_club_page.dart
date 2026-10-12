@@ -6,6 +6,7 @@ import '../services/club_data_service.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/fixture_view.dart';
@@ -102,6 +103,15 @@ class _MyClubPageState extends State<MyClubPage> {
                               club.name,
                               style: textTheme.titleLarge?.copyWith(
                                 color: AppColors.onPrimaryContainer,
+                              ),
+                            ),
+                            Text(
+                              [
+                                'Fecha ${data.fixture.round}',
+                                roundDateRange(data.fixture),
+                              ].where((s) => s.isNotEmpty).join(' · '),
+                              style: textTheme.bodySmall?.copyWith(
+                                color: AppColors.textMuted,
                               ),
                             ),
                           ],

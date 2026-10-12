@@ -7,6 +7,7 @@ import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
 import 'package:anfa_chiguayante/widgets/app_components.dart';
+import 'package:anfa_chiguayante/widgets/match_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,7 +50,11 @@ void main() {
 
     expect(find.text('Fixture'), findsOneWidget);
     expect(find.text('Tabla'), findsOneWidget);
-    expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
+    // Abre en la fecha más reciente, con el formato de la planilla.
+    expect(find.text('FECHA 21'), findsOneWidget);
+    expect(find.text('Sáb 10 – Dom 11 oct 2026'), findsOneWidget);
+    expect(find.text('Sábado 10'), findsOneWidget);
+    expect(find.text('CANCHA MARIO OSBEN'), findsOneWidget);
   });
 
   testWidgets('la app usa la paleta centralizada gris azulada y blanca',
@@ -86,6 +91,11 @@ void main() {
       'primario / contenedor primario':
           (AppColors.primary, AppColors.primaryContainer),
       'error / fondo': (AppColors.error, AppColors.background),
+      'texto / cruce de Mi Club': (AppColors.text, AppColors.primaryContainer),
+      'texto secundario / cruce de Mi Club':
+          (AppColors.textMuted, AppColors.primaryContainer),
+      'texto secundario / cabecera de cancha y turno':
+          (AppColors.textMuted, AppColors.surfaceLow),
     };
 
     pairs.forEach((name, pair) {
@@ -105,9 +115,8 @@ void main() {
         await tester.pumpWidget(const MyApp());
         await tester.pumpAndSettle();
 
-        // Abre la primera cancha para mostrar filas de partido.
-        await tester.tap(find.text('Cancha Mario Osben'));
-        await tester.pumpAndSettle();
+        // Las canchas se muestran abiertas, con sus filas de partido.
+        expect(find.byType(MatchRow), findsWidgets);
 
         for (final tab in ['Mi Club', 'Tabla', 'Clubes', 'Fixture']) {
           await tester.tap(find.text(tab).last);
@@ -145,7 +154,7 @@ void main() {
 
       expect(stat('Posición', '17'), findsOneWidget);
       expect(stat('Puntos', '42'), findsOneWidget);
-      expect(find.text('Arturo Prat vs El Valle'), findsWidgets);
+      expect(find.text("Arturo Prat vs Bdo. O'Higgins"), findsWidgets);
     });
 
     testWidgets("Bdo. O'Higgins muestra su posición y puntos",
@@ -260,10 +269,112 @@ void main() {
 
       expect(find.text('MI CLUB'), findsOneWidget);
       expect(find.text('Arturo Prat'), findsOneWidget);
-      // Arturo Prat juega el sábado solo en Cancha Chiguayante Sur.
-      expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
-      expect(find.text('Cancha Mario Osben'), findsNothing);
+      // En la fecha 21 Arturo Prat juega el sábado solo en Cancha Chiguayante Sur.
+      expect(find.text('CANCHA CHIGUAYANTE SUR'), findsOneWidget);
+      expect(find.text('CANCHA MARIO OSBEN'), findsNothing);
       expect(find.text('2 partidos programados'), findsOneWidget);
+    });
+  });
+
+  group('Fixture con formato de planilla', () {
+    Future<void> pumpHome(WidgetTester tester) async {
+      await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+      await tester.pumpAndSettle();
+    }
+
+    Finder rowsWith(String text) => find.descendant(
+          of: find.byType(MatchRow),
+          matching: find.text(text),
+        );
+
+    testWidgets('agrupa el cruce una vez con todas sus series',
+        (tester) async {
+      await pumpHome(tester);
+
+      // Sábado, Cancha Mario Osben: 13:00, 14:10 y 15:30 son el mismo cruce.
+      expect(find.text('U.L. Carrera  vs  San Pablo', findRichText: true),
+          findsWidgets);
+      expect(rowsWith('13:00'), findsOneWidget);
+      expect(rowsWith('14:10'), findsOneWidget);
+      expect(find.text('TURNO'), findsWidgets);
+    });
+
+    testWidgets('filtro por serie', (tester) async {
+      await pumpHome(tester);
+
+      expect(rowsWith('1° Infantil'), findsWidgets);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'H. Ortiz'));
+      await tester.pumpAndSettle();
+
+      expect(rowsWith('1° Infantil'), findsNothing);
+      expect(rowsWith('H. Ortiz'), findsWidgets);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Todas'));
+      await tester.pumpAndSettle();
+
+      expect(rowsWith('1° Infantil'), findsWidgets);
+    });
+
+    testWidgets('muestra el club libre de la fecha', (tester) async {
+      await pumpHome(tester);
+
+      await tester.dragUntilVisible(
+        find.text('Libre: Independiente'),
+        find.byType(ListView).first,
+        const Offset(0, -300),
+      );
+
+      expect(find.text('Libre: Independiente'), findsOneWidget);
+    });
+
+    testWidgets('resalta Mi Club sin ocultar al resto', (tester) async {
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      // Ventana alta para que se construya todo el sábado sin desplazarse.
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await pumpHome(tester);
+
+      // Sábado: Arturo Prat juega dos cruces (14:10 y 15:30, en turnos
+      // distintos), así que aparecen dos insignias.
+      expect(find.text('MI CLUB'), findsNWidgets(2));
+      // Los demás cruces siguen visibles.
+      expect(find.text('CANCHA MARIO OSBEN'), findsOneWidget);
+      expect(find.text('CANCHA MAGALLANES'), findsOneWidget);
+    });
+
+    testWidgets('permite volver a la fecha anterior', (tester) async {
+      await pumpHome(tester);
+
+      expect(find.text('FECHA 21'), findsOneWidget);
+      expect(find.text('Fuente: planilla de la asociación'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Fecha anterior'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('FECHA 11'), findsOneWidget);
+      // La fecha 11 no tiene origen verificado y se avisa.
+      expect(find.text('Fuente sin verificar'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Fecha siguiente'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('FECHA 21'), findsOneWidget);
+    });
+
+    testWidgets('el detalle del club libre lo indica', (tester) async {
+      await tester.pumpWidget(wrap(
+        ClubDetailPage(club: club('independiente', 'Independiente')),
+        realDataBundle(),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Libre en la fecha 21.'), findsOneWidget);
     });
   });
 }

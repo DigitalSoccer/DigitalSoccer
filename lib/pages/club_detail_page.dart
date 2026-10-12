@@ -8,6 +8,7 @@ import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/standings_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 
@@ -107,6 +108,9 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
 
           final textTheme = Theme.of(context).textTheme;
           final isFavorite = favoriteClubId == widget.club.id;
+          final isBye = matchDays.any(
+                (day) => day.byeClubIds.contains(widget.club.id),
+          );
 
           return ListView(
             padding: const EdgeInsets.only(bottom: AppSpacing.xl),
@@ -191,12 +195,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
               ),
 
               if (clubDays.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.xl),
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Text(
-                    'Este club no tiene partidos en la fecha cargada.',
+                    isBye
+                        ? 'Libre en la fecha ${data.fixture.round}.'
+                        : 'Este club no tiene partidos en la fecha cargada.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.textMuted),
+                    style: const TextStyle(color: AppColors.textMuted),
                   ),
                 ),
 
@@ -218,7 +224,9 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SectionHeader(day.day),
+                      SectionHeader(
+                        'Fecha ${data.fixture.round} · ${dayLabel(day)}',
+                      ),
                       Card(
                         margin: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.lg,

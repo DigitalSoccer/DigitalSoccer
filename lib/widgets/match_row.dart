@@ -4,23 +4,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import 'app_components.dart';
 
+/// Una línea del fixture, como en la planilla: hora y serie de un partido.
+/// Los equipos se muestran en el encabezado del cruce (`MatchupGroup`).
 class MatchRow extends StatefulWidget {
   final String matchId;
   final String time;
-  final String home;
-  final String away;
   final String category;
-  final String fieldName;
   final String status;
 
   const MatchRow({
     super.key,
     required this.matchId,
     required this.time,
-    required this.home,
-    required this.away,
     required this.category,
-    required this.fieldName,
     required this.status,
   });
 
@@ -40,6 +36,8 @@ class _MatchRowState extends State<MatchRow> {
   Future<void> loadFavorite() async {
     final prefs = await SharedPreferences.getInstance();
     final favs = prefs.getStringList('favorites') ?? [];
+
+    if (!mounted) return;
 
     setState(() {
       isFavorite = favs.contains(widget.matchId);
@@ -63,6 +61,8 @@ class _MatchRowState extends State<MatchRow> {
       favs,
     );
 
+    if (!mounted) return;
+
     setState(() {
       isFavorite = favs.contains(widget.matchId);
     });
@@ -72,98 +72,70 @@ class _MatchRowState extends State<MatchRow> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppColors.border),
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.xs,
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.md,
-          AppSpacing.xs,
-          AppSpacing.md,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 4,
-              height: 64,
-              decoration: BoxDecoration(
-                color: MatchStatusBadge.colorFor(widget.status),
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 20,
+            decoration: BoxDecoration(
+              color: MatchStatusBadge.colorFor(widget.status),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+          ),
+
+          const SizedBox(width: AppSpacing.sm),
+
+          SizedBox(
+            width: 52,
+            child: Text(
+              widget.time,
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
+          ),
 
-            const SizedBox(width: AppSpacing.md),
-
-            SizedBox(
-              width: 52,
-              child: Text(
-                widget.time,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+          Expanded(
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  widget.category,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.text,
+                  ),
                 ),
-              ),
+                MatchStatusBadge(status: widget.status),
+              ],
             ),
+          ),
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${widget.home} vs ${widget.away}',
-                    style: textTheme.titleSmall,
-                  ),
-
-                  const SizedBox(height: AppSpacing.sm),
-
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.xs,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Chip(
-                        label: Text(
-                          widget.category,
-                        ),
-                      ),
-                      MatchStatusBadge(status: widget.status),
-                    ],
-                  ),
-
-                  const SizedBox(height: AppSpacing.xs),
-
-                  Text(
-                    widget.fieldName,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            tooltip: isFavorite
+                ? 'Quitar de favoritos'
+                : 'Marcar como favorito',
+            icon: Icon(
+              isFavorite
+                  ? Icons.star
+                  : Icons.star_border,
+              size: 20,
+              color: isFavorite
+                  ? AppColors.favorite
+                  : AppColors.outline,
             ),
-
-            IconButton(
-              tooltip: isFavorite
-                  ? 'Quitar de favoritos'
-                  : 'Marcar como favorito',
-              icon: Icon(
-                isFavorite
-                    ? Icons.star
-                    : Icons.star_border,
-                color: isFavorite
-                    ? AppColors.favorite
-                    : AppColors.outline,
-              ),
-              onPressed: toggleFavorite,
-            ),
-          ],
-        ),
+            onPressed: toggleFavorite,
+          ),
+        ],
       ),
     );
   }
