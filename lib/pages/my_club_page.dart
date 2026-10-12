@@ -125,6 +125,7 @@ class _MyClubPageState extends State<MyClubPage> {
             Expanded(
               child: FixtureView(
                 matchDays: data.fixture.days,
+                roundNumber: data.fixture.round,
                 clubId: club.id,
               ),
             ),

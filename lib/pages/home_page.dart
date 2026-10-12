@@ -123,6 +123,7 @@ class _HomePageState extends State<HomePage> {
                 // La clave reinicia pestañas y filtros al cambiar de fecha.
                 key: ValueKey(round.round),
                 matchDays: round.days,
+                roundNumber: round.round,
                 searchQuery: searchQuery,
                 highlightClubId: data.favoriteClubId,
                 clubNames: {

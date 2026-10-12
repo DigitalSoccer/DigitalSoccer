@@ -2,6 +2,7 @@ import 'package:anfa_chiguayante/main.dart';
 import 'package:anfa_chiguayante/models/club.dart';
 import 'package:anfa_chiguayante/pages/club_detail_page.dart';
 import 'package:anfa_chiguayante/pages/home_page.dart';
+import 'package:anfa_chiguayante/pages/matchup_detail_page.dart';
 import 'package:anfa_chiguayante/pages/my_club_page.dart';
 import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
@@ -54,7 +55,13 @@ void main() {
     expect(find.text('FECHA 21'), findsOneWidget);
     expect(find.text('Sáb 10 – Dom 11 oct 2026'), findsOneWidget);
     expect(find.text('Sábado 10'), findsOneWidget);
-    expect(find.text('CANCHA MARIO OSBEN'), findsOneWidget);
+    // El primer cruce del sábado (10:00) es Leinenweber vs Nacional.
+    expect(find.text('Leinenweber'), findsOneWidget);
+    // Ese cruce se juega en dos canchas; la tarjeta muestra ambas.
+    expect(
+      find.text('Cancha José Vilches · Cancha Chiguayante Sur'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('la app usa la paleta centralizada gris azulada y blanca',
@@ -115,8 +122,12 @@ void main() {
         await tester.pumpWidget(const MyApp());
         await tester.pumpAndSettle();
 
-        // Las canchas se muestran abiertas, con sus filas de partido.
+        // Abre el detalle del primer cruce (cancha y horarios) y vuelve.
+        await tester.tap(find.text('Leinenweber'));
+        await tester.pumpAndSettle();
         expect(find.byType(MatchRow), findsWidgets);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
 
         for (final tab in ['Mi Club', 'Tabla', 'Clubes', 'Fixture']) {
           await tester.tap(find.text(tab).last);
@@ -268,11 +279,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('MI CLUB'), findsOneWidget);
-      expect(find.text('Arturo Prat'), findsOneWidget);
-      // En la fecha 21 Arturo Prat juega el sábado solo en Cancha Chiguayante Sur.
-      expect(find.text('CANCHA CHIGUAYANTE SUR'), findsOneWidget);
-      expect(find.text('CANCHA MARIO OSBEN'), findsNothing);
-      expect(find.text('2 partidos programados'), findsOneWidget);
+      // El nombre aparece en la cabecera y en la tarjeta del cruce.
+      expect(find.text('Arturo Prat'), findsNWidgets(2));
+      // Fecha 21, sábado: un solo cruce (vs Bdo. O'Higgins), 2 partidos,
+      // en Cancha Chiguayante Sur.
+      expect(find.text("Bdo. O'Higgins"), findsOneWidget);
+      expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
+      expect(find.text('Cancha Mario Osben'), findsNothing);
+      expect(find.text('2 partidos'), findsOneWidget);
+      expect(find.text('14:10'), findsOneWidget);
     });
   });
 
@@ -287,33 +302,89 @@ void main() {
           matching: find.text(text),
         );
 
-    testWidgets('agrupa el cruce una vez con todas sus series',
-        (tester) async {
+    // Ventana alta para que se construya todo el sábado sin desplazarse.
+    void tallView(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('una tarjeta por cruce, con todas sus series', (tester) async {
+      tallView(tester);
       await pumpHome(tester);
 
-      // Sábado, Cancha Mario Osben: 13:00, 14:10 y 15:30 son el mismo cruce.
-      expect(find.text('U.L. Carrera  vs  San Pablo', findRichText: true),
-          findsWidgets);
-      expect(rowsWith('13:00'), findsOneWidget);
-      expect(rowsWith('14:10'), findsOneWidget);
-      expect(find.text('TURNO'), findsWidgets);
+      // Sábado: U.L. Carrera vs San Pablo juega 4 series en dos turnos;
+      // la lista lo muestra una sola vez, desde las 13:00.
+      expect(find.text('U.L. Carrera'), findsOneWidget);
+      expect(
+        find.text('1° Infantil · Juveniles · H. Ortiz · S. Senior'),
+        findsOneWidget,
+      );
+      // La lista ya no muestra filas de horario: están en el detalle.
+      expect(find.byType(MatchRow), findsNothing);
+    });
+
+    testWidgets('al tocar un cruce se ven la cancha y los horarios',
+        (tester) async {
+      tallView(tester);
+      await pumpHome(tester);
+
+      await tester.tap(find.text('U.L. Carrera'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MatchupDetailPage), findsOneWidget);
+      expect(find.text('Fecha 21 · Sábado 10 oct'), findsOneWidget);
+      expect(find.text('Programado'), findsOneWidget);
+      expect(find.text('Cancha Mario Osben'), findsOneWidget);
+      expect(find.text('4 partidos'), findsOneWidget);
+      for (final time in ['13:00', '14:10', '15:30', '16:40']) {
+        expect(rowsWith(time), findsOneWidget, reason: time);
+      }
+      expect(rowsWith('S. Senior'), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MatchupDetailPage), findsNothing);
+    });
+
+    testWidgets('con filtro de serie, el detalle muestra todas las series',
+        (tester) async {
+      tallView(tester);
+      await pumpHome(tester);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, '1° Infantil'));
+      await tester.pumpAndSettle();
+
+      // La tarjeta muestra solo la serie filtrada...
+      expect(find.text('1 partido'), findsWidgets);
+
+      await tester.tap(find.text('U.L. Carrera'));
+      await tester.pumpAndSettle();
+
+      // ...pero el detalle trae los 4 horarios del cruce.
+      for (final time in ['13:00', '14:10', '15:30', '16:40']) {
+        expect(rowsWith(time), findsOneWidget, reason: time);
+      }
     });
 
     testWidgets('filtro por serie', (tester) async {
+      tallView(tester);
       await pumpHome(tester);
 
-      expect(rowsWith('1° Infantil'), findsWidgets);
+      // Jackson vs El Valle solo juega 1° Infantil el sábado.
+      expect(find.text('Jackson'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(ChoiceChip, 'H. Ortiz'));
       await tester.pumpAndSettle();
 
-      expect(rowsWith('1° Infantil'), findsNothing);
-      expect(rowsWith('H. Ortiz'), findsWidgets);
+      expect(find.text('Jackson'), findsNothing);
+      expect(find.text('Ferrobadminton'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(ChoiceChip, 'Todas'));
       await tester.pumpAndSettle();
 
-      expect(rowsWith('1° Infantil'), findsWidgets);
+      expect(find.text('Jackson'), findsOneWidget);
     });
 
     testWidgets('muestra el club libre de la fecha', (tester) async {
@@ -333,19 +404,14 @@ void main() {
         ClubService.favoriteClubIdKey: 'arturo-prat',
       });
 
-      // Ventana alta para que se construya todo el sábado sin desplazarse.
-      tester.view.physicalSize = const Size(800, 4000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
+      tallView(tester);
       await pumpHome(tester);
 
-      // Sábado: Arturo Prat juega dos cruces (14:10 y 15:30, en turnos
-      // distintos), así que aparecen dos insignias.
-      expect(find.text('MI CLUB'), findsNWidgets(2));
+      // Sábado: Arturo Prat juega un solo cruce (vs Bdo. O'Higgins).
+      expect(find.text('MI CLUB'), findsOneWidget);
       // Los demás cruces siguen visibles.
-      expect(find.text('CANCHA MARIO OSBEN'), findsOneWidget);
-      expect(find.text('CANCHA MAGALLANES'), findsOneWidget);
+      expect(find.text('U.L. Carrera'), findsOneWidget);
+      expect(find.text('Jackson'), findsOneWidget);
     });
 
     testWidgets('permite volver a la fecha anterior', (tester) async {

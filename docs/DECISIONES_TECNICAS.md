@@ -68,3 +68,6 @@ Recomendación: adoptar 3.47.7 para todo el equipo, commitear esos dos archivos 
   tarjeta por cancha siempre abierta, cruces agrupados con sus series, separadores de turno, aviso de
   club libre, filtro por serie y Mi Club resaltado.
 - Detalle de carga de datos en `DATOS_FIXTURE.md`.
+- **Actualización (mismo día, a pedido de Diego):** la lista del fixture pasó de "por cancha" a "por
+  cruce", con tarjetas de estilo clásico (equipos a los lados, hora al centro) y una pantalla de
+  detalle con la cancha y los horarios de cada serie. Los turnos siguen en los datos.

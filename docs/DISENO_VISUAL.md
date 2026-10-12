@@ -50,13 +50,17 @@ Contraste: los pares de texto y fondo cumplen WCAG AA (≥ 4.5:1). Hay una prueb
 - Las medallas emoji de la tabla se reemplazaron por insignias de posición: además, los emojis no se
   veían en la versión web sin conexión.
 
-## Fixture (formato planilla)
+## Fixture (por cruce)
 
 - Encabezado de fecha con flechas para cambiar de fecha y enlace al origen de los datos.
-- Tarjeta por cancha con cabecera gris suave y el nombre en mayúsculas, como la planilla.
-- Cruce agrupado: equipos una vez y una línea por serie (hora, serie, estado, favorito).
-- Línea "TURNO" entre bloques; aviso "Libre: …" al final del día.
-- Mi Club: fondo `primaryContainer`, borde izquierdo `primary` e insignia "MI CLUB".
+- Pestañas por día y filtro por serie.
+- Una tarjeta "clásica" por cruce (local vs visita del día): cancha(s) arriba, equipos a los lados
+  con ícono genérico y, al centro, la hora del primer partido y la cantidad de partidos. Abajo, las
+  series. No hay marcador porque aún no se cargan resultados.
+- Al tocarla, la pantalla "Partido" muestra el cruce y, por cancha, los horarios de cada serie hacia
+  abajo (con favorito por partido). Siempre muestra todas las series, aunque la lista esté filtrada.
+- Aviso "Libre: …" al final del día. Mi Club: borde `primary` e insignia "MI CLUB".
+- Los turnos se guardan en los datos, pero no se muestran en la lista.
 
 ## Pendiente de decisión
 

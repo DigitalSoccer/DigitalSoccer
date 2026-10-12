@@ -159,30 +159,82 @@ class MatchDay {
   }
 }
 
-/// Partidos consecutivos del mismo cruce, como la planilla los escribe:
-/// el primero con los equipos y los siguientes con la fila en blanco.
-class MatchupGroup {
-  final List<Match> matches;
+/// Un partido dentro de un cruce, con la cancha donde se juega.
+class MatchupEntry {
+  final Match match;
+  final String fieldName;
 
-  MatchupGroup(this.matches);
+  MatchupEntry(this.match, this.fieldName);
+}
 
-  Match get first => matches.first;
+/// Cruce del día: todos los partidos (series) de un mismo local contra un
+/// mismo visitante, aunque estén en bloques o canchas distintas.
+class Matchup {
+  final List<MatchupEntry> entries;
 
-  static List<MatchupGroup> consecutive(List<Match> matches) {
-    final groups = <MatchupGroup>[];
+  Matchup(this.entries);
 
-    for (final match in matches) {
-      final last = groups.isEmpty ? null : groups.last.first;
+  Match get first => entries.first.match;
 
-      if (last != null &&
-          last.homeId == match.homeId &&
-          last.awayId == match.awayId) {
-        groups.last.matches.add(match);
-      } else {
-        groups.add(MatchupGroup([match]));
+  String get home => first.home;
+  String get homeId => first.homeId;
+  String get away => first.away;
+  String get awayId => first.awayId;
+
+  /// Hora del primer partido del cruce.
+  String get firstTime => entries.first.match.time;
+
+  /// Canchas del cruce, en orden de aparición.
+  List<String> get fieldNames => {
+        for (final e in entries) e.fieldName,
+      }.toList();
+
+  List<String> get categories => [
+        for (final e in entries) e.match.category,
+      ];
+
+  bool involves(String clubId) => first.involves(clubId);
+
+  /// Agrupa los partidos del día por cruce (local + visita), ordenados por
+  /// la hora de su primer partido. [map] transforma cada partido (p. ej.
+  /// cambios de estado) y [where] filtra antes de agrupar.
+  static List<Matchup> fromDay(
+    MatchDay day, {
+    Match Function(Match match)? map,
+    bool Function(Match match)? where,
+  }) {
+    final byKey = <String, List<MatchupEntry>>{};
+
+    for (final field in day.fields) {
+      for (final original in field.matches) {
+        final match = map == null ? original : map(original);
+
+        if (where != null && !where(match)) continue;
+
+        byKey
+            .putIfAbsent('${match.homeId}|${match.awayId}', () => [])
+            .add(MatchupEntry(match, field.fieldName));
       }
     }
 
-    return groups;
+    // Las horas vienen como HH:MM, así que el orden de texto es el horario.
+    // List.sort no es estable: se desempata por el orden de la planilla.
+    final matchups = byKey.values.map((entries) {
+      final indexed = entries.indexed.toList()
+        ..sort((a, b) {
+          final byTime = a.$2.match.time.compareTo(b.$2.match.time);
+          return byTime != 0 ? byTime : a.$1.compareTo(b.$1);
+        });
+      return Matchup([for (final e in indexed) e.$2]);
+    }).toList();
+
+    final order = {for (var i = 0; i < matchups.length; i++) matchups[i]: i};
+
+    matchups.sort((a, b) {
+      final byTime = a.firstTime.compareTo(b.firstTime);
+      return byTime != 0 ? byTime : order[a]!.compareTo(order[b]!);
+    });
+
+    return matchups;
   }
 }

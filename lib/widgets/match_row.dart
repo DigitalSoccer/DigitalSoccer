@@ -5,7 +5,7 @@ import '../theme/app_theme.dart';
 import 'app_components.dart';
 
 /// Una línea del fixture, como en la planilla: hora y serie de un partido.
-/// Los equipos se muestran en el encabezado del cruce (`MatchupGroup`).
+/// Los equipos se muestran en el encabezado del cruce (`Matchup`).
 class MatchRow extends StatefulWidget {
   final String matchId;
   final String time;

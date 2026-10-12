@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/match.dart';
+import '../pages/matchup_detail_page.dart';
 import '../services/override_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/fecha_format.dart';
 import 'app_components.dart';
 import 'async_views.dart';
-import 'match_row.dart';
 
 /// Orden de las series para el filtro (de menor a mayor). Las que no estén
 /// aquí se agregan al final en el orden en que aparecen.
@@ -21,8 +21,8 @@ const List<String> seriesOrder = [
   'Honor',
 ];
 
-/// Fixture con la misma estructura que la planilla de la asociación:
-/// día → cancha → bloques (turnos) → cruces con sus horarios y series.
+/// Fixture por cruce: una tarjeta por cada "local vs visita" del día. Al
+/// tocarla se abre el detalle con la cancha y los horarios de cada serie.
 class FixtureView extends StatefulWidget {
   final List<MatchDay> matchDays;
 
@@ -38,6 +38,9 @@ class FixtureView extends StatefulWidget {
   /// Nombres de clubes por id, para el aviso de "Libre".
   final Map<String, String> clubNames;
 
+  /// Número de fecha, para el encabezado del detalle.
+  final int? roundNumber;
+
   const FixtureView({
     super.key,
     required this.matchDays,
@@ -45,6 +48,7 @@ class FixtureView extends StatefulWidget {
     this.searchQuery,
     this.highlightClubId,
     this.clubNames = const {},
+    this.roundNumber,
   });
 
   @override
@@ -131,38 +135,49 @@ class _FixtureViewState extends State<FixtureView> {
     final serie = _serieByDay[index];
     final series = seriesOf(day);
 
-    final fieldCards = <Widget>[];
+    final matchups = Matchup.fromDay(
+      day,
+      map: OverrideService.apply,
+      where: (m) => matchesFilter(m, serie),
+    );
 
-    for (final field in day.fields) {
-      final blocks = <List<Match>>[];
-      final turnos = <String?>[];
+    // El detalle muestra todas las series del cruce, aunque la lista esté
+    // filtrada por una serie: el filtro solo sirve para encontrarlo.
+    final complete = {
+      for (final m in Matchup.fromDay(
+        day,
+        map: OverrideService.apply,
+        where: (m) => matchesFilter(m, null),
+      ))
+        '${m.homeId}|${m.awayId}': m,
+    };
 
-      for (final block in field.blocks) {
-        final matches = block.matches
-            .map(OverrideService.apply)
-            .where((m) => matchesFilter(m, serie))
-            .toList();
+    // Con el filtro de club todos los cruces son suyos: no se resalta.
+    final highlight =
+    widget.clubId == null ? widget.highlightClubId : null;
 
-        if (matches.isEmpty) continue;
+    final subtitle = [
+      if (widget.roundNumber != null) 'Fecha ${widget.roundNumber}',
+      dayLabel(day),
+    ].join(' · ');
 
-        blocks.add(matches);
-        turnos.add(block.turno);
-      }
-
-      if (blocks.isEmpty) continue;
-
-      fieldCards.add(
-        _FieldCard(
-          fieldName: field.fieldName,
-          blocks: blocks,
-          turnos: turnos,
-          showTurnos: field.hasTurnos,
-          // Con el filtro de club todos los cruces son suyos: no se resalta.
-          highlightClubId:
-          widget.clubId == null ? widget.highlightClubId : null,
+    final cards = [
+      for (final matchup in matchups)
+        _MatchupCard(
+          matchup: matchup,
+          highlighted: highlight != null && matchup.involves(highlight),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MatchupDetailPage(
+                matchup:
+                complete['${matchup.homeId}|${matchup.awayId}'] ?? matchup,
+                subtitle: subtitle,
+              ),
+            ),
+          ),
         ),
-      );
-    }
+    ];
 
     final byes = day.byeClubIds
         .map((id) => widget.clubNames[id] ?? id)
@@ -184,7 +199,7 @@ class _FixtureViewState extends State<FixtureView> {
             ),
           ),
 
-        if (fieldCards.isEmpty)
+        if (cards.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xl),
             child: EmptyView(
@@ -193,7 +208,7 @@ class _FixtureViewState extends State<FixtureView> {
             ),
           )
         else
-          ...fieldCards.map((card) => ContentWidth(child: card)),
+          ...cards.map((card) => ContentWidth(child: card)),
 
         if (byes.isNotEmpty && widget.clubId == null)
           ContentWidth(
@@ -255,43 +270,23 @@ class _SerieFilter extends StatelessWidget {
   }
 }
 
-class _FieldCard extends StatelessWidget {
-  final String fieldName;
-  final List<List<Match>> blocks;
-  final List<String?> turnos;
-  final bool showTurnos;
-  final String? highlightClubId;
+/// Tarjeta clásica de un cruce: cancha arriba, equipos a los lados y la
+/// hora del primer partido al centro. Al tocarla se abre el detalle.
+class _MatchupCard extends StatelessWidget {
+  final Matchup matchup;
+  final bool highlighted;
+  final VoidCallback onTap;
 
-  const _FieldCard({
-    required this.fieldName,
-    required this.blocks,
-    required this.turnos,
-    required this.showTurnos,
-    required this.highlightClubId,
+  const _MatchupCard({
+    required this.matchup,
+    required this.highlighted,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final count = blocks.fold<int>(0, (sum, b) => sum + b.length);
-
-    final children = <Widget>[];
-
-    for (var i = 0; i < blocks.length; i++) {
-      for (final group in MatchupGroup.consecutive(blocks[i])) {
-        children.add(
-          _MatchupTile(
-            group: group,
-            highlighted: highlightClubId != null &&
-                group.first.involves(highlightClubId!),
-          ),
-        );
-      }
-
-      if (showTurnos) {
-        children.add(_TurnoDivider(turno: turnos[i]));
-      }
-    }
+    final count = matchup.entries.length;
 
     return Card(
       margin: const EdgeInsets.fromLTRB(
@@ -300,164 +295,102 @@ class _FieldCard extends StatelessWidget {
         AppSpacing.lg,
         0,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            color: AppColors.surfaceLow,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.stadium_outlined,
-                  size: 20,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        fieldName.toUpperCase(),
-                        style: textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                      Text(
-                        '$count partidos programados',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+      shape: highlighted
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              side: const BorderSide(color: AppColors.primary, width: 1.5),
+            )
+          : null,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.stadium_outlined,
+                    size: 16,
+                    color: AppColors.textMuted,
                   ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      matchup.fieldNames.join(' · '),
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                  if (highlighted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: const Text(
+                        'MI CLUB',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onPrimary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              MatchupScoreline(
+                matchup: matchup,
+                center: Column(
+                  children: [
+                    Text(
+                      matchup.firstTime,
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Text(
+                      count == 1 ? '1 partido' : '$count partidos',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
-}
+              ),
 
-/// Un cruce con todas sus series, como lo agrupa la planilla.
-class _MatchupTile extends StatelessWidget {
-  final MatchupGroup group;
-  final bool highlighted;
+              const Divider(height: AppSpacing.xl),
 
-  const _MatchupTile({
-    required this.group,
-    required this.highlighted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final first = group.first;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: highlighted ? AppColors.primaryContainer : null,
-        border: Border(
-          top: const BorderSide(color: AppColors.border),
-          left: BorderSide(
-            color: highlighted ? AppColors.primary : Colors.transparent,
-            width: 3,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      matchup.categories.join(' · '),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: AppColors.outline,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-      ),
-      padding: const EdgeInsets.only(
-        top: AppSpacing.md,
-        bottom: AppSpacing.xs,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: first.home),
-                        TextSpan(
-                          text: '  vs  ',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        TextSpan(text: first.away),
-                      ],
-                    ),
-                    style: textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                if (highlighted)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
-                    ),
-                    child: const Text(
-                      'MI CLUB',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onPrimary,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          for (final match in group.matches)
-            MatchRow(
-              matchId: match.id,
-              time: match.time,
-              category: match.category,
-              status: match.status,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TurnoDivider extends StatelessWidget {
-  final String? turno;
-
-  const _TurnoDivider({required this.turno});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surfaceLow,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs + 2,
-      ),
-      child: Text(
-        turno == null ? 'TURNO' : 'TURNO: ${turno!.toUpperCase()}',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
       ),
     );
   }
