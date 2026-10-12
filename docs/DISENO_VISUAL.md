@@ -50,6 +50,14 @@ Contraste: los pares de texto y fondo cumplen WCAG AA (≥ 4.5:1). Hay una prueb
 - Las medallas emoji de la tabla se reemplazaron por insignias de posición: además, los emojis no se
   veían en la versión web sin conexión.
 
+## Fixture (formato planilla)
+
+- Encabezado de fecha con flechas para cambiar de fecha y enlace al origen de los datos.
+- Tarjeta por cancha con cabecera gris suave y el nombre en mayúsculas, como la planilla.
+- Cruce agrupado: equipos una vez y una línea por serie (hora, serie, estado, favorito).
+- Línea "TURNO" entre bloques; aviso "Libre: …" al final del día.
+- Mi Club: fondo `primaryContainer`, borde izquierdo `primary` e insignia "MI CLUB".
+
 ## Pendiente de decisión
 
 - Escudo y colores oficiales del club (Roberto, con el club).

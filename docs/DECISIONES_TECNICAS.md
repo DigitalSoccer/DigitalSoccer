@@ -55,3 +55,16 @@ Recomendación: adoptar 3.47.7 para todo el equipo, commitear esos dos archivos 
 - Una versión pasa a `main` solo tras validación y autorización. Merges explícitos y revisables.
 - El número de versión de `pubspec.yaml` (hoy `1.0.0+1`) **no se ha cambiado**. Pendiente decidir
   cómo se corresponde con el nombre de rama `01.00.01` (ver informe).
+
+## DT-08 — Fixture con el formato de la planilla de la asociación (Propuesta, 2026-10-12)
+
+- La programación oficial llega como planilla de la **Asociación de Fútbol Caupolicán de Chiguayante**:
+  fecha → día con fecha → cancha → bloques separados por "TURNO:" → hora, cruce y serie, más "LIBRE:".
+- El modelo agrega `date` y `libre` al día, `blocks`/`turno` a la cancha y `source` a la fecha. El
+  formato anterior (`matches` sin bloques) sigue siendo válido.
+- Se transcribió la **fecha 21** desde dos fotos. Las filas sin equipos se interpretaron como
+  continuación del cruce anterior; queda pendiente validar la transcripción con el club.
+- La pantalla de Fixture reproduce la planilla: selector de fecha, pestañas con día y fecha, una
+  tarjeta por cancha siempre abierta, cruces agrupados con sus series, separadores de turno, aviso de
+  club libre, filtro por serie y Mi Club resaltado.
+- Detalle de carga de datos en `DATOS_FIXTURE.md`.
