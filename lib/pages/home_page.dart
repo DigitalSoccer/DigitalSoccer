@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/fixture_round.dart';
 import '../services/data_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/fixture_view.dart';
 
@@ -42,19 +44,25 @@ class _HomePageState extends State<HomePage> {
       builder: (context, fixture) {
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'Buscar club...',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
+            ContentWidth(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
+                child: TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Buscar club...',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                ),
               ),
             ),
 

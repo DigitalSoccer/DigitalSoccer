@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/club.dart';
 import '../services/club_data_service.dart';
 import '../services/club_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import 'club_detail_page.dart';
 
@@ -70,6 +72,10 @@ class _ClubsPageState extends State<ClubsPage> {
         }
 
         return ListView.builder(
+          padding: const EdgeInsets.only(
+            top: AppSpacing.md,
+            bottom: AppSpacing.xl,
+          ),
           itemCount: clubs.length,
           itemBuilder: (context, index) {
             final club = clubs[index];
@@ -77,29 +83,39 @@ class _ClubsPageState extends State<ClubsPage> {
             final isFavorite =
                 club.id == favoriteClubId;
 
-            return Card(
-              margin:
-              const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
-              child: ListTile(
-                leading: const Icon(
-                  Icons.shield,
+            return ContentWidth(
+              child: Card(
+              shape: isFavorite
+                  ? RoundedRectangleBorder(
+                borderRadius:
+                BorderRadius.circular(AppRadius.md),
+                side: const BorderSide(
+                  color: AppColors.brand,
+                  width: 1.5,
                 ),
+              )
+                  : null,
+              child: ListTile(
+                contentPadding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.xs,
+                  AppSpacing.xs,
+                  AppSpacing.xs,
+                ),
+                leading: const ClubAvatar(),
 
                 title: Text(
                   club.name,
-                  style: const TextStyle(
-                    fontWeight:
-                    FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
 
                 subtitle: Text(
                   club.field.isEmpty
                       ? 'Cancha por definir'
                       : club.field,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                  ),
                 ),
 
                 onTap: () async {
@@ -133,12 +149,13 @@ class _ClubsPageState extends State<ClubsPage> {
                         : Icons.star_border,
                   ),
                   color: isFavorite
-                      ? Colors.amber
-                      : Colors.grey,
+                      ? AppColors.favorite
+                      : AppColors.outline,
                   onPressed: () {
                     selectClub(club);
                   },
                 ),
+              ),
               ),
             );
           },

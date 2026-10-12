@@ -6,6 +6,7 @@ import 'package:anfa_chiguayante/pages/my_club_page.dart';
 import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
+import 'package:anfa_chiguayante/widgets/app_components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +27,16 @@ Widget wrap(Widget child, AssetBundle bundle) {
 
 Club club(String id, String name) =>
     Club(id: id, name: name, shortName: name, field: '');
+
+/// Dato destacado visible con su etiqueta (p. ej. "POSICIÓN" / "17").
+Finder stat(String label, String value) {
+  return find.descendant(
+    of: find.byWidgetPredicate(
+      (w) => w is StatTile && w.label == label && w.value == value,
+    ),
+    matching: find.text(value),
+  );
+}
 
 void main() {
   setUp(() {
@@ -83,6 +94,47 @@ void main() {
     });
   });
 
+  group('Diseño adaptable (sin desbordes)', () {
+    for (final size in const [Size(320, 640), Size(1280, 800)]) {
+      testWidgets('pestañas principales a ${size.width.toInt()} px',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(const MyApp());
+        await tester.pumpAndSettle();
+
+        // Abre la primera cancha para mostrar filas de partido.
+        await tester.tap(find.text('Cancha Mario Osben'));
+        await tester.pumpAndSettle();
+
+        for (final tab in ['Mi Club', 'Tabla', 'Clubes', 'Fixture']) {
+          await tester.tap(find.text(tab).last);
+          await tester.pumpAndSettle();
+        }
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('detalle de club a ${size.width.toInt()} px',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(wrap(
+          ClubDetailPage(club: club('arturo-prat', 'Arturo Prat')),
+          realDataBundle(),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(stat('Puntos', '42'), findsOneWidget);
+      });
+    }
+  });
+
   group('Detalle de club', () {
     testWidgets('Arturo Prat muestra su posición y puntos', (tester) async {
       await tester.pumpWidget(wrap(
@@ -91,8 +143,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Posición: 17'), findsOneWidget);
-      expect(find.textContaining('Puntos: 42'), findsOneWidget);
+      expect(stat('Posición', '17'), findsOneWidget);
+      expect(stat('Puntos', '42'), findsOneWidget);
       expect(find.text('Arturo Prat vs El Valle'), findsWidgets);
     });
 
@@ -104,8 +156,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Posición: 5'), findsOneWidget);
-      expect(find.textContaining('Puntos: 90'), findsOneWidget);
+      expect(stat('Posición', '5'), findsOneWidget);
+      expect(stat('Puntos', '90'), findsOneWidget);
     });
 
     testWidgets('un club fuera de la tabla no inventa posición',
@@ -116,7 +168,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Posición'), findsNothing);
+      expect(find.byType(StatTile), findsNothing);
       expect(
         find.text('Sin información en la tabla de posiciones.'),
         findsOneWidget,
@@ -206,7 +258,8 @@ void main() {
       await tester.pumpWidget(wrap(const MyClubPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Mi Club: Arturo Prat'), findsOneWidget);
+      expect(find.text('MI CLUB'), findsOneWidget);
+      expect(find.text('Arturo Prat'), findsOneWidget);
       // Arturo Prat juega el sábado solo en Cancha Chiguayante Sur.
       expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
       expect(find.text('Cancha Mario Osben'), findsNothing);

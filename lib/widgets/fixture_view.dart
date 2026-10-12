@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../services/override_service.dart';
+import '../theme/app_theme.dart';
+import 'app_components.dart';
 import 'async_views.dart';
 import 'match_row.dart';
 
@@ -46,15 +48,20 @@ class FixtureView extends StatelessWidget {
       length: matchDays.length,
       child: Column(
         children: [
-          TabBar(
-            isScrollable: true,
-            tabs: matchDays
-                .map(
-                  (d) => Tab(
-                text: d.day,
+          ContentWidth(
+            child: TabBar(
+              isScrollable: true,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
               ),
-            )
-                .toList(),
+              tabs: matchDays
+                  .map(
+                    (d) => Tab(
+                  text: d.day,
+                ),
+              )
+                  .toList(),
+            ),
           ),
           Expanded(
             child: TabBarView(
@@ -73,26 +80,29 @@ class FixtureView extends StatelessWidget {
 
                   fieldCards.add(
                     Card(
-                      elevation: 3,
-                      margin:
-                      const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
                       child: ExpansionTile(
-                        leading: const Icon(
-                          Icons.stadium,
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            borderRadius:
+                            BorderRadius.circular(AppRadius.sm),
+                          ),
+                          child: const Icon(
+                            Icons.stadium_outlined,
+                            color: AppColors.primary,
+                          ),
                         ),
                         title: Text(
                           field.fieldName,
-                          style: const TextStyle(
-                            fontWeight:
-                            FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         subtitle: Text(
                           '${matches.length} partidos programados',
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                          ),
                         ),
                         children: matches.map((match) {
                           return MatchRow(
@@ -120,10 +130,12 @@ class FixtureView extends StatelessWidget {
 
                 return ListView(
                   padding: const EdgeInsets.only(
-                    top: 8,
-                    bottom: 16,
+                    top: AppSpacing.md,
+                    bottom: AppSpacing.xl,
                   ),
-                  children: fieldCards,
+                  children: fieldCards
+                      .map((card) => ContentWidth(child: card))
+                      .toList(),
                 );
               }).toList(),
             ),

@@ -7,6 +7,8 @@ import '../models/standing.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/standings_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 
 class ClubDetailPage extends StatefulWidget {
@@ -103,74 +105,98 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
             ),
           );
 
+          final textTheme = Theme.of(context).textTheme;
+          final isFavorite = favoriteClubId == widget.club.id;
+
           return ListView(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
             children: [
-              Card(
-                margin: const EdgeInsets.all(10),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      // Ícono genérico: no representa el escudo del club.
-                      const Icon(
-                        Icons.shield,
-                        size: 60,
-                      ),
-                      const SizedBox(height: 10),
+              ContentWidth(
+                child: Card(
+                  margin: const EdgeInsets.all(AppSpacing.lg),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      children: [
+                        const ClubAvatar(size: 72),
 
-                      Text(
-                        widget.club.name,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                        const SizedBox(height: AppSpacing.md),
 
-                      const SizedBox(height: 10),
-
-                      ElevatedButton.icon(
-                        onPressed: setAsMyClub,
-                        icon: Icon(
-                          favoriteClubId == widget.club.id
-                              ? Icons.star
-                              : Icons.star_border,
-                        ),
-                        label: const Text(
-                          'Establecer como Mi Club',
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      if (standing != null) ...[
                         Text(
-                          '🏆 Posición: ${standing.position}',
-                          style: const TextStyle(
-                            fontSize: 18,
+                          widget.club.name,
+                          textAlign: TextAlign.center,
+                          style: textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
 
-                        Text(
-                          '📊 Puntos: ${standing.standing.points}',
-                          style: const TextStyle(
-                            fontSize: 18,
+                        if (widget.club.field.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            widget.club.field,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: AppSpacing.lg),
+
+                        OutlinedButton.icon(
+                          onPressed: setAsMyClub,
+                          icon: Icon(
+                            isFavorite
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: isFavorite
+                                ? AppColors.favorite
+                                : null,
+                          ),
+                          label: const Text(
+                            'Establecer como Mi Club',
                           ),
                         ),
-                      ] else
-                        const Text(
-                          'Sin información en la tabla de posiciones.',
-                        ),
-                    ],
+
+                        const SizedBox(height: AppSpacing.xl),
+
+                        if (standing != null)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: StatTile(
+                                  label: 'Posición',
+                                  value: '${standing.position}',
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: StatTile(
+                                  label: 'Puntos',
+                                  value: '${standing.standing.points}',
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          Text(
+                            'Sin información en la tabla de posiciones.',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
               if (clubDays.isEmpty)
                 const Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     'Este club no tiene partidos en la fecha cargada.',
                     textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textMuted),
                   ),
                 ),
 
@@ -188,33 +214,52 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                   }
                 }
 
-                return Card(
-                  margin:
-                  const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  child: ExpansionTile(
-                    initiallyExpanded: true,
-                    title: Text(
-                      day.day,
-                      style: const TextStyle(
-                        fontWeight:
-                        FontWeight.bold,
+                return ContentWidth(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SectionHeader(day.day),
+                      Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                        ),
+                        child: Column(
+                          children: [
+                            for (var i = 0; i < matches.length; i++)
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  border: i == 0
+                                      ? null
+                                      : const Border(
+                                    top: BorderSide(
+                                      color: AppColors.border,
+                                    ),
+                                  ),
+                                ),
+                                child: ListTile(
+                                  leading: Text(
+                                    matches[i].match.time,
+                                    style: textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    '${matches[i].match.home} vs ${matches[i].match.away}',
+                                    style: textTheme.titleSmall,
+                                  ),
+                                  subtitle: Text(
+                                    '${matches[i].match.category} • ${matches[i].field}',
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    children: matches.map((item) {
-                      final match = item.match;
-
-                      return ListTile(
-                        title: Text(
-                          '${match.home} vs ${match.away}',
-                        ),
-                        subtitle: Text(
-                          '${match.time} • ${match.category} • ${item.field}',
-                        ),
-                      );
-                    }).toList(),
+                    ],
                   ),
                 );
               }),

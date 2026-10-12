@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../theme/app_theme.dart';
+import 'app_components.dart';
+
 class MatchRow extends StatefulWidget {
   final String matchId;
   final String time;
@@ -65,41 +68,47 @@ class _MatchRowState extends State<MatchRow> {
     });
   }
 
-  Color statusColor() {
-    switch (widget.status) {
-      case 'suspendido':
-        return Colors.red;
-
-      case 'reprogramado':
-        return Colors.orange;
-
-      default:
-        return Colors.green;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
+    final textTheme = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AppColors.border),
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.xs,
+          AppSpacing.md,
+        ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 6,
-              height: 70,
+              width: 4,
+              height: 64,
               decoration: BoxDecoration(
-                color: statusColor(),
-                borderRadius:
-                BorderRadius.circular(10),
+                color: MatchStatusBadge.colorFor(widget.status),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
+
+            SizedBox(
+              width: 52,
+              child: Text(
+                widget.time,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
 
             Expanded(
               child: Column(
@@ -107,45 +116,32 @@ class _MatchRowState extends State<MatchRow> {
                 CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.time,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight:
-                      FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
                     '${widget.home} vs ${widget.away}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight:
-                      FontWeight.w600,
-                    ),
+                    style: textTheme.titleSmall,
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.sm),
 
                   Wrap(
-                    spacing: 8,
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Chip(
                         label: Text(
                           widget.category,
                         ),
                       ),
+                      MatchStatusBadge(status: widget.status),
                     ],
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
 
                   Text(
                     widget.fieldName,
-                    style: TextStyle(
-                      color:
-                      Colors.grey.shade600,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -153,13 +149,16 @@ class _MatchRowState extends State<MatchRow> {
             ),
 
             IconButton(
+              tooltip: isFavorite
+                  ? 'Quitar de favoritos'
+                  : 'Marcar como favorito',
               icon: Icon(
                 isFavorite
                     ? Icons.star
                     : Icons.star_border,
                 color: isFavorite
-                    ? Colors.amber
-                    : Colors.grey,
+                    ? AppColors.favorite
+                    : AppColors.outline,
               ),
               onPressed: toggleFavorite,
             ),

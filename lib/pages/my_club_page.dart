@@ -5,6 +5,8 @@ import '../models/fixture_round.dart';
 import '../services/club_data_service.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/fixture_view.dart';
 
@@ -69,20 +71,44 @@ class _MyClubPageState extends State<MyClubPage> {
           );
         }
 
-        final colors = Theme.of(context).colorScheme;
+        final textTheme = Theme.of(context).textTheme;
 
         return Column(
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              color: colors.primary,
-              child: Text(
-                'Mi Club: ${club.name}',
-                style: TextStyle(
-                  color: colors.onPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+              color: AppColors.primaryContainer,
+              child: ContentWidth(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      const ClubAvatar(size: 44),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'MI CLUB',
+                              style: textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              club.name,
+                              style: textTheme.titleLarge?.copyWith(
+                                color: AppColors.onPrimaryContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

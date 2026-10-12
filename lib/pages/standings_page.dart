@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/standing.dart';
 import '../services/standings_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 
 class StandingsPage extends StatefulWidget {
@@ -29,19 +31,6 @@ class _StandingsPageState extends State<StandingsPage> {
     });
   }
 
-  String medal(int position) {
-    switch (position) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return '';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return AsyncBody<List<Standing>>(
@@ -55,49 +44,104 @@ class _StandingsPageState extends State<StandingsPage> {
           );
         }
 
-        return ListView.builder(
-          itemCount: standings.length,
-          itemBuilder: (context, index) {
-            final team = standings[index];
-            final position = index + 1;
-
-            return Card(
-              margin: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
-              child: ListTile(
-                leading: SizedBox(
-                  width: 40,
-                  child: Center(
-                    child: Text(
-                      medal(position).isEmpty
-                          ? '$position'
-                          : medal(position),
-                      style: const TextStyle(
-                        fontSize: 24,
+        return ListView(
+          padding: const EdgeInsets.only(
+            top: AppSpacing.md,
+            bottom: AppSpacing.xl,
+          ),
+          children: [
+            ContentWidth(
+              child: Card(
+                child: Column(
+                  children: [
+                    const _StandingsHeader(),
+                    for (var i = 0; i < standings.length; i++)
+                      _StandingRow(
+                        position: i + 1,
+                        standing: standings[i],
                       ),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  team.team,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                trailing: Text(
-                  '${team.points} pts',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+class _StandingsHeader extends StatelessWidget {
+  const _StandingsHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+        );
+
+    return Container(
+      color: AppColors.surfaceLow,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        children: [
+          SizedBox(width: 32, child: Text('#', style: style)),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: Text('CLUB', style: style)),
+          Text('PTS', style: style),
+        ],
+      ),
+    );
+  }
+}
+
+class _StandingRow extends StatelessWidget {
+  final int position;
+  final Standing standing;
+
+  const _StandingRow({
+    required this.position,
+    required this.standing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AppColors.border),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            PositionBadge(position: position),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                standing.team,
+                style: textTheme.titleSmall,
+              ),
+            ),
+            Text(
+              '${standing.points} pts',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
