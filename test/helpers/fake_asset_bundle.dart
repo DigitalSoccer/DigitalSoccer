@@ -36,6 +36,8 @@ class FakeAssetBundle extends CachingAssetBundle {
 
 const dataFiles = [
   'assets/data/clubs.json',
+  'assets/data/fechas.json',
+  'assets/data/fecha_21.json',
   'assets/data/fixture.json',
   'assets/data/standings.json',
 ];
