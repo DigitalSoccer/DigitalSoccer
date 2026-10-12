@@ -41,22 +41,46 @@ void main() {
     expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
   });
 
-  testWidgets('el tema usa el verde provisional y no el morado por defecto',
+  testWidgets('la app usa la paleta centralizada gris azulada y blanca',
       (tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
     final context = tester.element(find.byType(Scaffold).first);
-    final primary = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
 
-    expect(
-      primary,
-      ColorScheme.fromSeed(seedColor: provisionalSeedColor).primary,
-    );
-    expect(
-      primary,
-      isNot(ColorScheme.fromSeed(seedColor: const Color(0xFF6750A4)).primary),
-    );
+    expect(theme.colorScheme.primary, AppColors.primary);
+    expect(theme.scaffoldBackgroundColor, AppColors.background);
+    expect(theme.colorScheme.onSurface, AppColors.text);
+  });
+
+  test('los pares de texto y fondo cumplen contraste WCAG AA (4.5:1)', () {
+    double contrast(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
+      final hi = la > lb ? la : lb;
+      final lo = la > lb ? lb : la;
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    final pairs = {
+      'texto / fondo': (AppColors.text, AppColors.background),
+      'texto secundario / fondo': (AppColors.textMuted, AppColors.background),
+      'texto secundario / gris suave':
+          (AppColors.textMuted, AppColors.surfaceMid),
+      'primario / fondo': (AppColors.primary, AppColors.background),
+      'blanco / primario': (AppColors.onPrimary, AppColors.primary),
+      'texto / contenedor primario':
+          (AppColors.onPrimaryContainer, AppColors.primaryContainer),
+      'primario / contenedor primario':
+          (AppColors.primary, AppColors.primaryContainer),
+      'error / fondo': (AppColors.error, AppColors.background),
+    };
+
+    pairs.forEach((name, pair) {
+      expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5),
+          reason: name);
+    });
   });
 
   group('Detalle de club', () {
