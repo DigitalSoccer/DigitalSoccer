@@ -1,0 +1,122 @@
+{
+  "round": 11,
+  "days": [
+    {
+      "day": "Sábado",
+      "fields": [
+        {
+          "fieldName": "Cancha Mario Osben",
+          "matches": [
+            {"time":"14:00","home":"Ferrobadminton","away":"Leinenweber","category":"Juveniles","status":"normal"},
+            {"time":"15:20","home":"El Tigre","away":"Independiente","category":"2° Infantil","status":"normal"},
+            {"time":"16:20","home":"El Tigre","away":"Independiente","category":"1° Infantil","status":"normal"},
+            {"time":"17:30","home":"El Tigre","away":"Independiente","category":"Juveniles","status":"normal"},
+            {"time":"18:50","home":"Ferrobadminton","away":"Leinenweber","category":"S. Senior","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha Chiguayante Sur",
+          "matches": [
+            {"time":"11:30","home":"Union Angamos","away":"Chiguayante Sur","category":"2° Infantil","status":"normal"},
+            {"time":"12:30","home":"Union Angamos","away":"Chiguayante Sur","category":"1° Infantil","status":"normal"},
+            {"time":"14:00","home":"Union Angamos","away":"Chiguayante Sur","category":"Juveniles","status":"normal"},
+            {"time":"15:00","home":"Arturo Prat","away":"El Valle","category":"1° Infantil","status":"normal"},
+            {"time":"16:10","home":"Arturo Prat","away":"El Valle","category":"Juveniles","status":"normal"},
+            {"time":"17:30","home":"Union Angamos","away":"Chiguayante Sur","category":"H. Ortiz","status":"normal"},
+            {"time":"18:40","home":"Union Angamos","away":"Chiguayante Sur","category":"S. Senior","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha Independiente",
+          "matches": [
+            {"time":"12:00","home":"Schaub F.C.","away":"Magallanes","category":"2° Infantil","status":"normal"},
+            {"time":"13:00","home":"Schaub F.C.","away":"Magallanes","category":"1° Infantil","status":"normal"},
+            {"time":"14:10","home":"Schaub F.C.","away":"Magallanes","category":"Juveniles","status":"normal"},
+            {"time":"15:30","home":"Schaub F.C.","away":"Magallanes","category":"H. Ortiz","status":"normal"},
+            {"time":"16:40","home":"Schaub F.C.","away":"Magallanes","category":"S. Senior","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha José Vilches",
+          "matches": [
+            {"time":"12:00","home":"U.L. Carrera","away":"Nacional","category":"2° Infantil","status":"normal"},
+            {"time":"13:00","home":"U.L. Carrera","away":"Nacional","category":"1° Infantil","status":"normal"},
+            {"time":"14:10","home":"U.L. Carrera","away":"Nacional","category":"Juveniles","status":"normal"},
+            {"time":"15:30","home":"U.L. Carrera","away":"Nacional","category":"S. Senior","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha Magallanes",
+          "matches": [
+            {"time":"10:00","home":"U.L. Bolzhauser","away":"Jackson","category":"2° Infantil","status":"normal"},
+            {"time":"11:00","home":"U.L. Bolzhauser","away":"Jackson","category":"1° Infantil","status":"normal"},
+            {"time":"12:10","home":"U.L. Bolzhauser","away":"Jackson","category":"Juveniles","status":"normal"},
+            {"time":"13:30","home":"Bdo. O'Higgins","away":"San Pablo","category":"2° Infantil","status":"normal"},
+            {"time":"14:30","home":"Bdo. O'Higgins","away":"San Pablo","category":"1° Infantil","status":"normal"},
+            {"time":"15:40","home":"Bdo. O'Higgins","away":"San Pablo","category":"Juveniles","status":"normal"},
+            {"time":"17:00","home":"Bdo. O'Higgins","away":"San Pablo","category":"H. Ortiz","status":"normal"},
+            {"time":"18:10","home":"Bdo. O'Higgins","away":"San Pablo","category":"S. Senior","status":"normal"},
+            {"time":"19:20","home":"U.L. Bolzhauser","away":"Jackson","category":"S. Senior","status":"normal"}
+          ]
+        }
+      ]
+    },
+    {
+      "day": "Domingo",
+      "fields": [
+        {
+          "fieldName": "Cancha Mario Osben",
+          "matches": [
+            {"time":"09:00","home":"Ferrobadminton","away":"Leinenweber","category":"Segunda","status":"normal"},
+            {"time":"10:20","home":"Ferrobadminton","away":"Leinenweber","category":"Primera","status":"normal"},
+            {"time":"11:50","home":"Ferrobadminton","away":"Leinenweber","category":"Senior","status":"normal"},
+            {"time":"13:30","home":"El Tigre","away":"Independiente","category":"Segunda","status":"normal"},
+            {"time":"14:50","home":"El Tigre","away":"Independiente","category":"Primera","status":"normal"},
+            {"time":"16:20","home":"Jackson","away":"Nacional","category":"Honor","status":"normal"},
+            {"time":"18:00","home":"Chiguayante Sur","away":"Bdo. O'Higgins","category":"Honor","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha Chiguayante Sur",
+          "matches": [
+            {"time":"09:00","home":"Union Angamos","away":"Chiguayante Sur","category":"Segunda","status":"normal"},
+            {"time":"10:20","home":"Union Angamos","away":"Chiguayante Sur","category":"Primera","status":"normal"},
+            {"time":"11:50","home":"Union Angamos","away":"Chiguayante Sur","category":"Senior","status":"normal"},
+            {"time":"13:30","home":"Arturo Prat","away":"El Valle","category":"Segunda","status":"normal"},
+            {"time":"14:50","home":"Arturo Prat","away":"El Valle","category":"Primera","status":"normal"},
+            {"time":"16:20","home":"Arturo Prat","away":"Union Angamos","category":"Honor","status":"normal"},
+            {"time":"18:00","home":"Magallanes","away":"Maestranza","category":"Honor","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha Independiente",
+          "matches": [
+            {"time":"09:00","home":"Schaub F.C.","away":"Magallanes","category":"Segunda","status":"normal"},
+            {"time":"10:20","home":"Schaub F.C.","away":"Magallanes","category":"Primera","status":"normal"},
+            {"time":"11:50","home":"Schaub F.C.","away":"Magallanes","category":"Senior","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha José Vilches",
+          "matches": [
+            {"time":"09:00","home":"U.L. Carrera","away":"Nacional","category":"Segunda","status":"normal"},
+            {"time":"10:20","home":"U.L. Carrera","away":"Nacional","category":"Primera","status":"normal"},
+            {"time":"11:50","home":"U.L. Carrera","away":"Nacional","category":"Senior","status":"normal"}
+          ]
+        },
+        {
+          "fieldName": "Cancha Magallanes",
+          "matches": [
+            {"time":"09:00","home":"U.L. Bolzhauser","away":"Jackson","category":"Segunda","status":"normal"},
+            {"time":"10:20","home":"U.L. Bolzhauser","away":"Jackson","category":"Primera","status":"normal"},
+            {"time":"11:50","home":"U.L. Bolzhauser","away":"Jackson","category":"Senior","status":"normal"},
+            {"time":"13:30","home":"Bdo. O'Higgins","away":"San Pablo","category":"Segunda","status":"normal"},
+            {"time":"14:50","home":"Bdo. O'Higgins","away":"San Pablo","category":"Primera","status":"normal"},
+            {"time":"16:20","home":"Bdo. O'Higgins","away":"San Pablo","category":"Senior","status":"normal"},
+            {"time":"18:00","home":"San Pablo","away":"Ferrobadminton","category":"Honor","status":"normal"}
+          ]
+        }
+      ]
+    }
+  ]
+}

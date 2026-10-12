@@ -1,0 +1,87 @@
+[
+  {
+    "name": "Arturo Prat",
+    "shortName": "A. Prat",
+    "field": "Cancha Chiguayante Sur"
+  },
+  {
+    "name": "Bdo. O'Higgins",
+    "shortName": "Bdo. O'Higgins",
+    "field": "Cancha Magallanes"
+  },
+  {
+    "name": "Chiguayante Sur",
+    "shortName": "Chiguayante Sur",
+    "field": "Cancha Chiguayante Sur"
+  },
+  {
+    "name": "El Tigre",
+    "shortName": "El Tigre",
+    "field": "Cancha Mario Osben"
+  },
+  {
+    "name": "El Valle",
+    "shortName": "El Valle",
+    "field": "Cancha Chiguayante Sur"
+  },
+  {
+    "name": "Ferrobadminton",
+    "shortName": "Ferro",
+    "field": "Cancha Mario Osben"
+  },
+  {
+    "name": "Independiente",
+    "shortName": "Independiente",
+    "field": "Cancha Independiente"
+  },
+  {
+    "name": "Jackson",
+    "shortName": "Jackson",
+    "field": "Cancha Magallanes"
+  },
+  {
+    "name": "Leinenweber",
+    "shortName": "Leinenweber",
+    "field": "Cancha Mario Osben"
+  },
+  {
+    "name": "Magallanes",
+    "shortName": "Magallanes",
+    "field": "Cancha Magallanes"
+  },
+  {
+    "name": "Maestranza",
+    "shortName": "Maestranza",
+    "field": ""
+  },
+  {
+    "name": "Nacional",
+    "shortName": "Nacional",
+    "field": "Cancha José Vilches"
+  },
+  {
+    "name": "San Pablo",
+    "shortName": "San Pablo",
+    "field": "Cancha Magallanes"
+  },
+  {
+    "name": "Schaub F.C.",
+    "shortName": "Schaub",
+    "field": "Cancha Independiente"
+  },
+  {
+    "name": "U.L. Bolzhauser",
+    "shortName": "Bolzhauser",
+    "field": "Cancha Magallanes"
+  },
+  {
+    "name": "U.L. Carrera",
+    "shortName": "Carrera",
+    "field": "Cancha José Vilches"
+  },
+  {
+    "name": "Union Angamos",
+    "shortName": "Angamos",
+    "field": "Cancha Chiguayante Sur"
+  }
+]
