@@ -26,11 +26,12 @@ autenticación y panel administrativo.
 Se ordena por puntos y, con puntos iguales, se respeta el orden de la fuente. No se aplica ningún
 desempate propio mientras no se conozcan las reglas oficiales del campeonato.
 
-## DT-04 — Tema visual provisional (Propuesta)
+## DT-04 — Tema visual (Actualizada 2026-10-12)
 
-`ColorScheme.fromSeed(seedColor: Colors.green)` en `lib/theme/app_theme.dart`. El verde **no** es un color
-oficial confirmado del club ni de ANFA. El tema anterior usaba `primarySwatch`, que Material 3 ignora,
-por eso la app se veía morada.
+Primero se corrigió el tema verde (`primarySwatch` se ignora en Material 3; por eso la app se veía
+morada). Luego el equipo pidió una paleta **gris azulada y blanca**, implementada con un `ColorScheme`
+explícito y tokens centralizados en `lib/theme/app_theme.dart`. No son colores oficiales. Detalle en
+`DISENO_VISUAL.md`.
 
 ## DT-05 — Carga de datos y errores (Propuesta)
 
@@ -45,3 +46,12 @@ está instalada la **3.47.7**, con la que se ejecutaron todas las pruebas; usarl
 `pubspec.lock` 6 paquetes fijados por el SDK y agregó exclusiones en `analysis_options.yaml`.
 Recomendación: adoptar 3.47.7 para todo el equipo, commitear esos dos archivos y fijar la versión
 (en el README y, opcionalmente, con FVM y un archivo `.fvmrc`).
+
+## DT-07 — Flujo de ramas y versiones (Aprobada, 2026-10-12)
+
+- `main`: versión estable y validada. No se desarrolla directamente en ella.
+- `develop`: integración del desarrollo. Las ramas de trabajo (`fix/…`, `feature/…`) salen de `develop`.
+- `Release/01.00.01`: preparación de la versión 01.00.01, a partir de `develop` validado.
+- Una versión pasa a `main` solo tras validación y autorización. Merges explícitos y revisables.
+- El número de versión de `pubspec.yaml` (hoy `1.0.0+1`) **no se ha cambiado**. Pendiente decidir
+  cómo se corresponde con el nombre de rama `01.00.01` (ver informe).
