@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
+import '../models/standing.dart';
 import '../services/standings_service.dart';
+import '../widgets/async_views.dart';
 
-class StandingsPage extends StatelessWidget {
+class StandingsPage extends StatefulWidget {
   const StandingsPage({super.key});
+
+  @override
+  State<StandingsPage> createState() => _StandingsPageState();
+}
+
+class _StandingsPageState extends State<StandingsPage> {
+  Future<List<Standing>>? _future;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _future ??= _load();
+  }
+
+  Future<List<Standing>> _load() {
+    return StandingsService.loadStandings(DefaultAssetBundle.of(context));
+  }
+
+  void _retry() {
+    setState(() {
+      _future = _load();
+    });
+  }
 
   String medal(int position) {
     switch (position) {
@@ -19,16 +44,16 @@ class StandingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Standing>>(
-      future: StandingsService.loadStandings(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(),
+    return AsyncBody<List<Standing>>(
+      future: _future!,
+      onRetry: _retry,
+      builder: (context, standings) {
+        if (standings.isEmpty) {
+          return const EmptyView(
+            icon: Icons.emoji_events_outlined,
+            message: 'La tabla de posiciones aún no está disponible.',
           );
         }
-
-        final standings = snapshot.data!;
 
         return ListView.builder(
           itemCount: standings.length,

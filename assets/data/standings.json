@@ -1,69 +1,86 @@
 [
   {
+    "clubId": "chiguayante-sur",
     "team": "Chiguayante Sur",
     "points": 161
   },
   {
+    "clubId": "union-angamos",
     "team": "Union Angamos",
     "points": 119
   },
   {
+    "clubId": "magallanes",
     "team": "Magallanes",
     "points": 103
   },
   {
+    "clubId": "san-pablo",
     "team": "San Pablo",
     "points": 95
   },
   {
+    "clubId": "bdo-ohiggins",
     "team": "Bdo. O’Higgins",
     "points": 90
   },
   {
+    "clubId": "ferrobadminton",
     "team": "Ferrobadminton",
     "points": 85
   },
   {
+    "clubId": "independiente",
     "team": "Independiente",
     "points": 84
   },
   {
+    "clubId": "maestranza",
     "team": "Maestranza",
     "points": 79
   },
   {
+    "clubId": "nacional",
     "team": "Nacional",
     "points": 79
   },
   {
+    "clubId": "jackson",
     "team": "Jackson",
     "points": 76
   },
   {
+    "clubId": "leinenweber",
     "team": "Leinenweber",
     "points": 64
   },
   {
+    "clubId": "ul-bolzhauser",
     "team": "U.L. Bolzhauser",
     "points": 63
   },
   {
+    "clubId": "el-tigre",
     "team": "El Tigre",
     "points": 59
   },
   {
+    "clubId": "schaub-fc",
     "team": "Schaub F.C.",
     "points": 49
   },
   {
+    "clubId": "el-valle",
     "team": "El Valle",
     "points": 46
   },
   {
+    "clubId": "ul-carrera",
     "team": "U.L. Carrera",
     "points": 44
   },
   {
+    "clubId": "arturo-prat",
     "team": "A. Prat",
     "points": 42
   }

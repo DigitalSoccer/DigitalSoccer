@@ -1,27 +1,47 @@
 import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../services/override_service.dart';
+import 'async_views.dart';
 import 'match_row.dart';
 
 class FixtureView extends StatelessWidget {
   final List<MatchDay> matchDays;
-  final String? selectedClub;
+
+  /// Si se indica, solo muestra los partidos de ese club.
+  final String? clubId;
+
+  /// Texto libre del buscador; filtra por nombre de equipo.
+  final String? searchQuery;
 
   const FixtureView({
     super.key,
     required this.matchDays,
-    this.selectedClub,
+    this.clubId,
+    this.searchQuery,
   });
 
-  bool isMyMatch(Match match, String club) {
-    final c = club.toLowerCase();
+  bool matchesFilter(Match match) {
+    if (clubId != null && !match.involves(clubId!)) {
+      return false;
+    }
 
-    return match.home.toLowerCase().contains(c) ||
-        match.away.toLowerCase().contains(c);
+    final query = searchQuery?.trim().toLowerCase() ?? '';
+
+    if (query.isEmpty) return true;
+
+    return match.home.toLowerCase().contains(query) ||
+        match.away.toLowerCase().contains(query);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (matchDays.isEmpty) {
+      return const EmptyView(
+        icon: Icons.event_busy,
+        message: 'No hay partidos programados.',
+      );
+    }
+
     return DefaultTabController(
       length: matchDays.length,
       child: Column(
@@ -39,31 +59,20 @@ class FixtureView extends StatelessWidget {
           Expanded(
             child: TabBarView(
               children: matchDays.map((day) {
-                return ListView(
-                  padding: const EdgeInsets.only(
-                    top: 8,
-                    bottom: 16,
-                  ),
-                  children: day.fields.map((field) {
-                    final matches = field.matches
-                        .map(
-                          (m) => OverrideService.apply(m),
-                    )
-                        .where(
-                          (m) => selectedClub == null
-                          ? true
-                          : isMyMatch(
-                        m,
-                        selectedClub!,
-                      ),
-                    )
-                        .toList();
+                final fieldCards = <Widget>[];
 
-                    if (matches.isEmpty) {
-                      return const SizedBox();
-                    }
+                for (final field in day.fields) {
+                  final matches = field.matches
+                      .map(
+                        (m) => OverrideService.apply(m),
+                  )
+                      .where(matchesFilter)
+                      .toList();
 
-                    return Card(
+                  if (matches.isEmpty) continue;
+
+                  fieldCards.add(
+                    Card(
                       elevation: 3,
                       margin:
                       const EdgeInsets.symmetric(
@@ -98,8 +107,23 @@ class FixtureView extends StatelessWidget {
                           );
                         }).toList(),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  );
+                }
+
+                if (fieldCards.isEmpty) {
+                  return EmptyView(
+                    icon: Icons.event_busy,
+                    message: 'No hay partidos para mostrar el ${day.day}.',
+                  );
+                }
+
+                return ListView(
+                  padding: const EdgeInsets.only(
+                    top: 8,
+                    bottom: 16,
+                  ),
+                  children: fieldCards,
                 );
               }).toList(),
             ),

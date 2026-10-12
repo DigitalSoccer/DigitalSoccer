@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../models/club.dart';
 import '../models/fixture_round.dart';
 import '../models/match.dart';
+import '../models/standing.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/standings_service.dart';
+import '../widgets/async_views.dart';
 
 class ClubDetailPage extends StatefulWidget {
-  final String club;
+  final Club club;
 
   const ClubDetailPage({
     super.key,
@@ -18,28 +21,54 @@ class ClubDetailPage extends StatefulWidget {
   State<ClubDetailPage> createState() => _ClubDetailPageState();
 }
 
+class _ClubDetailData {
+  final FixtureRound fixture;
+  final StandingPosition? position;
+
+  _ClubDetailData(this.fixture, this.position);
+}
+
 class _ClubDetailPageState extends State<ClubDetailPage> {
-  String? favoriteClub;
+  String? favoriteClubId;
+  Future<_ClubDetailData>? _future;
 
   @override
-  void initState() {
-    super.initState();
-    loadFavoriteClub();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _future ??= _load();
   }
 
-  Future<void> loadFavoriteClub() async {
-    final club = await ClubService.getFavoriteClub();
+  Future<_ClubDetailData> _load() async {
+    final bundle = DefaultAssetBundle.of(context);
 
+    final results = await Future.wait([
+      DataService.loadData(bundle),
+      StandingsService.loadStandings(bundle),
+      ClubService.getFavoriteClubId([widget.club]),
+    ]);
+
+    favoriteClubId = results[2] as String?;
+
+    return _ClubDetailData(
+      results[0] as FixtureRound,
+      StandingsService.positionOf(
+        results[1] as List<Standing>,
+        widget.club.id,
+      ),
+    );
+  }
+
+  void _retry() {
     setState(() {
-      favoriteClub = club;
+      _future = _load();
     });
   }
 
   Future<void> setAsMyClub() async {
-    await ClubService.setFavoriteClub(widget.club);
+    await ClubService.setFavoriteClubId(widget.club.id);
 
     setState(() {
-      favoriteClub = widget.club;
+      favoriteClubId = widget.club.id;
     });
 
     if (!mounted) return;
@@ -47,54 +76,32 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${widget.club} seleccionado como Mi Club',
+          '${widget.club.name} seleccionado como Mi Club',
         ),
       ),
     );
-  }
-
-  bool isClubMatch(Match match) {
-    return match.home == widget.club ||
-        match.away == widget.club;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.club),
+        title: Text(widget.club.name),
       ),
-      body: FutureBuilder(
-        future: Future.wait([
-          DataService.loadData(),
-          StandingsService.loadStandings(),
-        ]),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+      body: AsyncBody<_ClubDetailData>(
+        future: _future!,
+        onRetry: _retry,
+        builder: (context, data) {
+          final matchDays = data.fixture.days;
+          final standing = data.position;
 
-          final data = snapshot.data as List;
-
-          final fixture =
-          data[0] as FixtureRound;
-
-          final standings =
-          data[1] as List<Standing>;
-
-          final matchDays = fixture.days;
-
-          final standingIndex = standings.indexWhere(
-                (s) =>
-            s.team.toLowerCase() ==
-                widget.club.toLowerCase(),
+          final clubDays = matchDays.where(
+                (day) => day.fields.any(
+                  (field) => field.matches.any(
+                    (m) => m.involves(widget.club.id),
+              ),
+            ),
           );
-
-          final standing = standingIndex >= 0
-              ? standings[standingIndex]
-              : null;
 
           return ListView(
             children: [
@@ -104,6 +111,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
+                      // Ícono genérico: no representa el escudo del club.
                       const Icon(
                         Icons.shield,
                         size: 60,
@@ -111,7 +119,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                       const SizedBox(height: 10),
 
                       Text(
-                        widget.club,
+                        widget.club.name,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -123,7 +131,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                       ElevatedButton.icon(
                         onPressed: setAsMyClub,
                         icon: Icon(
-                          favoriteClub == widget.club
+                          favoriteClubId == widget.club.id
                               ? Icons.star
                               : Icons.star_border,
                         ),
@@ -132,45 +140,52 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                         ),
                       ),
 
+                      const SizedBox(height: 20),
+
                       if (standing != null) ...[
-                        const SizedBox(height: 20),
-
                         Text(
-                          '🏆 Posición: ${standingIndex + 1}',
+                          '🏆 Posición: ${standing.position}',
                           style: const TextStyle(
                             fontSize: 18,
                           ),
                         ),
 
                         Text(
-                          '📊 Puntos: ${standing.points}',
+                          '📊 Puntos: ${standing.standing.points}',
                           style: const TextStyle(
                             fontSize: 18,
                           ),
                         ),
-                      ],
+                      ] else
+                        const Text(
+                          'Sin información en la tabla de posiciones.',
+                        ),
                     ],
                   ),
                 ),
               ),
 
-              ...matchDays.map((day) {
+              if (clubDays.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Este club no tiene partidos en la fecha cargada.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+              ...clubDays.map((day) {
                 final matches =
-                <Map<String, dynamic>>[];
+                <({Match match, String field})>[];
 
                 for (final field in day.fields) {
                   for (final match in field.matches) {
-                    if (isClubMatch(match)) {
-                      matches.add({
-                        'match': match,
-                        'field': field.fieldName,
-                      });
+                    if (match.involves(widget.club.id)) {
+                      matches.add(
+                        (match: match, field: field.fieldName),
+                      );
                     }
                   }
-                }
-
-                if (matches.isEmpty) {
-                  return const SizedBox();
                 }
 
                 return Card(
@@ -189,18 +204,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                       ),
                     ),
                     children: matches.map((item) {
-                      final match =
-                      item['match'] as Match;
-
-                      final field =
-                      item['field'] as String;
+                      final match = item.match;
 
                       return ListTile(
                         title: Text(
                           '${match.home} vs ${match.away}',
                         ),
                         subtitle: Text(
-                          '${match.time} • ${match.category} • $field',
+                          '${match.time} • ${match.category} • ${item.field}',
                         ),
                       );
                     }).toList(),
