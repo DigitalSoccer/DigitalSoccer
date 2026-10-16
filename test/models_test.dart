@@ -149,4 +149,37 @@ void main() {
       expect(StandingsService.positionOf(table, 'zz'), isNull);
     });
   });
+
+  group('Standing: PJ y diferencia de goles', () {
+    test('son opcionales: la fuente actual solo trae puntos', () {
+      final s = Standing.fromJson({
+        'clubId': 'a',
+        'team': 'A',
+        'points': 10,
+      });
+
+      expect(s.played, isNull);
+      expect(s.goalDifference, isNull);
+    });
+
+    test('se leen cuando vienen', () {
+      final s = Standing.fromJson({
+        'clubId': 'a',
+        'team': 'A',
+        'points': 10,
+        'played': 8,
+        'goalDifference': -3,
+      });
+
+      expect(s.played, 8);
+      expect(s.goalDifference, -3);
+    });
+
+    test('formato de la diferencia de goles', () {
+      expect(formatGoalDifference(null), '–');
+      expect(formatGoalDifference(5), '+5');
+      expect(formatGoalDifference(0), '0');
+      expect(formatGoalDifference(-3), '-3');
+    });
+  });
 }

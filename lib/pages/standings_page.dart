@@ -71,6 +71,10 @@ class _StandingsPageState extends State<StandingsPage> {
   }
 }
 
+// Ancho de las columnas numéricas, igual en encabezado y filas.
+const double _statWidth = 40;
+const double _pointsWidth = 44;
+
 class _StandingsHeader extends StatelessWidget {
   const _StandingsHeader();
 
@@ -78,6 +82,14 @@ class _StandingsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelSmall?.copyWith(
           fontWeight: FontWeight.w700,
+        );
+
+    Widget column(String label, double width, String tooltip) => SizedBox(
+          width: width,
+          child: Tooltip(
+            message: tooltip,
+            child: Text(label, textAlign: TextAlign.center, style: style),
+          ),
         );
 
     return Container(
@@ -91,7 +103,9 @@ class _StandingsHeader extends StatelessWidget {
           SizedBox(width: 32, child: Text('#', style: style)),
           const SizedBox(width: AppSpacing.md),
           Expanded(child: Text('CLUB', style: style)),
-          Text('PTS', style: style),
+          column('PJ', _statWidth, 'Partidos jugados'),
+          column('DIF', _statWidth, 'Diferencia de goles'),
+          column('PTS', _pointsWidth, 'Puntos'),
         ],
       ),
     );
@@ -110,6 +124,18 @@ class _StandingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
+    Widget stat(String value) => SizedBox(
+          width: _statWidth,
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.textMuted,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        );
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -132,11 +158,18 @@ class _StandingRow extends StatelessWidget {
                 style: textTheme.titleSmall,
               ),
             ),
-            Text(
-              '${standing.points} pts',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.primary,
+            stat(standing.played?.toString() ?? '–'),
+            stat(formatGoalDifference(standing.goalDifference)),
+            SizedBox(
+              width: _pointsWidth,
+              child: Text(
+                '${standing.points}',
+                textAlign: TextAlign.center,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ),
           ],

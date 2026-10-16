@@ -508,4 +508,42 @@ void main() {
       expect(find.text('Libre en la fecha 21.'), findsOneWidget);
     });
   });
+
+  group('Tabla: columnas PJ, DIF y PTS', () {
+    testWidgets('con los datos actuales PJ y DIF muestran guion',
+        (tester) async {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PJ'), findsOneWidget);
+      expect(find.text('DIF'), findsOneWidget);
+      expect(find.text('PTS'), findsOneWidget);
+      // 17 clubes × 2 columnas sin dato.
+      expect(find.text('–'), findsNWidgets(34));
+      // Los puntos sí son datos reales.
+      expect(find.text('161'), findsOneWidget);
+    });
+
+    testWidgets('con valores los muestra con signo en DIF', (tester) async {
+      await tester.pumpWidget(wrap(
+        const StandingsPage(),
+        FakeAssetBundle({
+          standingsPath: '[{"clubId": "a", "team": "Equipo A", "points": 30,'
+              ' "played": 12, "goalDifference": 15},'
+              ' {"clubId": "b", "team": "Equipo B", "points": 9,'
+              ' "played": 12, "goalDifference": -7}]',
+        }),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('12'), findsNWidgets(2));
+      expect(find.text('+15'), findsOneWidget);
+      expect(find.text('-7'), findsOneWidget);
+      expect(find.text('30'), findsOneWidget);
+    });
+  });
 }

@@ -92,3 +92,11 @@ Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi
     Si el club queda libre, se indica.
 - Hoy no hay jugadores cargados. Colores de tarjetas en `AppColors.cardYellow` / `AppColors.cardRed`,
   componentes `DisciplineCard`, `SquadTable` y `SquadLegend`.
+
+## Tabla general (2026-10-15)
+
+- Columnas: **# · Club · PJ · DIF · PTS** (anchos fijos alineados entre encabezado y filas).
+- PJ y DIF son opcionales en los datos (`played`, `goalDifference` en `standings.json`). La fuente
+  actual solo trae puntos, así que se muestran como **"–"**. No se cargan valores inventados en la
+  app; solo se simularon en una copia aparte para revisar el diseño.
+- DIF se muestra con signo: `+5`, `0`, `-3`.
