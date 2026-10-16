@@ -28,6 +28,7 @@ flutter:
     - assets/data/fecha_21.json
     - assets/data/fixture.json
     - assets/data/planteles.json
+    - assets/data/tablas_series.json
     - assets/data/standings.json
     - assets/data/clubs.json
     - assets/data/categories.json

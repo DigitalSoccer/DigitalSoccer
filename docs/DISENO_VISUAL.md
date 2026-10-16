@@ -100,3 +100,6 @@ Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi
   actual solo trae puntos, así que se muestran como **"–"**. No se cargan valores inventados en la
   app; solo se simularon en una copia aparte para revisar el diseño.
 - DIF se muestra con signo: `+5`, `0`, `-3`.
+- **Menú desplegable "Tabla"** arriba (2026-10-15): "Tabla general" (por defecto) y "Serie …" para
+  cada serie del fixture, de menor a mayor. Sin datos de una serie: "La tabla de <serie> aún no está
+  disponible." Título de la pantalla: "Tabla de posiciones".

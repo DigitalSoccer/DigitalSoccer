@@ -546,4 +546,112 @@ void main() {
       expect(find.text('30'), findsOneWidget);
     });
   });
+
+  group('Tabla: menú por serie', () {
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
+
+    Future<void> choose(WidgetTester tester, String option) async {
+      await tester.tap(find.byType(DropdownButtonFormField<String?>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(option).last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('por defecto muestra la tabla general', (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tabla general'), findsOneWidget);
+      expect(find.text('Chiguayante Sur'), findsOneWidget);
+    });
+
+    testWidgets('ofrece las series del fixture de menor a mayor',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      final dropdown = tester.widget<DropdownButton<String?>>(
+        find.byType(DropdownButton<String?>),
+      );
+      final labels = dropdown.items!
+          .map((item) => (item.child as Text).data)
+          .toList();
+
+      expect(labels, [
+        'Tabla general',
+        'Serie 2° Infantil',
+        'Serie 1° Infantil',
+        'Serie Juveniles',
+        'Serie H. Ortiz',
+        'Serie S. Senior',
+        'Serie Segunda',
+        'Serie Primera',
+        'Serie Senior',
+        'Serie Honor',
+      ]);
+    });
+
+    testWidgets('una serie sin datos lo indica y no inventa la tabla',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await choose(tester, 'Serie Honor');
+
+      expect(
+        find.text('La tabla de Honor aún no está disponible.'),
+        findsOneWidget,
+      );
+      expect(find.text('Chiguayante Sur'), findsNothing);
+
+      await choose(tester, 'Tabla general');
+
+      expect(find.text('Chiguayante Sur'), findsOneWidget);
+    });
+
+    testWidgets('una serie con datos muestra su propia tabla', (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(
+        const StandingsPage(),
+        FakeAssetBundle({
+          ...realDataFiles(),
+          // Datos de EJEMPLO solo para la prueba.
+          'assets/data/tablas_series.json':
+              '{"series": {"Honor": ['
+              '{"clubId": "b", "team": "Equipo B", "points": 3},'
+              '{"clubId": "a", "team": "Equipo A", "points": 9,'
+              ' "played": 3, "goalDifference": 4}]}}',
+        }),
+      ));
+      await tester.pumpAndSettle();
+
+      await choose(tester, 'Serie Honor');
+
+      // Ordenada por puntos.
+      final a = tester.getTopLeft(find.text('Equipo A')).dy;
+      final b = tester.getTopLeft(find.text('Equipo B')).dy;
+      expect(a, lessThan(b));
+      expect(find.text('+4'), findsOneWidget);
+      expect(find.text('Chiguayante Sur'), findsNothing);
+    });
+
+    testWidgets('si fallan los datos de series, igual muestra la general',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        const StandingsPage(),
+        FakeAssetBundle({standingsPath: realDataFiles()[standingsPath]!}),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reintentar'), findsNothing);
+      expect(find.text('Chiguayante Sur'), findsOneWidget);
+    });
+  });
 }

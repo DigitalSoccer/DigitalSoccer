@@ -91,3 +91,22 @@ Formato esperado:
 - `category` usa el mismo nombre de serie que el fixture (`Honor`, `S. Senior`, `2° Infantil`…).
 - `number` y cada estadística son opcionales (sin dato: "–" y 0).
 - Más adelante estos datos vendrán de la API; la app solo cambia de dónde los lee (`SquadService`).
+
+## Tablas por serie (estructura preparada, sin datos)
+
+`assets/data/tablas_series.json` está vacío (`{"series": {}}`). Formato esperado: una lista por serie,
+con los mismos campos que `standings.json`:
+
+```json
+{
+  "series": {
+    "Honor": [
+      {"clubId": "arturo-prat", "team": "Arturo Prat", "points": 12,
+       "played": 8, "goalDifference": -2}
+    ]
+  }
+}
+```
+
+La clave es el nombre de la serie tal como aparece en el fixture. Si este archivo falla, la app sigue
+mostrando la tabla general.

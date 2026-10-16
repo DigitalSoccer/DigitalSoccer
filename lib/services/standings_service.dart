@@ -4,10 +4,32 @@ import '../models/standing.dart';
 import 'asset_json.dart';
 
 class StandingsService {
+  static const String seriesPath = 'assets/data/tablas_series.json';
+
   static Future<List<Standing>> loadStandings([AssetBundle? bundle]) {
     return loadJsonAsset(
       'assets/data/standings.json',
       parseStandings,
+      bundle: bundle,
+    );
+  }
+
+  /// Tablas por serie (`{"series": {"Honor": [...], ...}}`). Vacío hasta
+  /// que haya datos de cómo se reparten los puntos en cada serie.
+  static Future<Map<String, List<Standing>>> loadSeriesStandings([
+    AssetBundle? bundle,
+  ]) {
+    return loadJsonAsset(
+      seriesPath,
+      (data) {
+        final series = (data as Map<String, dynamic>)['series']
+            as Map<String, dynamic>;
+
+        return {
+          for (final entry in series.entries)
+            entry.key: parseStandings(entry.value),
+        };
+      },
       bundle: bundle,
     );
   }

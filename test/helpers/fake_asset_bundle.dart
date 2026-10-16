@@ -41,6 +41,7 @@ const dataFiles = [
   'assets/data/fixture.json',
   'assets/data/planteles.json',
   'assets/data/standings.json',
+  'assets/data/tablas_series.json',
 ];
 
 /// Lee del disco los JSON reales del proyecto.

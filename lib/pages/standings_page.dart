@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/fixture_round.dart';
+import '../models/series.dart';
 import '../models/standing.dart';
+import '../services/data_service.dart';
 import '../services/standings_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_components.dart';
@@ -12,8 +15,21 @@ class StandingsPage extends StatefulWidget {
   State<StandingsPage> createState() => _StandingsPageState();
 }
 
+class _StandingsData {
+  final List<Standing> general;
+  final Map<String, List<Standing>> bySeries;
+
+  /// Series que aparecen en el fixture, de menor a mayor.
+  final List<String> categories;
+
+  _StandingsData(this.general, this.bySeries, this.categories);
+}
+
 class _StandingsPageState extends State<StandingsPage> {
-  Future<List<Standing>>? _future;
+  Future<_StandingsData>? _future;
+
+  /// Serie elegida en el menú; `null` = tabla general.
+  String? _category;
 
   @override
   void didChangeDependencies() {
@@ -21,8 +37,41 @@ class _StandingsPageState extends State<StandingsPage> {
     _future ??= _load();
   }
 
-  Future<List<Standing>> _load() {
-    return StandingsService.loadStandings(DefaultAssetBundle.of(context));
+  Future<_StandingsData> _load() async {
+    final bundle = DefaultAssetBundle.of(context);
+
+    // Las tablas por serie y el fixture (que da la lista de series) son
+    // secundarios: si fallan, se muestra igual la tabla general.
+    Future<T> optional<T>(Future<T> future, T fallback) =>
+        future.catchError((Object e) {
+          debugPrint('Dato opcional de la tabla no disponible: $e');
+          return fallback;
+        });
+
+    final results = await Future.wait([
+      StandingsService.loadStandings(bundle),
+      optional(
+        StandingsService.loadSeriesStandings(bundle),
+        <String, List<Standing>>{},
+      ),
+      optional(DataService.loadRounds(bundle), <FixtureRound>[]),
+    ]);
+
+    final bySeries = results[1] as Map<String, List<Standing>>;
+    final rounds = results[2] as List<FixtureRound>;
+
+    return _StandingsData(
+      results[0] as List<Standing>,
+      bySeries,
+      sortSeries([
+        for (final round in rounds)
+          for (final day in round.days)
+            for (final field in day.fields)
+              for (final match in field.matches) match.category,
+        // Una serie con tabla cargada aparece aunque no esté en el fixture.
+        ...bySeries.keys,
+      ]),
+    );
   }
 
   void _retry() {
@@ -33,16 +82,14 @@ class _StandingsPageState extends State<StandingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncBody<List<Standing>>(
+    return AsyncBody<_StandingsData>(
       future: _future!,
       onRetry: _retry,
-      builder: (context, standings) {
-        if (standings.isEmpty) {
-          return const EmptyView(
-            icon: Icons.emoji_events_outlined,
-            message: 'La tabla de posiciones aún no está disponible.',
-          );
-        }
+      builder: (context, data) {
+        final category = _category;
+        final standings = category == null
+            ? data.general
+            : data.bySeries[category] ?? const <Standing>[];
 
         return ListView(
           padding: const EdgeInsets.only(
@@ -51,19 +98,64 @@ class _StandingsPageState extends State<StandingsPage> {
           ),
           children: [
             ContentWidth(
-              child: Card(
-                child: Column(
-                  children: [
-                    const _StandingsHeader(),
-                    for (var i = 0; i < standings.length; i++)
-                      _StandingRow(
-                        position: i + 1,
-                        standing: standings[i],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                ),
+                child: DropdownButtonFormField<String?>(
+                  initialValue: category,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Tabla',
+                    prefixIcon: Icon(Icons.emoji_events_outlined),
+                  ),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Tabla general'),
+                    ),
+                    for (final c in data.categories)
+                      DropdownMenuItem<String?>(
+                        value: c,
+                        child: Text('Serie $c'),
                       ),
                   ],
+                  onChanged: (value) {
+                    setState(() {
+                      _category = value;
+                    });
+                  },
                 ),
               ),
             ),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            if (standings.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xl),
+                child: EmptyView(
+                  icon: Icons.emoji_events_outlined,
+                  message: category == null
+                      ? 'La tabla de posiciones aún no está disponible.'
+                      : 'La tabla de $category aún no está disponible.',
+                ),
+              )
+            else
+              ContentWidth(
+                child: Card(
+                  child: Column(
+                    children: [
+                      const _StandingsHeader(),
+                      for (var i = 0; i < standings.length; i++)
+                        _StandingRow(
+                          position: i + 1,
+                          standing: standings[i],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         );
       },

@@ -20,7 +20,7 @@ class _MainPageState extends State<MainPage> {
   final List<String> _titles = [
     'ANFA Chiguayante',
     'Fixture',
-    'Tabla General',
+    'Tabla de posiciones',
     'Clubes',
   ];
 
