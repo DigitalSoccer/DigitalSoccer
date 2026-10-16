@@ -8,23 +8,9 @@ import 'app_components.dart';
 import 'async_views.dart';
 import 'matchup_card.dart';
 
-/// Orden de las series para el filtro (de menor a mayor). Las que no estén
-/// aquí se agregan al final en el orden en que aparecen.
-const List<String> seriesOrder = [
-  '2° Infantil',
-  '1° Infantil',
-  'Juveniles',
-  'H. Ortiz',
-  'S. Senior',
-  'Segunda',
-  'Primera',
-  'Senior',
-  'Honor',
-];
-
 /// Fixture por cruce: una tarjeta por cada "local vs visita" del día. Al
 /// tocarla se abre el detalle con la cancha y los horarios de cada serie.
-class FixtureView extends StatefulWidget {
+class FixtureView extends StatelessWidget {
   final List<MatchDay> matchDays;
 
   /// Si se indica, solo muestra los partidos de ese club.
@@ -52,24 +38,14 @@ class FixtureView extends StatefulWidget {
     this.roundNumber,
   });
 
-  @override
-  State<FixtureView> createState() => _FixtureViewState();
-}
-
-class _FixtureViewState extends State<FixtureView> {
-  /// Serie elegida por día (null = todas).
-  final Map<int, String?> _serieByDay = {};
-
-  bool matchesFilter(Match match, String? serie) {
-    if (widget.clubId != null && !match.involves(widget.clubId!)) {
+  // Los filtros (club y nombre de equipo) aplican a todas las series de un
+  // cruce por igual, así que cada tarjeta conserva el cruce completo.
+  bool matchesFilter(Match match) {
+    if (clubId != null && !match.involves(clubId!)) {
       return false;
     }
 
-    if (serie != null && match.category != serie) {
-      return false;
-    }
-
-    final query = widget.searchQuery?.trim().toLowerCase() ?? '';
+    final query = searchQuery?.trim().toLowerCase() ?? '';
 
     if (query.isEmpty) return true;
 
@@ -77,23 +53,9 @@ class _FixtureViewState extends State<FixtureView> {
         match.away.toLowerCase().contains(query);
   }
 
-  List<String> seriesOf(MatchDay day) {
-    final present = <String>{
-      for (final field in day.fields)
-        for (final match in field.matches)
-          if (widget.clubId == null || match.involves(widget.clubId!))
-            match.category,
-    };
-
-    return [
-      ...seriesOrder.where(present.contains),
-      ...present.where((s) => !seriesOrder.contains(s)),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (widget.matchDays.isEmpty) {
+    if (matchDays.isEmpty) {
       return const EmptyView(
         icon: Icons.event_busy,
         message: 'No hay partidos programados.',
@@ -101,7 +63,7 @@ class _FixtureViewState extends State<FixtureView> {
     }
 
     return DefaultTabController(
-      length: widget.matchDays.length,
+      length: matchDays.length,
       child: Column(
         children: [
           ContentWidth(
@@ -110,7 +72,7 @@ class _FixtureViewState extends State<FixtureView> {
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.sm,
               ),
-              tabs: widget.matchDays
+              tabs: matchDays
                   .map(
                     (d) => Tab(
                   text: dayTabLabel(d),
@@ -122,8 +84,7 @@ class _FixtureViewState extends State<FixtureView> {
           Expanded(
             child: TabBarView(
               children: [
-                for (var i = 0; i < widget.matchDays.length; i++)
-                  _buildDay(context, i, widget.matchDays[i]),
+                for (final day in matchDays) _buildDay(context, day),
               ],
             ),
           ),
@@ -132,33 +93,18 @@ class _FixtureViewState extends State<FixtureView> {
     );
   }
 
-  Widget _buildDay(BuildContext context, int index, MatchDay day) {
-    final serie = _serieByDay[index];
-    final series = seriesOf(day);
-
+  Widget _buildDay(BuildContext context, MatchDay day) {
     final matchups = Matchup.fromDay(
       day,
       map: OverrideService.apply,
-      where: (m) => matchesFilter(m, serie),
+      where: matchesFilter,
     );
 
-    // El detalle muestra todas las series del cruce, aunque la lista esté
-    // filtrada por una serie: el filtro solo sirve para encontrarlo.
-    final complete = {
-      for (final m in Matchup.fromDay(
-        day,
-        map: OverrideService.apply,
-        where: (m) => matchesFilter(m, null),
-      ))
-        '${m.homeId}|${m.awayId}': m,
-    };
-
     // Con el filtro de club todos los cruces son suyos: no se resalta.
-    final highlight =
-    widget.clubId == null ? widget.highlightClubId : null;
+    final highlight = clubId == null ? highlightClubId : null;
 
     final subtitle = [
-      if (widget.roundNumber != null) 'Fecha ${widget.roundNumber}',
+      if (roundNumber != null) 'Fecha $roundNumber',
       dayLabel(day),
     ].join(' · ');
 
@@ -171,8 +117,7 @@ class _FixtureViewState extends State<FixtureView> {
             context,
             MaterialPageRoute(
               builder: (_) => MatchupDetailPage(
-                matchup:
-                complete['${matchup.homeId}|${matchup.awayId}'] ?? matchup,
+                matchup: matchup,
                 subtitle: subtitle,
               ),
             ),
@@ -181,25 +126,15 @@ class _FixtureViewState extends State<FixtureView> {
     ];
 
     final byes = day.byeClubIds
-        .map((id) => widget.clubNames[id] ?? id)
+        .map((id) => clubNames[id] ?? id)
         .toList();
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.xs,
+        bottom: AppSpacing.xl,
+      ),
       children: [
-        if (series.length > 1)
-          ContentWidth(
-            child: _SerieFilter(
-              series: series,
-              selected: serie,
-              onSelected: (value) {
-                setState(() {
-                  _serieByDay[index] = value;
-                });
-              },
-            ),
-          ),
-
         if (cards.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xl),
@@ -211,62 +146,11 @@ class _FixtureViewState extends State<FixtureView> {
         else
           ...cards.map((card) => ContentWidth(child: card)),
 
-        if (byes.isNotEmpty && widget.clubId == null)
+        if (byes.isNotEmpty && clubId == null)
           ContentWidth(
             child: _ByeBanner(names: byes),
           ),
       ],
-    );
-  }
-}
-
-class _SerieFilter extends StatelessWidget {
-  final List<String> series;
-  final String? selected;
-  final ValueChanged<String?> onSelected;
-
-  const _SerieFilter({
-    required this.series,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Widget chip(String label, String? value) {
-      final isSelected = selected == value;
-
-      return Padding(
-        padding: const EdgeInsets.only(right: AppSpacing.sm),
-        child: ChoiceChip(
-          label: Text(label),
-          selected: isSelected,
-          showCheckmark: false,
-          selectedColor: AppColors.primary,
-          labelStyle: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? AppColors.onPrimary : AppColors.textMuted,
-          ),
-          onSelected: (_) => onSelected(value),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.xs,
-      ),
-      child: Row(
-        children: [
-          chip('Todas', null),
-          for (final s in series) chip(s, s),
-        ],
-      ),
     );
   }
 }

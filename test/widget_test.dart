@@ -442,45 +442,6 @@ void main() {
       expect(find.byType(MatchupDetailPage), findsNothing);
     });
 
-    testWidgets('con filtro de serie, el detalle muestra todas las series',
-        (tester) async {
-      tallView(tester);
-      await pumpHome(tester);
-
-      await tester.tap(find.widgetWithText(ChoiceChip, '1° Infantil'));
-      await tester.pumpAndSettle();
-
-      // La tarjeta muestra solo la serie filtrada...
-      expect(find.text('1 partido'), findsWidgets);
-
-      await tester.tap(find.text('U.L. Carrera'));
-      await tester.pumpAndSettle();
-
-      // ...pero el detalle trae los 4 horarios del cruce.
-      for (final time in ['13:00', '14:10', '15:30', '16:40']) {
-        expect(rowsWith(time), findsOneWidget, reason: time);
-      }
-    });
-
-    testWidgets('filtro por serie', (tester) async {
-      tallView(tester);
-      await pumpHome(tester);
-
-      // Jackson vs El Valle solo juega 1° Infantil el sábado.
-      expect(find.text('Jackson'), findsOneWidget);
-
-      await tester.tap(find.widgetWithText(ChoiceChip, 'H. Ortiz'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Jackson'), findsNothing);
-      expect(find.text('Ferrobadminton'), findsOneWidget);
-
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Todas'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Jackson'), findsOneWidget);
-    });
-
     testWidgets('muestra el club libre de la fecha', (tester) async {
       await pumpHome(tester);
 

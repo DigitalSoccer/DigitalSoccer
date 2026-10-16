@@ -168,7 +168,6 @@ class _ChooseClub extends StatelessWidget {
         _Hero(
           child: ContentWidth(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(
                   Icons.sports_soccer,
@@ -178,6 +177,7 @@ class _ChooseClub extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   '¡Bienvenido!',
+                  textAlign: TextAlign.center,
                   style: textTheme.headlineSmall?.copyWith(
                     color: AppColors.onPrimary,
                     fontWeight: FontWeight.w700,
@@ -187,6 +187,7 @@ class _ChooseClub extends StatelessWidget {
                 Text(
                   'Elige tu club para ver sus partidos de la fecha y su '
                   'posición en la tabla.',
+                  textAlign: TextAlign.center,
                   style: textTheme.bodyLarge?.copyWith(
                     color: AppColors.primaryContainer,
                   ),
@@ -299,44 +300,42 @@ class _ClubHome extends StatelessWidget {
       children: [
         _Hero(
           child: ContentWidth(
-            child: Row(
+            child: Column(
               children: [
-                const ClubAvatar(size: 56),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'MI CLUB',
-                        style: textTheme.labelSmall?.copyWith(
-                          color: AppColors.primaryContainer,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        club.name,
-                        style: textTheme.headlineSmall?.copyWith(
-                          color: AppColors.onPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (club.field.isNotEmpty)
-                        Text(
-                          club.field,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: AppColors.primaryContainer,
-                          ),
-                        ),
-                    ],
+                const ClubAvatar(size: 72),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'MI CLUB',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: AppColors.primaryContainer,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
                   ),
                 ),
-                TextButton(
+                Text(
+                  club.name,
+                  textAlign: TextAlign.center,
+                  style: textTheme.headlineSmall?.copyWith(
+                    color: AppColors.onPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (club.field.isNotEmpty)
+                  Text(
+                    club.field,
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.primaryContainer,
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.xs),
+                TextButton.icon(
                   onPressed: onChangeClub,
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.onPrimary,
                   ),
-                  child: const Text('Cambiar'),
+                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  label: const Text('Cambiar'),
                 ),
               ],
             ),

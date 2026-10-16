@@ -120,7 +120,7 @@ ThemeData buildAppTheme() {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      centerTitle: false,
+      centerTitle: true,
       // Tamaño explícito: `ThemeData.textTheme` aún no incluye tamaños
       // (Flutter los agrega en Theme.of), y el título quedaba en 14 px.
       titleTextStyle: TextStyle(

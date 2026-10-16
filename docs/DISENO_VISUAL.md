@@ -53,7 +53,7 @@ Contraste: los pares de texto y fondo cumplen WCAG AA (≥ 4.5:1). Hay una prueb
 ## Fixture (por cruce)
 
 - Encabezado de fecha con flechas para cambiar de fecha y enlace al origen de los datos.
-- Pestañas por día y filtro por serie.
+- Pestañas por día (sin filtro por serie: se quitó el 2026-10-15 a pedido de Diego).
 - Una tarjeta "clásica" por cruce (local vs visita del día): cancha(s) arriba, equipos a los lados
   con ícono genérico y, al centro, la hora del primer partido y la cantidad de partidos. Abajo, las
   series. No hay marcador porque aún no se cargan resultados.
@@ -72,8 +72,9 @@ Contraste: los pares de texto y fondo cumplen WCAG AA (≥ 4.5:1). Hay una prueb
 
 Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi Club").
 
-- **Inicio sin club elegido:** bloque azul de bienvenida y lista de clubes para elegir.
-- **Inicio con club:** bloque azul con el club y botón "Cambiar" (abre la lista en una hoja inferior),
+- **Inicio sin club elegido:** bloque azul de bienvenida (centrado) y lista de clubes para elegir.
+- Títulos de la barra superior centrados en todas las pantallas.
+- **Inicio con club:** bloque azul con el club centrado y botón "Cambiar" (abre la lista en una hoja inferior),
   posición y puntos, y los cruces del club en la fecha más reciente agrupados por día, con las mismas
   tarjetas clásicas del fixture. Si el club queda libre, se indica. Botón "Ver fixture completo".
 - Las tarjetas abren la pantalla "Partido" (cancha y horarios por serie).
