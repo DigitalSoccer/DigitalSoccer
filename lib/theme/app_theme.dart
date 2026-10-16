@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de la app: gris azulado claro + blanco.
+/// Paleta de la app: azul acero (base #205375) + blanco.
 ///
 /// Es la DIRECCIÓN VISUAL acordada por el equipo, no los colores oficiales
 /// del Club Arturo Prat ni de ANFA Chiguayante (pendientes de confirmación).
@@ -9,32 +9,32 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  /// Gris azulado claro: color de identidad (acentos, indicadores).
+  /// Azul claro de acento (indicadores, bordes destacados).
   /// No usar como fondo de texto blanco: no tiene contraste suficiente.
-  static const Color brand = Color(0xFF8FA3B8);
+  static const Color brand = Color(0xFF5E8DB5);
 
-  /// Gris azulado profundo para elementos interactivos y texto destacado
-  /// (contraste ≥ 4.5:1 sobre blanco).
-  static const Color primary = Color(0xFF48607A);
+  /// Azul principal (#205375): barra superior, elementos interactivos y texto
+  /// destacado. Contraste ≥ 4.5:1 sobre blanco.
+  static const Color primary = Color(0xFF205375);
   static const Color onPrimary = Colors.white;
 
-  /// Fondo suave gris azulado para cabeceras, insignias y selección.
-  static const Color primaryContainer = Color(0xFFE1E8EF);
-  static const Color onPrimaryContainer = Color(0xFF1E2B38);
+  /// Azul muy suave para cabeceras, insignias y selección.
+  static const Color primaryContainer = Color(0xFFDDE9F3);
+  static const Color onPrimaryContainer = Color(0xFF0E2A3F);
 
   static const Color background = Colors.white;
 
-  /// Grises suaves para separar superficies.
-  static const Color surfaceLow = Color(0xFFF5F7F9);
-  static const Color surfaceMid = Color(0xFFEEF2F5);
-  static const Color surfaceHigh = Color(0xFFE6EBF0);
+  /// Grises con tinte azul para separar superficies.
+  static const Color surfaceLow = Color(0xFFF5F8FB);
+  static const Color surfaceMid = Color(0xFFECF2F7);
+  static const Color surfaceHigh = Color(0xFFE2EAF2);
 
-  static const Color border = Color(0xFFDCE2E8);
-  static const Color outline = Color(0xFF8C98A5);
+  static const Color border = Color(0xFFD5DFE8);
+  static const Color outline = Color(0xFF8496A8);
 
-  /// Texto principal y secundario (gris azulado oscuro).
-  static const Color text = Color(0xFF1F2A37);
-  static const Color textMuted = Color(0xFF5A6776);
+  /// Texto principal y secundario (azul marino).
+  static const Color text = Color(0xFF15293A);
+  static const Color textMuted = Color(0xFF4F6275);
 
   static const Color error = Color(0xFFB4443C);
 
@@ -114,22 +114,19 @@ ThemeData buildAppTheme() {
       ),
     ),
 
-    appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.text,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.onPrimary,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
       // Tamaño explícito: `ThemeData.textTheme` aún no incluye tamaños
       // (Flutter los agrega en Theme.of), y el título quedaba en 14 px.
-      titleTextStyle: const TextStyle(
+      titleTextStyle: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w700,
-        color: AppColors.text,
-      ),
-      shape: const Border(
-        bottom: BorderSide(color: AppColors.border),
+        color: AppColors.onPrimary,
       ),
     ),
 
