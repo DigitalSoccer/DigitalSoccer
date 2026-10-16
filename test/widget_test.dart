@@ -178,7 +178,6 @@ void main() {
 
       expect(stat('Posición', '17'), findsOneWidget);
       expect(stat('Puntos', '42'), findsOneWidget);
-      expect(find.text("Arturo Prat vs Bdo. O'Higgins"), findsWidgets);
     });
 
     testWidgets("Bdo. O'Higgins muestra su posición y puntos",
@@ -206,6 +205,14 @@ void main() {
         find.text('Sin información en la tabla de posiciones.'),
         findsOneWidget,
       );
+      expect(
+        find.text('Este club no tiene series en las fechas cargadas.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Próximas fechas'));
+      await tester.pumpAndSettle();
+
       expect(
         find.text('Este club no tiene partidos en la fecha cargada.'),
         findsOneWidget,
@@ -493,6 +500,9 @@ void main() {
         ClubDetailPage(club: club('independiente', 'Independiente')),
         realDataBundle(),
       ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Próximas fechas'));
       await tester.pumpAndSettle();
 
       expect(find.text('Libre en la fecha 21.'), findsOneWidget);

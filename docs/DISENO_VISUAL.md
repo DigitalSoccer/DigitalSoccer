@@ -79,11 +79,16 @@ Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi
   tarjetas clásicas del fixture. Si el club queda libre, se indica. Botón "Ver fixture completo".
 - Las tarjetas abren la pantalla "Partido" (cancha y horarios por serie).
 
-## Planteles (2026-10-15)
+## Ficha del club (2026-10-15)
 
-- Ficha del club → sección **"Planteles por serie"**: una opción por cada serie en que juega el club
-  (según las fechas cargadas), ordenadas de menor a mayor.
-- Al tocar una serie se abre **"Plantel · <club>"** con pestañas por serie y una tabla:
-  N° · Jugador · PJ · G · tarjeta amarilla · tarjeta roja (los goles en azul), más una leyenda.
-- Sin datos: "El plantel de <serie> aún no está disponible." Hoy no hay jugadores cargados.
-- Colores de tarjetas en `AppColors.cardYellow` / `AppColors.cardRed` y el componente `DisciplineCard`.
+- Encabezado compacto: ícono genérico, nombre, cancha, estrella "Mi Club" y posición/puntos. Al
+  desplazar se recoge y las pestañas quedan fijas arriba.
+- Dos pestañas: **Plantel** y **Próximas fechas**.
+  - **Plantel:** una fila desplegable por cada serie en que juega el club (según las fechas cargadas,
+    de menor a mayor). Al abrirla, la tabla N° · Jugador · PJ · G · tarjeta amarilla · tarjeta roja
+    (goles en azul), o "El plantel de <serie> aún no está disponible". Leyenda al final.
+  - **Próximas fechas:** cruces del club en fechas desde hoy en adelante, con tarjetas clásicas que
+    abren el detalle. Si no hay fechas futuras cargadas, muestra la última programada con un aviso.
+    Si el club queda libre, se indica.
+- Hoy no hay jugadores cargados. Colores de tarjetas en `AppColors.cardYellow` / `AppColors.cardRed`,
+  componentes `DisciplineCard`, `SquadTable` y `SquadLegend`.
