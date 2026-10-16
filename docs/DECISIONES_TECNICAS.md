@@ -71,3 +71,12 @@ Recomendación: adoptar 3.47.7 para todo el equipo, commitear esos dos archivos 
 - **Actualización (mismo día, a pedido de Diego):** la lista del fixture pasó de "por cancha" a "por
   cruce", con tarjetas de estilo clásico (equipos a los lados, hora al centro) y una pantalla de
   detalle con la cancha y los horarios de cada serie. Los turnos siguen en los datos.
+
+## DT-09 — Planteles por serie (Propuesta, 2026-10-15)
+
+- Se prepara la estructura (modelo `Player`/`Squad`, `SquadService`, pantalla Plantel) sin datos reales.
+- Estadísticas: partidos jugados, goles, amarillas y rojas: lo que registra el acta de un partido amateur.
+- **Riesgo a resolver antes de cargar datos:** las series infantiles y juveniles son de **menores de
+  edad**. Antes de publicar sus nombres hay que definir con Roberto y el club qué se muestra (por ejemplo,
+  solo nombre e inicial del apellido, o nada en series infantiles) y contar con autorización. Con la API
+  futura, esa regla puede aplicarse en el servidor según el rol de quien consulta.

@@ -78,3 +78,12 @@ Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi
   posición y puntos, y los cruces del club en la fecha más reciente agrupados por día, con las mismas
   tarjetas clásicas del fixture. Si el club queda libre, se indica. Botón "Ver fixture completo".
 - Las tarjetas abren la pantalla "Partido" (cancha y horarios por serie).
+
+## Planteles (2026-10-15)
+
+- Ficha del club → sección **"Planteles por serie"**: una opción por cada serie en que juega el club
+  (según las fechas cargadas), ordenadas de menor a mayor.
+- Al tocar una serie se abre **"Plantel · <club>"** con pestañas por serie y una tabla:
+  N° · Jugador · PJ · G · tarjeta amarilla · tarjeta roja (los goles en azul), más una leyenda.
+- Sin datos: "El plantel de <serie> aún no está disponible." Hoy no hay jugadores cargados.
+- Colores de tarjetas en `AppColors.cardYellow` / `AppColors.cardRed` y el componente `DisciplineCard`.

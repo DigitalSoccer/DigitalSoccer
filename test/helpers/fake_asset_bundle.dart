@@ -39,6 +39,7 @@ const dataFiles = [
   'assets/data/fechas.json',
   'assets/data/fecha_21.json',
   'assets/data/fixture.json',
+  'assets/data/planteles.json',
   'assets/data/standings.json',
 ];
 

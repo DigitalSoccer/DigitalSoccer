@@ -43,6 +43,10 @@ class AppColors {
   static const Color statusNormal = brand;
   static const Color statusSuspended = error;
   static const Color statusRescheduled = Color(0xFFA86A12);
+
+  // Tarjetas disciplinarias (íconos de la tabla de jugadores).
+  static const Color cardYellow = Color(0xFFF2C200);
+  static const Color cardRed = Color(0xFFD32F2F);
 }
 
 class AppSpacing {

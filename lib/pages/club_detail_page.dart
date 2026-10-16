@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/club.dart';
 import '../models/fixture_round.dart';
 import '../models/match.dart';
+import '../models/series.dart';
 import '../models/standing.dart';
+import '../services/asset_json.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/standings_service.dart';
@@ -11,6 +13,7 @@ import '../theme/app_theme.dart';
 import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
+import 'squad_page.dart';
 
 class ClubDetailPage extends StatefulWidget {
   final Club club;
@@ -28,7 +31,10 @@ class _ClubDetailData {
   final FixtureRound fixture;
   final StandingPosition? position;
 
-  _ClubDetailData(this.fixture, this.position);
+  /// Series en que juega el club según todas las fechas cargadas.
+  final List<String> categories;
+
+  _ClubDetailData(this.fixture, this.position, this.categories);
 }
 
 class _ClubDetailPageState extends State<ClubDetailPage> {
@@ -45,19 +51,32 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
     final bundle = DefaultAssetBundle.of(context);
 
     final results = await Future.wait([
-      DataService.loadData(bundle),
+      DataService.loadRounds(bundle),
       StandingsService.loadStandings(bundle),
       ClubService.getFavoriteClubId([widget.club]),
     ]);
 
     favoriteClubId = results[2] as String?;
 
+    final rounds = results[0] as List<FixtureRound>;
+
+    if (rounds.isEmpty) {
+      throw DataLoadException(DataService.indexPath, 'No hay fechas cargadas');
+    }
+
     return _ClubDetailData(
-      results[0] as FixtureRound,
+      rounds.first,
       StandingsService.positionOf(
         results[1] as List<Standing>,
         widget.club.id,
       ),
+      sortSeries([
+        for (final round in rounds)
+          for (final day in round.days)
+            for (final field in day.fields)
+              for (final match in field.matches)
+                if (match.involves(widget.club.id)) match.category,
+      ]),
     );
   }
 
@@ -194,6 +213,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                 ),
               ),
 
+              if (data.categories.isNotEmpty)
+                ContentWidth(
+                  child: _SquadSection(
+                    club: widget.club,
+                    categories: data.categories,
+                  ),
+                ),
+
               if (clubDays.isEmpty)
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
@@ -275,6 +302,61 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Acceso a los planteles: una opción por serie en que juega el club.
+class _SquadSection extends StatelessWidget {
+  final Club club;
+  final List<String> categories;
+
+  const _SquadSection({
+    required this.club,
+    required this.categories,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader('Planteles por serie'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              for (final category in categories)
+                ActionChip(
+                  avatar: const Icon(
+                    Icons.groups_outlined,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                  label: Text(category),
+                  labelStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                  backgroundColor: AppColors.primaryContainer,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SquadPage(
+                        club: club,
+                        categories: categories,
+                        initialCategory: category,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

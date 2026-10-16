@@ -198,3 +198,22 @@ class ContentWidth extends StatelessWidget {
     );
   }
 }
+
+/// Tarjeta disciplinaria (amarilla o roja) dibujada como un rectángulo.
+class DisciplineCard extends StatelessWidget {
+  final Color color;
+
+  const DisciplineCard({super.key, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 14,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+}

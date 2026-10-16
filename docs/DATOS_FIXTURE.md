@@ -67,3 +67,27 @@ flutter test test/club_relations_test.dart
 
 Comprueba ids válidos, clubes libres existentes y, para la fecha 21, el total de partidos por día y los
 partidos de Arturo Prat contra la planilla.
+
+## Planteles (estructura preparada, sin datos)
+
+`assets/data/planteles.json` está vacío (`{"planteles": []}`) hasta que el club entregue los datos.
+Formato esperado:
+
+```json
+{
+  "planteles": [
+    {
+      "clubId": "arturo-prat",
+      "category": "Honor",
+      "players": [
+        {"id": "…", "name": "…", "number": 9,
+         "stats": {"played": 18, "goals": 11, "yellow": 3, "red": 1}}
+      ]
+    }
+  ]
+}
+```
+
+- `category` usa el mismo nombre de serie que el fixture (`Honor`, `S. Senior`, `2° Infantil`…).
+- `number` y cada estadística son opcionales (sin dato: "–" y 0).
+- Más adelante estos datos vendrán de la API; la app solo cambia de dónde los lee (`SquadService`).
