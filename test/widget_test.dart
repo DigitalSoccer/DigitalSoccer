@@ -3,7 +3,7 @@ import 'package:anfa_chiguayante/models/club.dart';
 import 'package:anfa_chiguayante/pages/club_detail_page.dart';
 import 'package:anfa_chiguayante/pages/home_page.dart';
 import 'package:anfa_chiguayante/pages/matchup_detail_page.dart';
-import 'package:anfa_chiguayante/pages/my_club_page.dart';
+import 'package:anfa_chiguayante/pages/inicio_page.dart';
 import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
@@ -45,12 +45,20 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('la app arranca y muestra el fixture', (tester) async {
+  testWidgets('la app arranca en Inicio y el fixture está en su pestaña',
+      (tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
+    expect(find.text('Inicio'), findsOneWidget);
     expect(find.text('Fixture'), findsOneWidget);
     expect(find.text('Tabla'), findsOneWidget);
+    // Sin club elegido, Inicio invita a elegir uno.
+    expect(find.text('¡Bienvenido!'), findsOneWidget);
+
+    await tester.tap(find.text('Fixture'));
+    await tester.pumpAndSettle();
+
     // Abre en la fecha más reciente, con el formato de la planilla.
     expect(find.text('FECHA 21'), findsOneWidget);
     expect(find.text('Sáb 10 – Dom 11 oct 2026'), findsOneWidget);
@@ -64,7 +72,7 @@ void main() {
     );
   });
 
-  testWidgets('la app usa la paleta centralizada gris azulada y blanca',
+  testWidgets('la app usa la paleta centralizada azul (#205375) y blanca',
       (tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -103,6 +111,8 @@ void main() {
           (AppColors.textMuted, AppColors.primaryContainer),
       'texto secundario / cabecera de cancha y turno':
           (AppColors.textMuted, AppColors.surfaceLow),
+      'texto suave / bloque azul de Inicio':
+          (AppColors.primaryContainer, AppColors.primary),
     };
 
     pairs.forEach((name, pair) {
@@ -122,6 +132,9 @@ void main() {
         await tester.pumpWidget(const MyApp());
         await tester.pumpAndSettle();
 
+        await tester.tap(find.text('Fixture'));
+        await tester.pumpAndSettle();
+
         // Abre el detalle del primer cruce (cancha y horarios) y vuelve.
         await tester.tap(find.text('Leinenweber'));
         await tester.pumpAndSettle();
@@ -129,7 +142,7 @@ void main() {
         await tester.pageBack();
         await tester.pumpAndSettle();
 
-        for (final tab in ['Mi Club', 'Tabla', 'Clubes', 'Fixture']) {
+        for (final tab in ['Inicio', 'Tabla', 'Clubes', 'Fixture']) {
           await tester.tap(find.text(tab).last);
           await tester.pumpAndSettle();
         }
@@ -260,35 +273,116 @@ void main() {
       );
     });
 
-    testWidgets('sin club favorito invita a elegir uno', (tester) async {
-      await tester.pumpWidget(wrap(const MyClubPage(), realDataBundle()));
+  });
+
+  group('Inicio', () {
+    // Ventana alta para que se construya toda la pantalla sin desplazarse.
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('sin club invita a elegirlo y luego muestra su información',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Selecciona un club en la pestaña Clubes'),
-        findsOneWidget,
-      );
+      expect(find.text('¡Bienvenido!'), findsOneWidget);
+      expect(find.textContaining('Elige tu club'), findsOneWidget);
+
+      await tester.tap(find.text('Arturo Prat'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('¡Bienvenido!'), findsNothing);
+      expect(find.text('MI CLUB'), findsOneWidget);
+      expect(stat('Posición', '17'), findsOneWidget);
+      expect(stat('Puntos', '42'), findsOneWidget);
+
+      // La elección queda guardada como club favorito.
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(ClubService.favoriteClubIdKey), 'arturo-prat');
     });
 
-    testWidgets('Mi Club filtra el fixture por id del club', (tester) async {
+    testWidgets('muestra los cruces del club en la fecha y abre el detalle',
+        (tester) async {
+      tall(tester);
       SharedPreferences.setMockInitialValues({
         ClubService.favoriteClubIdKey: 'arturo-prat',
       });
 
-      await tester.pumpWidget(wrap(const MyClubPage(), realDataBundle()));
+      await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      expect(find.text('MI CLUB'), findsOneWidget);
-      // El nombre aparece en la cabecera y en la tarjeta del cruce.
-      expect(find.text('Arturo Prat'), findsNWidgets(2));
-      // Fecha 21, sábado: un solo cruce (vs Bdo. O'Higgins), 2 partidos,
-      // en Cancha Chiguayante Sur.
-      expect(find.text("Bdo. O'Higgins"), findsOneWidget);
-      expect(find.text('Cancha Chiguayante Sur'), findsOneWidget);
-      expect(find.text('Cancha Mario Osben'), findsNothing);
-      expect(find.text('2 partidos'), findsOneWidget);
+      expect(find.text('FECHA 21 · SÁB 10 – DOM 11 OCT 2026'), findsOneWidget);
+      expect(find.text('Sábado 10 oct'), findsOneWidget);
+      expect(find.text('Domingo 11 oct'), findsOneWidget);
+      // Sábado y domingo vs Bdo. O'Higgins, y domingo vs Maestranza.
+      expect(find.text("Bdo. O'Higgins"), findsNWidgets(2));
+      expect(find.text('Maestranza'), findsOneWidget);
       expect(find.text('14:10'), findsOneWidget);
+
+      await tester.tap(find.text('Maestranza'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MatchupDetailPage), findsOneWidget);
+      expect(find.text('Fecha 21 · Domingo 11 oct'), findsOneWidget);
     });
+
+    testWidgets('permite cambiar de club', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Cambiar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cambiar mi club'), findsOneWidget);
+
+      await tester.tap(find.text('Independiente'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Independiente'), findsOneWidget);
+      expect(find.text('Libre en la fecha 21.'), findsOneWidget);
+    });
+
+    testWidgets('"Ver fixture completo" lleva a la pestaña Fixture',
+        (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(const MyApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ver fixture completo'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('FECHA 21'), findsOneWidget);
+    });
+
+    for (final size in const [Size(320, 640), Size(1280, 800)]) {
+      testWidgets('sin desbordes a ${size.width.toInt()} px', (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.text('Arturo Prat'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('MI CLUB'), findsOneWidget);
+      });
+    }
   });
 
   group('Fixture con formato de planilla', () {

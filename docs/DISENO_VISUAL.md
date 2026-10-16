@@ -1,7 +1,7 @@
 # Diseño visual
 
-> **Importante:** la paleta gris azulada y blanca es la dirección visual acordada por el equipo
-> (2026-10-12). **No** son colores oficiales del Club Arturo Prat ni de ANFA Chiguayante. Escudo, colores
+> **Importante:** la paleta azul (base `#205375`) y blanca es la dirección visual acordada por el equipo
+> (2026-10-12, cambiada a azul el 2026-10-15). **No** son colores oficiales del Club Arturo Prat ni de ANFA Chiguayante. Escudo, colores
 > y recursos de marca deben verificarse y autorizarse antes de considerarse definitivos.
 
 ## Referencia
@@ -26,13 +26,13 @@ superficies y texto gris azulado oscuro.
 
 | Token | Color | Uso |
 |---|---|---|
-| `brand` | `#8FA3B8` | Gris azulado claro de identidad: acentos, barra de estado "normal", borde del club favorito. No lleva texto encima |
-| `primary` | `#48607A` | Elementos interactivos, pestaña seleccionada, horas, puntos, botones |
-| `primaryContainer` | `#E1E8EF` | Indicador de navegación, cabecera de Mi Club, fondos de íconos |
+| `brand` | `#5E8DB5` | Azul claro de acento: acentos, barra de estado "normal", borde del club favorito. No lleva texto encima |
+| `primary` | `#205375` | Barra superior, bloque azul de Inicio, elementos interactivos, pestaña seleccionada, horas, puntos, botones |
+| `primaryContainer` | `#DDE9F3` | Indicador de navegación, texto suave sobre azul, fondos de íconos |
 | `background` | `#FFFFFF` | Fondo predominante y tarjetas |
-| `surfaceLow` / `surfaceMid` / `surfaceHigh` | `#F5F7F9` / `#EEF2F5` / `#E6EBF0` | Buscador, encabezado de tabla, chips, insignias |
-| `border` | `#DCE2E8` | Bordes de tarjetas y separadores |
-| `text` / `textMuted` | `#1F2A37` / `#5A6776` | Texto principal / secundario |
+| `surfaceLow` / `surfaceMid` / `surfaceHigh` | `#F5F8FB` / `#ECF2F7` / `#E2EAF2` | Buscador, encabezado de tabla, chips, insignias |
+| `border` | `#D5DFE8` | Bordes de tarjetas y separadores |
+| `text` / `textMuted` | `#15293A` / `#4F6275` | Texto principal / secundario (azul marino) |
 | `error` | `#B4443C` | Errores y partidos suspendidos |
 | `statusRescheduled` | `#A86A12` | Partidos reprogramados |
 | `favorite` | `#B8860B` | Estrella de favorito |
@@ -67,3 +67,13 @@ Contraste: los pares de texto y fondo cumplen WCAG AA (≥ 4.5:1). Hay una prueb
 - Escudo y colores oficiales del club (Roberto, con el club).
 - Pantalla de inicio específica de Arturo Prat (ver propuesta en el informe de la tarea): no se
   construyó para no ampliar el alcance sin aprobación.
+
+## Navegación (2026-10-15)
+
+Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi Club").
+
+- **Inicio sin club elegido:** bloque azul de bienvenida y lista de clubes para elegir.
+- **Inicio con club:** bloque azul con el club y botón "Cambiar" (abre la lista en una hoja inferior),
+  posición y puntos, y los cruces del club en la fecha más reciente agrupados por día, con las mismas
+  tarjetas clásicas del fixture. Si el club queda libre, se indica. Botón "Ver fixture completo".
+- Las tarjetas abren la pantalla "Partido" (cancha y horarios por serie).
