@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../widgets/app_bottom_nav.dart';
 import 'clubs_page.dart';
 import 'home_page.dart';
 import 'inicio_page.dart';
@@ -31,13 +31,18 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  static const int standingsIndex = 2;
+
   Widget _page(int index) {
     switch (index) {
       case 0:
-        return InicioPage(onOpenFixture: () => _onItemTapped(fixtureIndex));
+        return InicioPage(
+          onOpenFixture: () => _onItemTapped(fixtureIndex),
+          onOpenStandings: () => _onItemTapped(standingsIndex),
+        );
       case fixtureIndex:
         return const HomePage();
-      case 2:
+      case standingsIndex:
         return const StandingsPage();
       default:
         return const ClubsPage();
@@ -49,38 +54,31 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(title: Text(_titles[_selectedIndex])),
       body: _page(_selectedIndex),
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border)),
-          boxShadow: AppShadows.navBar,
-        ),
-        child: NavigationBar(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: _onItemTapped,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Inicio',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined),
-              selectedIcon: Icon(Icons.calendar_month_rounded),
-              label: 'Fixture',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.leaderboard_outlined),
-              selectedIcon: Icon(Icons.leaderboard_rounded),
-              label: 'Tabla',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.shield_outlined),
-              selectedIcon: Icon(Icons.shield_rounded),
-              label: 'Clubes',
-            ),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNav(
+        selectedIndex: _selectedIndex,
+        onSelected: _onItemTapped,
+        items: const [
+          AppNavItem(
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home_rounded,
+            label: 'Inicio',
+          ),
+          AppNavItem(
+            icon: Icons.calendar_month_outlined,
+            selectedIcon: Icons.calendar_month_rounded,
+            label: 'Fixture',
+          ),
+          AppNavItem(
+            icon: Icons.format_list_numbered_rounded,
+            selectedIcon: Icons.format_list_numbered_rounded,
+            label: 'Tabla',
+          ),
+          AppNavItem(
+            icon: Icons.shield_outlined,
+            selectedIcon: Icons.shield_rounded,
+            label: 'Clubes',
+          ),
+        ],
       ),
     );
   }

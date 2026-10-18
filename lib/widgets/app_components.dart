@@ -280,3 +280,37 @@ class DisciplineCard extends StatelessWidget {
     );
   }
 }
+
+/// Escudo de club GENÉRICO: un escudo rojo relleno, como en la maqueta.
+/// No es el escudo oficial de ningún club (no hay escudos autorizados);
+/// cuando existan, este es el lugar para mostrar la imagen de cada club.
+class ClubCrest extends StatelessWidget {
+  final double size;
+
+  /// Con fondo circular blanco (para usar sobre el encabezado rojo).
+  final bool onRed;
+
+  const ClubCrest({super.key, this.size = 32, this.onRed = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final shield = Icon(
+      Icons.shield_rounded,
+      size: onRed ? size * 0.58 : size,
+      color: AppColors.primary,
+      semanticLabel: 'Escudo genérico (sin escudo oficial)',
+    );
+
+    if (!onRed) return shield;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        shape: BoxShape.circle,
+      ),
+      child: shield,
+    );
+  }
+}

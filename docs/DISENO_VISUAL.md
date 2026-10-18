@@ -145,3 +145,19 @@ Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi
 - **Datos oficiales (2026-10-18):** tabla general = Total acumulado de la planilla de la asociación;
   menú con "Acumulado infantil y juvenil", "Acumulado adultos" y las 10 series (incluida Femenina).
   Bajo el menú, la fuente y la advertencia "sujeta a modificaciones". Empates con posición compartida.
+
+## Inicio estilo maqueta (2026-10-18)
+
+Basado en la maqueta compartida por Diego ("Design 21"):
+
+- **Barra superior roja** (`primary`) con título blanco de 19 px en todas las pantallas (antes blanca).
+- **Inicio con club:** encabezado rojo con esquinas inferiores redondeadas y el panel **MI CLUB** en
+  `primaryDeep` (#991B1B): escudo genérico sobre círculo blanco, nombre, cancha y botón píldora blanco
+  "Cambiar". Debajo, **dos tarjetas** POSICIÓN y PUNTOS (cifras en rojo) montadas sobre el borde del rojo.
+- **Tarjetas de partido** del club: día y "FECHA N" arriba, escudos rojos genéricos, hora al centro,
+  cancha y series abajo. Abren el detalle.
+- **Resumen de la tabla:** los 3 primeros y, si está más abajo, la fila de Mi Club (fondo rojo suave)
+  tras "···"; "Ver tabla" abre la pestaña Tabla.
+- **Barra inferior propia** (`AppBottomNav`): línea roja sobre el ítem activo, ícono y etiqueta en rojo.
+- **Escudos:** `ClubCrest` es un escudo rojo **genérico**; la maqueta muestra escudos reales que no
+  tenemos ni están autorizados. Es el lugar para poner el escudo de cada club cuando exista.

@@ -13,18 +13,17 @@ import '../theme/app_theme.dart';
 import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
-import '../widgets/club_header.dart';
 import '../widgets/club_tile.dart';
-import '../widgets/matchup_card.dart';
 import 'matchup_detail_page.dart';
 
 /// Pestaña de inicio. Sin club elegido, invita a elegir uno; con club,
 /// muestra su posición y sus partidos de la fecha más reciente.
 class InicioPage extends StatefulWidget {
-  /// Abre la pestaña Fixture (la provee la navegación principal).
+  /// Abren las pestañas Fixture y Tabla (las provee la navegación principal).
   final VoidCallback? onOpenFixture;
+  final VoidCallback? onOpenStandings;
 
-  const InicioPage({super.key, this.onOpenFixture});
+  const InicioPage({super.key, this.onOpenFixture, this.onOpenStandings});
 
   @override
   State<InicioPage> createState() => _InicioPageState();
@@ -35,12 +34,14 @@ class _InicioData {
   final Club? club;
   final FixtureRound round;
   final StandingPosition? position;
+  final List<Standing> standings;
 
   _InicioData({
     required this.clubs,
     required this.club,
     required this.round,
     required this.position,
+    required this.standings,
   });
 }
 
@@ -68,13 +69,16 @@ class _InicioPageState extends State<InicioPage> {
       await ClubService.getFavoriteClubId(clubs),
     );
 
+    final standings = results[2] as List<Standing>;
+
     return _InicioData(
       clubs: clubs,
       club: club,
       round: results[1] as FixtureRound,
       position: club == null
           ? null
-          : StandingsService.positionOf(results[2] as List<Standing>, club.id),
+          : StandingsService.positionOf(standings, club.id),
+      standings: standings,
     );
   }
 
@@ -133,6 +137,7 @@ class _InicioPageState extends State<InicioPage> {
           data: data,
           onChangeClub: () => _changeClub(data),
           onOpenFixture: widget.onOpenFixture,
+          onOpenStandings: widget.onOpenStandings,
         );
       },
     );
@@ -231,18 +236,22 @@ class _ChooseClub extends StatelessWidget {
   }
 }
 
-/// Inicio con club elegido.
+/// Inicio con club elegido, al estilo de la maqueta: encabezado rojo con el
+/// panel "MI CLUB", tarjetas de posición y puntos montadas sobre el rojo, los
+/// partidos del club en la fecha y un resumen de la tabla.
 class _ClubHome extends StatelessWidget {
   final Club club;
   final _InicioData data;
   final VoidCallback onChangeClub;
   final VoidCallback? onOpenFixture;
+  final VoidCallback? onOpenStandings;
 
   const _ClubHome({
     required this.club,
     required this.data,
     required this.onChangeClub,
     required this.onOpenFixture,
+    required this.onOpenStandings,
   });
 
   @override
@@ -267,23 +276,17 @@ class _ClubHome extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        ClubHeroHeader(
+        _RedHeader(
           club: club,
           position: data.position,
-          eyebrow: 'MI CLUB',
-          action: TextButton.icon(
-            onPressed: onChangeClub,
-            icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-            label: const Text('Cambiar'),
-          ),
+          onChangeClub: onChangeClub,
         ),
 
         ContentWidth(
           child: SectionHeader(
-            [
-              'Fecha ${round.round}',
-              range,
-            ].where((s) => s.isNotEmpty).join(' · '),
+            ['Fecha ${round.round}', range]
+                .where((s) => s.isNotEmpty)
+                .join(' · '),
           ),
         ),
 
@@ -308,33 +311,39 @@ class _ClubHome extends StatelessWidget {
           ),
 
         for (final entry in days)
-          if (entry.matchups.isNotEmpty) ...[
-            ContentWidth(child: GroupLabel(dayLabel(entry.day))),
-            for (final matchup in entry.matchups)
-              ContentWidth(
-                child: MatchupCard(
-                  matchup: matchup,
-                  highlighted: false,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MatchupDetailPage(
-                        matchup: matchup,
-                        subtitle:
-                            'Fecha ${round.round} · ${dayLabel(entry.day)}',
-                      ),
+          for (final matchup in entry.matchups)
+            ContentWidth(
+              child: _HomeMatchCard(
+                matchup: matchup,
+                dayLabel: dayLabel(entry.day),
+                roundLabel: 'FECHA ${round.round}',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MatchupDetailPage(
+                      matchup: matchup,
+                      subtitle: 'Fecha ${round.round} · ${dayLabel(entry.day)}',
                     ),
                   ),
                 ),
               ),
-          ],
+            ),
+
+        if (data.standings.isNotEmpty)
+          ContentWidth(
+            child: _StandingsPreview(
+              standings: data.standings,
+              clubId: club.id,
+              onOpenStandings: onOpenStandings,
+            ),
+          ),
 
         if (onOpenFixture != null)
           ContentWidth(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg,
-                AppSpacing.xl,
+                AppSpacing.lg,
                 AppSpacing.lg,
                 0,
               ),
@@ -346,6 +355,418 @@ class _ClubHome extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Encabezado rojo con el panel "MI CLUB" y, montadas sobre su borde
+/// inferior, las tarjetas de POSICIÓN y PUNTOS.
+class _RedHeader extends StatelessWidget {
+  final Club club;
+  final StandingPosition? position;
+  final VoidCallback onChangeClub;
+
+  const _RedHeader({
+    required this.club,
+    required this.position,
+    required this.onChangeClub,
+  });
+
+  /// Cuánto sobresalen las tarjetas por debajo del rojo.
+  static const double _overlap = 44;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final standing = position;
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          bottom: _overlap,
+          child: const DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(AppRadius.xl),
+              ),
+            ),
+          ),
+        ),
+        ContentWidth(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xs,
+              AppSpacing.lg,
+              0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Panel "MI CLUB".
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryDeep,
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                  ),
+                  child: Row(
+                    children: [
+                      const ClubCrest(size: 52, onRed: true),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'MI CLUB',
+                              style: AppText.eyebrow.copyWith(
+                                color: AppColors.primaryContainer,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              club.name,
+                              style: textTheme.titleLarge?.copyWith(
+                                color: AppColors.onPrimary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (club.field.isNotEmpty)
+                              Text(
+                                club.field,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: AppColors.primaryContainer,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      FilledButton.icon(
+                        onPressed: onChangeClub,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.surface,
+                          foregroundColor: AppColors.primary,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                        label: const Text('Cambiar'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                if (standing != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetricCard(
+                          label: 'Posición',
+                          value: '${standing.position}',
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _MetricCard(
+                          label: 'Puntos',
+                          value: '${standing.standing.points}',
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  const SurfaceCard(
+                    shadow: AppShadows.md,
+                    padding: EdgeInsets.all(AppSpacing.lg),
+                    child: Text(
+                      'Sin información en la tabla de posiciones.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MetricCard({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfaceCard(
+      shadow: AppShadows.md,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+      child: StatTile(
+        label: label,
+        value: value,
+        valueColor: AppColors.primary,
+      ),
+    );
+  }
+}
+
+/// Tarjeta de un partido del club: día y número de fecha arriba, los dos
+/// equipos con escudo genérico y la hora al centro; abajo, cancha y series.
+class _HomeMatchCard extends StatelessWidget {
+  final Matchup matchup;
+  final String dayLabel;
+  final String roundLabel;
+  final VoidCallback onTap;
+
+  const _HomeMatchCard({
+    required this.matchup,
+    required this.dayLabel,
+    required this.roundLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final count = matchup.entries.length;
+
+    Widget team(String name) => Expanded(
+          child: Column(
+            children: [
+              const ClubCrest(size: 36),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        );
+
+    return SurfaceCard(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        0,
+      ),
+      shadow: AppShadows.md,
+      onTap: onTap,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(dayLabel, style: textTheme.titleMedium)),
+              Text(
+                roundLabel,
+                style: AppText.eyebrow.copyWith(color: AppColors.primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              team(matchup.home),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      matchup.firstTime,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.text,
+                        fontFeatures: AppText.tabular,
+                      ),
+                    ),
+                    Text(
+                      count == 1 ? '1 partido' : '$count partidos',
+                      style: AppText.eyebrow,
+                    ),
+                  ],
+                ),
+              ),
+              team(matchup.away),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            matchup.fieldNames.join(' · '),
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            matchup.categories.join(' · '),
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Resumen de la tabla general: los tres primeros y, si está más abajo, la
+/// fila del club elegido. "Ver tabla" abre la pestaña Tabla.
+class _StandingsPreview extends StatelessWidget {
+  final List<Standing> standings;
+  final String clubId;
+  final VoidCallback? onOpenStandings;
+
+  const _StandingsPreview({
+    required this.standings,
+    required this.clubId,
+    required this.onOpenStandings,
+  });
+
+  static const int _top = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final clubIndex = standings.indexWhere((s) => s.clubId == clubId);
+
+    final rows = <Widget>[
+      for (var i = 0; i < standings.length && i < _top; i++)
+        _PreviewRow(
+          rank: StandingsService.rankOf(standings, standings[i]),
+          standing: standings[i],
+          isMyClub: standings[i].clubId == clubId,
+        ),
+      if (clubIndex >= _top) ...[
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Text(
+            '···',
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(color: AppColors.outline),
+          ),
+        ),
+        _PreviewRow(
+          rank: StandingsService.rankOf(standings, standings[clubIndex]),
+          standing: standings[clubIndex],
+          isMyClub: true,
+        ),
+      ],
+    ];
+
+    return SurfaceCard(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        0,
+      ),
+      shadow: AppShadows.md,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text('Tabla', style: textTheme.titleMedium)),
+              if (onOpenStandings != null)
+                TextButton(
+                  onPressed: onOpenStandings,
+                  child: const Text('Ver tabla'),
+                ),
+            ],
+          ),
+          ...rows,
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewRow extends StatelessWidget {
+  final int rank;
+  final Standing standing;
+  final bool isMyClub;
+
+  const _PreviewRow({
+    required this.rank,
+    required this.standing,
+    required this.isMyClub,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      margin: const EdgeInsets.only(right: AppSpacing.sm, top: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: isMyClub ? AppColors.primarySoft : null,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(
+              '$rank',
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: isMyClub ? AppColors.primary : AppColors.text,
+              ),
+            ),
+          ),
+          const ClubCrest(size: 22),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              standing.team,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: isMyClub ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            '${standing.points} pts',
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              fontFeatures: AppText.tabular,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

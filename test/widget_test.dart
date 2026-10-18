@@ -119,6 +119,14 @@ void main() {
       'podio plata': (AppColors.silverFg, AppColors.silverBg),
       'podio bronce': (AppColors.bronzeFg, AppColors.bronzeBg),
       'error / tarjeta': (AppColors.error, AppColors.surface),
+      // Encabezado rojo de Inicio y barra superior.
+      'blanco / barra y encabezado rojo': (AppColors.onPrimary, AppColors.primary),
+      'blanco / panel MI CLUB': (AppColors.onPrimary, AppColors.primaryDeep),
+      'texto suave / panel MI CLUB':
+          (AppColors.primaryContainer, AppColors.primaryDeep),
+      'rojo / tarjeta (cifras y "Ver tabla")':
+          (AppColors.primary, AppColors.surface),
+      'rojo / fila de Mi Club': (AppColors.primary, AppColors.primarySoft),
     };
 
     pairs.forEach((name, pair) {
@@ -330,7 +338,8 @@ void main() {
 
       expect(find.text('FECHA 21 · SÁB 10 – DOM 11 OCT 2026'), findsOneWidget);
       expect(find.text('Sábado 10 oct'), findsOneWidget);
-      expect(find.text('Domingo 11 oct'), findsOneWidget);
+      // Dos partidos el domingo: cada tarjeta lleva su día.
+      expect(find.text('Domingo 11 oct'), findsNWidgets(2));
       // Sábado y domingo vs Bdo. O'Higgins, y domingo vs Maestranza.
       expect(find.text("Bdo. O'Higgins"), findsNWidgets(2));
       expect(find.text('Maestranza'), findsOneWidget);
@@ -360,7 +369,8 @@ void main() {
       await tester.tap(find.text('Independiente'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Independiente'), findsOneWidget);
+      // En el panel MI CLUB y en su fila de la mini-tabla.
+      expect(find.text('Independiente'), findsNWidgets(2));
       expect(find.text('Libre en la fecha 21.'), findsOneWidget);
     });
 
@@ -738,6 +748,62 @@ void main() {
 
       expect(find.text('Reintentar'), findsNothing);
       expect(find.text('Chiguayante Sur'), findsOneWidget);
+    });
+  });
+
+  group('Inicio: resumen de la tabla', () {
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('muestra los 3 primeros y la fila de Mi Club', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tabla'), findsOneWidget);
+      expect(find.text('394 pts'), findsOneWidget);
+      expect(find.text('334 pts'), findsOneWidget);
+      expect(find.text('312 pts'), findsOneWidget);
+      // Arturo Prat es 17°: aparece después de los puntos suspensivos.
+      expect(find.text('···'), findsOneWidget);
+      expect(find.text('110 pts'), findsOneWidget);
+      expect(find.text('17'), findsWidgets);
+    });
+
+    testWidgets('si Mi Club está entre los 3 primeros no se repite',
+        (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'chiguayante-sur',
+      });
+
+      await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('···'), findsNothing);
+      expect(find.text('394 pts'), findsOneWidget);
+    });
+
+    testWidgets('"Ver tabla" lleva a la pestaña Tabla', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(const MyApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ver tabla'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tabla de posiciones'), findsOneWidget);
     });
   });
 }

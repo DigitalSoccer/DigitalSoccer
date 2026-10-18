@@ -8,7 +8,15 @@ class StatTile extends StatelessWidget {
   final String label;
   final String value;
 
-  const StatTile({super.key, required this.label, required this.value});
+  /// Color de la cifra (por defecto, el del texto).
+  final Color? valueColor;
+
+  const StatTile({
+    super.key,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +25,12 @@ class StatTile extends StatelessWidget {
       children: [
         Text(label.toUpperCase(), style: AppText.eyebrow),
         const SizedBox(height: AppSpacing.xs),
-        Text(value, style: AppText.metric),
+        Text(
+          value,
+          style: valueColor == null
+              ? AppText.metric
+              : AppText.metric.copyWith(color: valueColor),
+        ),
       ],
     );
   }

@@ -18,6 +18,10 @@ class AppColors {
   static const Color primary = Color(0xFFB91C1C);
   static const Color onPrimary = Colors.white;
 
+  /// Rojo oscuro (red-800): panel "MI CLUB" sobre el encabezado rojo.
+  /// Contraste 8.4:1 con blanco.
+  static const Color primaryDeep = Color(0xFF991B1B);
+
   /// Rojo vivo (red-600): solo acentos sin texto (franjas, bordes).
   static const Color primaryBright = Color(0xFFDC2626);
 
@@ -225,21 +229,22 @@ ThemeData buildAppTheme() {
 
     // Barra superior compacta y blanca. Se integra con los encabezados
     // blancos de cada pantalla y muestra una sombra al desplazar.
+    // Barra superior roja (encabezado de marca, como la maqueta de Inicio).
+    // Blanco sobre red-700: contraste 6.5:1.
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.surface,
-      foregroundColor: AppColors.text,
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.onPrimary,
       surfaceTintColor: Colors.transparent,
-      shadowColor: Color(0x330F172A),
       elevation: 0,
-      scrolledUnderElevation: 1,
+      scrolledUnderElevation: 0,
       centerTitle: true,
       toolbarHeight: 56,
       // Tamaño explícito: `ThemeData.textTheme` aún no incluye tamaños
       // (Flutter los agrega en Theme.of), y el título quedaba en 14 px.
       titleTextStyle: TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
-        color: AppColors.text,
+        fontSize: 19,
+        fontWeight: FontWeight.w800,
+        color: AppColors.onPrimary,
       ),
     ),
 
