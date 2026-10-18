@@ -21,59 +21,49 @@ class MatchupDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allNormal = matchup.entries.every(
-      (e) => e.match.status == 'normal',
-    );
+    final allNormal = matchup.entries.every((e) => e.match.status == 'normal');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Partido'),
-      ),
+      appBar: AppBar(title: const Text('Partido')),
       body: ListView(
         padding: const EdgeInsets.only(bottom: AppSpacing.xl),
         children: [
           ContentWidth(
-            child: Card(
+            child: SurfaceCard(
               margin: const EdgeInsets.all(AppSpacing.lg),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            subtitle,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: AppColors.textMuted),
-                          ),
+              shadow: AppShadows.md,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          subtitle,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
                         ),
-                        if (allNormal)
-                          Text(
-                            'Programado',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    MatchupScoreline(
-                      matchup: matchup,
-                      avatarSize: 64,
-                      center: Text(
-                        'vs',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(color: AppColors.textMuted),
+                      ),
+                      if (allNormal) const TagChip(label: 'Programado'),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  MatchupScoreline(
+                    matchup: matchup,
+                    avatarSize: 64,
+                    center: Text(
+                      'VS',
+                      style: AppText.eyebrow.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -94,7 +84,7 @@ class MatchupDetailPage extends StatelessWidget {
 }
 
 /// Fila clásica de marcador: local a la izquierda, visita a la derecha y
-/// [center] al medio (hora, "vs" o, a futuro, el resultado).
+/// [center] al medio (hora, "VS" o, a futuro, el resultado).
 class MatchupScoreline extends StatelessWidget {
   final Matchup matchup;
   final Widget center;
@@ -120,7 +110,9 @@ class MatchupScoreline extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -133,7 +125,7 @@ class MatchupScoreline extends StatelessWidget {
         team(matchup.home),
         Padding(
           padding: EdgeInsets.only(
-            top: avatarSize * 0.15,
+            top: avatarSize * 0.12,
             left: AppSpacing.sm,
             right: AppSpacing.sm,
           ),
@@ -149,16 +141,13 @@ class _FieldMatches extends StatelessWidget {
   final String fieldName;
   final List<MatchupEntry> entries;
 
-  const _FieldMatches({
-    required this.fieldName,
-    required this.entries,
-  });
+  const _FieldMatches({required this.fieldName, required this.entries});
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Card(
+    return SurfaceCard(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         0,
@@ -168,20 +157,29 @@ class _FieldMatches extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            color: AppColors.surfaceLow,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.lg,
+              AppSpacing.md,
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.stadium_outlined,
-                  size: 20,
-                  color: AppColors.primary,
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primarySoft,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.stadium_outlined,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     fieldName,
@@ -194,9 +192,7 @@ class _FieldMatches extends StatelessWidget {
                   entries.length == 1
                       ? '1 partido'
                       : '${entries.length} partidos',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMuted,
-                  ),
+                  style: AppText.eyebrow,
                 ),
               ],
             ),
@@ -204,14 +200,10 @@ class _FieldMatches extends StatelessWidget {
           for (final entry in entries)
             DecoratedBox(
               decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: AppColors.border),
-                ),
+                border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.xs,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                 child: MatchRow(
                   matchId: entry.match.id,
                   time: entry.match.time,

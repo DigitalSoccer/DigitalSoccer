@@ -66,26 +66,29 @@ class FixtureView extends StatelessWidget {
       length: matchDays.length,
       child: Column(
         children: [
-          ContentWidth(
-            child: TabBar(
-              isScrollable: true,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-              ),
-              tabs: matchDays
-                  .map(
-                    (d) => Tab(
-                  text: dayTabLabel(d),
+          DecoratedBox(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border: Border(bottom: BorderSide(color: AppColors.border)),
+            ),
+            child: ContentWidth(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  0,
+                  AppSpacing.lg,
+                  AppSpacing.md,
                 ),
-              )
-                  .toList(),
+                child: SegmentedTabBar(
+                  scrollable: matchDays.length > 3,
+                  labels: [for (final day in matchDays) dayTabLabel(day)],
+                ),
+              ),
             ),
           ),
           Expanded(
             child: TabBarView(
-              children: [
-                for (final day in matchDays) _buildDay(context, day),
-              ],
+              children: [for (final day in matchDays) _buildDay(context, day)],
             ),
           ),
         ],
@@ -116,24 +119,17 @@ class FixtureView extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => MatchupDetailPage(
-                matchup: matchup,
-                subtitle: subtitle,
-              ),
+              builder: (_) =>
+                  MatchupDetailPage(matchup: matchup, subtitle: subtitle),
             ),
           ),
         ),
     ];
 
-    final byes = day.byeClubIds
-        .map((id) => clubNames[id] ?? id)
-        .toList();
+    final byes = day.byeClubIds.map((id) => clubNames[id] ?? id).toList();
 
     return ListView(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.xs,
-        bottom: AppSpacing.xl,
-      ),
+      padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xl),
       children: [
         if (cards.isEmpty)
           Padding(
@@ -147,9 +143,7 @@ class FixtureView extends StatelessWidget {
           ...cards.map((card) => ContentWidth(child: card)),
 
         if (byes.isNotEmpty && clubId == null)
-          ContentWidth(
-            child: _ByeBanner(names: byes),
-          ),
+          ContentWidth(child: _ByeBanner(names: byes)),
       ],
     );
   }
@@ -169,31 +163,10 @@ class _ByeBanner extends StatelessWidget {
         AppSpacing.lg,
         0,
       ),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.event_available_outlined,
-              size: 20,
-              color: AppColors.textMuted,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                'Libre: ${names.join(', ')}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          ],
-        ),
+      child: InfoBanner(
+        icon: Icons.event_available_outlined,
+        message: 'Libre: ${names.join(', ')}',
+        strong: true,
       ),
     );
   }

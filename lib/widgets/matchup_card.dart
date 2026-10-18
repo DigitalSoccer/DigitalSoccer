@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../pages/matchup_detail_page.dart';
 import '../theme/app_theme.dart';
+import 'app_components.dart';
 
-/// Tarjeta clásica de un cruce: cancha arriba, equipos a los lados y la
-/// hora del primer partido al centro. Al tocarla se abre el detalle.
+/// Tarjeta de un cruce en tres columnas: local, hora/estado y visita. Arriba
+/// la cancha y abajo un chip con las series en juego. Al tocarla se abre el
+/// detalle.
 class MatchupCard extends StatelessWidget {
   final Matchup matchup;
   final bool highlighted;
@@ -21,113 +23,97 @@ class MatchupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final count = matchup.entries.length;
 
-    return Card(
+    return SurfaceCard(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.md,
         AppSpacing.lg,
         0,
       ),
-      shape: highlighted
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              side: const BorderSide(color: AppColors.primary, width: 1.5),
-            )
-          : null,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
+      borderColor: highlighted ? AppColors.primary : null,
+      onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.stadium_outlined,
-                    size: 16,
-                    color: AppColors.textMuted,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      matchup.fieldNames.join(' · '),
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ),
-                  if (highlighted)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppRadius.sm),
-                      ),
-                      child: const Text(
-                        'MI CLUB',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.onPrimary,
-                        ),
-                      ),
-                    ),
-                ],
+              const Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: AppColors.outline,
               ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              MatchupScoreline(
-                matchup: matchup,
-                center: Column(
-                  children: [
-                    Text(
-                      matchup.firstTime,
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      count == 1 ? '1 partido' : '$count partidos',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Text(
+                  matchup.fieldNames.join(' · '),
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-
-              const Divider(height: AppSpacing.xl),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      matchup.categories.join(' · '),
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: AppColors.outline,
-                  ),
-                ],
-              ),
+              if (highlighted) const TagChip.myClub(),
             ],
           ),
-        ),
+
+          const SizedBox(height: AppSpacing.md),
+
+          MatchupScoreline(
+            matchup: matchup,
+            center: _Kickoff(matchup: matchup),
+          ),
+
+          const SizedBox(height: AppSpacing.md),
+
+          TagChip(label: matchup.categories.join(' · ')),
+        ],
       ),
     );
   }
 }
 
+/// Columna central: hora del primer partido y estado (cantidad de partidos,
+/// o "Suspendido"/"Reprogramado" si corresponde).
+class _Kickoff extends StatelessWidget {
+  final Matchup matchup;
+
+  const _Kickoff({required this.matchup});
+
+  @override
+  Widget build(BuildContext context) {
+    final count = matchup.entries.length;
+    final notable = matchup.entries
+        .map((e) => e.match.status)
+        .where(MatchStatusBadge.isNotable)
+        .firstOrNull;
+
+    return Column(
+      children: [
+        Text(
+          matchup.firstTime,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.text,
+            fontFeatures: AppText.tabular,
+          ),
+        ),
+        const SizedBox(height: 2),
+        if (notable != null)
+          MatchStatusBadge(status: notable)
+        else
+          Text(
+            count == 1 ? '1 partido' : '$count partidos',
+            style: AppText.eyebrow,
+          ),
+      ],
+    );
+  }
+}

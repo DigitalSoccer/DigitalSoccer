@@ -13,6 +13,8 @@ import '../theme/app_theme.dart';
 import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
+import '../widgets/club_header.dart';
+import '../widgets/club_tile.dart';
 import '../widgets/matchup_card.dart';
 import 'matchup_detail_page.dart';
 
@@ -72,10 +74,7 @@ class _InicioPageState extends State<InicioPage> {
       round: results[1] as FixtureRound,
       position: club == null
           ? null
-          : StandingsService.positionOf(
-              results[2] as List<Standing>,
-              club.id,
-            ),
+          : StandingsService.positionOf(results[2] as List<Standing>, club.id),
     );
   }
 
@@ -92,37 +91,26 @@ class _InicioPageState extends State<InicioPage> {
   }
 
   Future<void> _changeClub(_InicioData data) async {
-    final chosen = await showModalBottomSheet<Club>(
+    final chosen = await showAppBottomSheet<Club>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (context) => FractionallySizedBox(
-        heightFactor: 0.8,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                0,
-                AppSpacing.lg,
-                AppSpacing.sm,
-              ),
-              child: Text(
-                'Cambiar mi club',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-            ),
-            Expanded(
-              child: _ClubList(
-                clubs: data.clubs,
-                selectedId: data.club?.id,
-                onSelected: (club) => Navigator.pop(context, club),
-              ),
-            ),
-          ],
-        ),
-      ),
+      title: 'Cambiar mi club',
+      initialSize: 0.8,
+      builder: (context) => [
+        for (final club in data.clubs)
+          ClubTile(
+            club: club,
+            trailing: club.id == data.club?.id
+                ? const Padding(
+                    padding: EdgeInsets.only(right: AppSpacing.sm),
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.primary,
+                    ),
+                  )
+                : null,
+            onTap: () => Navigator.pop(context, club),
+          ),
+      ],
     );
 
     if (chosen != null) await _choose(chosen);
@@ -162,100 +150,83 @@ class _ChooseClub extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ListView(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        _Hero(
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(bottom: BorderSide(color: AppColors.border)),
+          ),
           child: ContentWidth(
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.sports_soccer,
-                  size: 36,
-                  color: AppColors.onPrimary,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  '¡Bienvenido!',
-                  textAlign: TextAlign.center,
-                  style: textTheme.headlineSmall?.copyWith(
-                    color: AppColors.onPrimary,
-                    fontWeight: FontWeight.w700,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.md,
+                AppSpacing.xl,
+                AppSpacing.xl,
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primarySoft,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.sports_soccer_rounded,
+                      size: 32,
+                      color: AppColors.primary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Elige tu club para ver sus partidos de la fecha y su '
-                  'posición en la tabla.',
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: AppColors.primaryContainer,
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    '¡Bienvenido!',
+                    textAlign: TextAlign.center,
+                    style: textTheme.headlineSmall,
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Elige tu club para ver sus partidos de la fecha y su '
+                    'posición en la tabla.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        Expanded(
-          child: _ClubList(clubs: clubs, onSelected: onSelected),
-        ),
+        if (clubs.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: AppSpacing.xl),
+            child: EmptyView(
+              icon: Icons.shield_outlined,
+              message: 'No hay clubes registrados.',
+            ),
+          )
+        else ...[
+          const ContentWidth(child: SectionHeader('Clubes')),
+          for (final club in clubs)
+            ContentWidth(
+              child: ClubTile(
+                club: club,
+                trailing: const Padding(
+                  padding: EdgeInsets.only(right: AppSpacing.sm),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.outline,
+                  ),
+                ),
+                onTap: () => onSelected(club),
+              ),
+            ),
+        ],
       ],
-    );
-  }
-}
-
-class _ClubList extends StatelessWidget {
-  final List<Club> clubs;
-  final String? selectedId;
-  final ValueChanged<Club> onSelected;
-
-  const _ClubList({
-    required this.clubs,
-    required this.onSelected,
-    this.selectedId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (clubs.isEmpty) {
-      return const EmptyView(
-        icon: Icons.shield_outlined,
-        message: 'No hay clubes registrados.',
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      itemCount: clubs.length,
-      itemBuilder: (context, index) {
-        final club = clubs[index];
-        final selected = club.id == selectedId;
-
-        return ContentWidth(
-          child: Card(
-            margin: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.xs,
-            ),
-            child: ListTile(
-              leading: const ClubAvatar(),
-              title: Text(
-                club.name,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              subtitle: Text(
-                club.field.isEmpty ? 'Cancha por definir' : club.field,
-                style: const TextStyle(color: AppColors.textMuted),
-              ),
-              trailing: Icon(
-                selected ? Icons.check_circle : Icons.chevron_right,
-                color: selected ? AppColors.primary : AppColors.outline,
-              ),
-              onTap: () => onSelected(club),
-            ),
-          ),
-        );
-      },
     );
   }
 }
@@ -276,9 +247,7 @@ class _ClubHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final round = data.round;
-    final position = data.position;
 
     final days = [
       for (final day in round.days)
@@ -298,82 +267,14 @@ class _ClubHome extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        _Hero(
-          child: ContentWidth(
-            child: Column(
-              children: [
-                const ClubAvatar(size: 72),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'MI CLUB',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: AppColors.primaryContainer,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                Text(
-                  club.name,
-                  textAlign: TextAlign.center,
-                  style: textTheme.headlineSmall?.copyWith(
-                    color: AppColors.onPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                if (club.field.isNotEmpty)
-                  Text(
-                    club.field,
-                    textAlign: TextAlign.center,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.primaryContainer,
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.xs),
-                TextButton.icon(
-                  onPressed: onChangeClub,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.onPrimary,
-                  ),
-                  icon: const Icon(Icons.swap_horiz, size: 18),
-                  label: const Text('Cambiar'),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        ContentWidth(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              0,
-            ),
-            child: position == null
-                ? Text(
-                    'Sin información en la tabla de posiciones.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  )
-                : Row(
-                    children: [
-                      Expanded(
-                        child: StatTile(
-                          label: 'Posición',
-                          value: '${position.position}',
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: StatTile(
-                          label: 'Puntos',
-                          value: '${position.standing.points}',
-                        ),
-                      ),
-                    ],
-                  ),
+        ClubHeroHeader(
+          club: club,
+          position: data.position,
+          eyebrow: 'MI CLUB',
+          action: TextButton.icon(
+            onPressed: onChangeClub,
+            icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+            label: const Text('Cambiar'),
           ),
         ),
 
@@ -389,37 +290,26 @@ class _ClubHome extends StatelessWidget {
         if (!playsThisRound)
           ContentWidth(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                0,
               ),
-              child: Text(
-                isBye
+              child: InfoBanner(
+                icon: isBye
+                    ? Icons.event_available_outlined
+                    : Icons.event_busy_outlined,
+                message: isBye
                     ? 'Libre en la fecha ${round.round}.'
                     : 'Sin partidos en la fecha ${round.round}.',
-                style: textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textMuted,
-                ),
               ),
             ),
           ),
 
         for (final entry in days)
           if (entry.matchups.isNotEmpty) ...[
-            ContentWidth(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                  AppSpacing.lg,
-                  0,
-                ),
-                child: Text(
-                  dayLabel(entry.day),
-                  style: textTheme.titleSmall,
-                ),
-              ),
-            ),
+            ContentWidth(child: GroupLabel(dayLabel(entry.day))),
             for (final matchup in entry.matchups)
               ContentWidth(
                 child: MatchupCard(
@@ -444,39 +334,18 @@ class _ClubHome extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg,
-                AppSpacing.lg,
+                AppSpacing.xl,
                 AppSpacing.lg,
                 0,
               ),
               child: OutlinedButton.icon(
                 onPressed: onOpenFixture,
-                icon: const Icon(Icons.sports_soccer_outlined),
+                icon: const Icon(Icons.calendar_month_outlined),
                 label: const Text('Ver fixture completo'),
               ),
             ),
           ),
       ],
-    );
-  }
-}
-
-/// Bloque superior azul, continuación de la barra de la app.
-class _Hero extends StatelessWidget {
-  final Widget child;
-
-  const _Hero({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.primary,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.xl,
-      ),
-      child: child,
     );
   }
 }

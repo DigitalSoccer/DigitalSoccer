@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
 import 'clubs_page.dart';
 import 'home_page.dart';
 import 'inicio_page.dart';
@@ -33,9 +34,7 @@ class _MainPageState extends State<MainPage> {
   Widget _page(int index) {
     switch (index) {
       case 0:
-        return InicioPage(
-          onOpenFixture: () => _onItemTapped(fixtureIndex),
-        );
+        return InicioPage(onOpenFixture: () => _onItemTapped(fixtureIndex));
       case fixtureIndex:
         return const HomePage();
       case 2:
@@ -48,17 +47,13 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-      ),
+      appBar: AppBar(title: Text(_titles[_selectedIndex])),
       body: _page(_selectedIndex),
       bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-          ),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.border)),
+          boxShadow: AppShadows.navBar,
         ),
         child: NavigationBar(
           selectedIndex: _selectedIndex,
@@ -66,22 +61,22 @@ class _MainPageState extends State<MainPage> {
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
+              selectedIcon: Icon(Icons.home_rounded),
               label: 'Inicio',
             ),
             NavigationDestination(
-              icon: Icon(Icons.sports_soccer_outlined),
-              selectedIcon: Icon(Icons.sports_soccer),
+              icon: Icon(Icons.calendar_month_outlined),
+              selectedIcon: Icon(Icons.calendar_month_rounded),
               label: 'Fixture',
             ),
             NavigationDestination(
-              icon: Icon(Icons.emoji_events_outlined),
-              selectedIcon: Icon(Icons.emoji_events),
+              icon: Icon(Icons.leaderboard_outlined),
+              selectedIcon: Icon(Icons.leaderboard_rounded),
               label: 'Tabla',
             ),
             NavigationDestination(
               icon: Icon(Icons.shield_outlined),
-              selectedIcon: Icon(Icons.shield),
+              selectedIcon: Icon(Icons.shield_rounded),
               label: 'Clubes',
             ),
           ],

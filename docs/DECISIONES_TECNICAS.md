@@ -33,6 +33,12 @@ morada). Luego el equipo pidió una paleta **gris azulada y blanca**, implementa
 explícito y tokens centralizados en `lib/theme/app_theme.dart`. No son colores oficiales. Detalle en
 `DISENO_VISUAL.md`.
 
+**Propuesta (2026-10-18, rama `feature/sistema-diseno-rojo`):** sistema rojo deportivo (`#B91C1C`) con
+fondo slate `#F8FAFC`, tarjetas blancas con sombra difusa (`AppShadows`) y componentes reutilizables
+(`SurfaceCard`, `SegmentedTabBar`, `StatsCard`, hojas inferiores de selección). Se mantiene Roboto: el
+brief admitía Inter o Roboto, e Inter requeriría una dependencia nueva (`google_fonts`) o empaquetar la
+fuente. Pendiente de aprobación del equipo.
+
 ## DT-05 — Carga de datos y errores (Propuesta)
 
 `loadJsonAsset` centraliza la lectura de JSON con tiempo límite (10 s) y convierte cualquier falla en

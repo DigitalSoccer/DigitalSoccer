@@ -16,6 +16,7 @@ flutter test
 | `test/club_service_test.dart` | Club favorito guardado por id y migración del valor antiguo (guardado por nombre) |
 | `test/asset_json_test.dart` | Errores de carga: archivo ausente, JSON mal formado, tipo de dato incorrecto, tiempo límite |
 | `test/widget_test.dart` | Arranque de la app, paleta centralizada y contraste WCAG AA, ausencia de desbordes a 320 y 1280 px, detalle de club (posición/puntos), estados de error con reintento, JSON mal formado, tabla vacía, búsqueda sin resultados, Mi Club |
+| `test/fixture_format_test.dart` | Formato de planilla del fixture (cruces, series, turnos, club libre) |
 | `test/helpers/fake_asset_bundle.dart` | Utilidad: bundle de assets en memoria para inyectar datos reales, vacíos o con errores |
 
 Las pantallas leen los datos desde `DefaultAssetBundle.of(context)`, por eso las pruebas pueden
@@ -27,6 +28,7 @@ envolverlas en un `DefaultAssetBundle` con datos controlados.
 |---|---|---|---|---|
 | 2026-10-12 | 3.47.7 (Dart 3.13.5) | `fix/identidad-clubes-pruebas-ui` | Sin problemas | **39 pasan, 0 fallan** |
 | 2026-10-12 | 3.47.7 (Dart 3.13.5) | `feature/rediseno-visual` | Sin problemas | **44 pasan, 0 fallan** |
+| 2026-10-13 | 3.47.7 (Dart 3.13.5) | `feature/fixture-planilla` | Sin problemas | **69 pasan, 0 fallan** |
 
 Las líneas `Error al cargar datos: DataLoadException(...)` que aparecen durante `flutter test` son
 esperadas: las imprimen las pruebas que simulan errores de carga.

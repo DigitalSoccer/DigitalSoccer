@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/club.dart';
 import '../models/fixture_round.dart';
 import '../models/series.dart';
 import '../models/standing.dart';
+import '../services/club_data_service.dart';
+import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/standings_service.dart';
 import '../theme/app_theme.dart';
@@ -22,29 +25,31 @@ class _StandingsData {
   /// Series del fixture y de las tablas, de menor a mayor.
   final List<String> categories;
 
-  _StandingsData(this.general, this.tables, this.categories);
+  /// Club favorito (Mi Club), para resaltar su fila.
+  final String? favoriteClubId;
+
+  _StandingsData(
+    this.general,
+    this.tables,
+    this.categories,
+    this.favoriteClubId,
+  );
 }
 
-/// Opción del menú: la tabla general, un acumulado o una serie.
+/// Opción del selector: la tabla general, un acumulado o una serie.
 class _Choice {
   final String? total;
   final String? series;
 
-  const _Choice.general()
-      : total = null,
-        series = null;
-  const _Choice.total(String name)
-      : total = name,
-        series = null;
-  const _Choice.series(String name)
-      : total = null,
-        series = name;
+  const _Choice.general() : total = null, series = null;
+  const _Choice.total(String name) : total = name, series = null;
+  const _Choice.series(String name) : total = null, series = name;
 
   String get label => total != null
       ? 'Acumulado ${total!.toLowerCase()}'
       : series != null
-          ? 'Serie $series'
-          : 'Tabla general';
+      ? 'Serie $series'
+      : 'Tabla general';
 
   @override
   bool operator ==(Object other) =>
@@ -68,8 +73,8 @@ class _StandingsPageState extends State<StandingsPage> {
   Future<_StandingsData> _load() async {
     final bundle = DefaultAssetBundle.of(context);
 
-    // Las tablas por serie y el fixture (que da la lista de series) son
-    // secundarios: si fallan, se muestra igual la tabla general.
+    // Las tablas por serie, el fixture (que da la lista de series) y los
+    // clubes son secundarios: si fallan, se muestra igual la tabla general.
     Future<T> optional<T>(Future<T> future, T fallback) =>
         future.catchError((Object e) {
           debugPrint('Dato opcional de la tabla no disponible: $e');
@@ -84,10 +89,8 @@ class _StandingsPageState extends State<StandingsPage> {
         StandingsService.loadSeriesStandings(bundle),
         const SeriesTables(),
       ),
-      optional<List<FixtureRound>>(
-        DataService.loadRounds(bundle),
-        const [],
-      ),
+      optional<List<FixtureRound>>(DataService.loadRounds(bundle), const []),
+      optional<List<Club>>(ClubDataService.loadClubs(bundle), const []),
     ]);
 
     final seriesTables = results[1] as SeriesTables;
@@ -103,12 +106,44 @@ class _StandingsPageState extends State<StandingsPage> {
         // Una serie con tabla cargada aparece aunque no esté en el fixture.
         ...seriesTables.series.keys,
       ]),
+      await ClubService.getFavoriteClubId(results[3] as List<Club>),
     );
   }
 
   void _retry() {
     setState(() {
       _future = _load();
+    });
+  }
+
+  Future<void> _pickTable(_StandingsData data, _Choice current) async {
+    final picked = await showSelectionSheet<_Choice>(
+      context: context,
+      title: 'Elegir tabla',
+      selected: current,
+      sections: [
+        SheetSection(
+          title: 'General',
+          options: [
+            const SheetOption(_Choice.general(), 'Tabla general'),
+            for (final name in data.tables.totals.keys)
+              SheetOption(_Choice.total(name), _Choice.total(name).label),
+          ],
+        ),
+        if (data.categories.isNotEmpty)
+          SheetSection(
+            title: 'Por serie',
+            options: [
+              for (final c in data.categories)
+                SheetOption(_Choice.series(c), _Choice.series(c).label),
+            ],
+          ),
+      ],
+    );
+
+    if (picked == null || !mounted) return;
+    setState(() {
+      _choice = picked;
     });
   }
 
@@ -129,42 +164,25 @@ class _StandingsPageState extends State<StandingsPage> {
         final standings = choice.total != null
             ? data.tables.totals[choice.total] ?? const <Standing>[]
             : choice.series != null
-                ? data.tables.series[choice.series] ?? const <Standing>[]
-                : data.general.standings;
+            ? data.tables.series[choice.series] ?? const <Standing>[]
+            : data.general.standings;
 
         final textTheme = Theme.of(context).textTheme;
 
         return ListView(
           padding: const EdgeInsets.only(
-            top: AppSpacing.md,
+            top: AppSpacing.lg,
             bottom: AppSpacing.xl,
           ),
           children: [
             ContentWidth(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                ),
-                child: DropdownButtonFormField<_Choice>(
-                  initialValue: choice,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Tabla',
-                    prefixIcon: Icon(Icons.emoji_events_outlined),
-                  ),
-                  items: [
-                    for (final c in choices)
-                      DropdownMenuItem<_Choice>(
-                        value: c,
-                        child: Text(c.label),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      _choice = value;
-                    });
-                  },
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: SelectorField(
+                  label: 'Tabla',
+                  value: choice.label,
+                  icon: Icons.leaderboard_outlined,
+                  onTap: () => _pickTable(data, choice),
                 ),
               ),
             ),
@@ -173,8 +191,8 @@ class _StandingsPageState extends State<StandingsPage> {
               ContentWidth(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.sm,
+                    AppSpacing.lg + AppSpacing.xs,
+                    AppSpacing.md,
                     AppSpacing.lg,
                     0,
                   ),
@@ -182,10 +200,10 @@ class _StandingsPageState extends State<StandingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Padding(
-                        padding: EdgeInsets.only(top: 2),
+                        padding: EdgeInsets.only(top: 1),
                         child: Icon(
                           Icons.info_outline,
-                          size: 16,
+                          size: 14,
                           color: AppColors.textMuted,
                         ),
                       ),
@@ -207,13 +225,13 @@ class _StandingsPageState extends State<StandingsPage> {
                 ),
               ),
 
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
 
             if (standings.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.xl),
                 child: EmptyView(
-                  icon: Icons.emoji_events_outlined,
+                  icon: Icons.leaderboard_outlined,
                   message: choice.series != null
                       ? 'La tabla de ${choice.series} aún no está disponible.'
                       : 'La tabla de posiciones aún no está disponible.',
@@ -221,15 +239,19 @@ class _StandingsPageState extends State<StandingsPage> {
               )
             else
               ContentWidth(
-                child: Card(
+                child: SurfaceCard(
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   child: Column(
                     children: [
                       const _StandingsHeader(),
                       for (final standing in standings)
                         _StandingRow(
-                          position:
-                              StandingsService.rankOf(standings, standing),
+                          position: StandingsService.rankOf(
+                            standings,
+                            standing,
+                          ),
                           standing: standing,
+                          isFavorite: standing.clubId == data.favoriteClubId,
                         ),
                     ],
                   ),
@@ -242,38 +264,41 @@ class _StandingsPageState extends State<StandingsPage> {
   }
 }
 
-// Ancho de las columnas numéricas, igual en encabezado y filas.
+// Ancho de las columnas, igual en encabezado y filas.
+const double _positionWidth = 30;
 const double _statWidth = 40;
 const double _pointsWidth = 44;
+
+/// Franja izquierda de cada fila: roja en Mi Club, transparente en el resto
+/// (así todas las filas quedan alineadas).
+const double _stripeWidth = 3;
 
 class _StandingsHeader extends StatelessWidget {
   const _StandingsHeader();
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-        );
-
     Widget column(String label, double width, String tooltip) => SizedBox(
-          width: width,
-          child: Tooltip(
-            message: tooltip,
-            child: Text(label, textAlign: TextAlign.center, style: style),
-          ),
-        );
+      width: width,
+      child: Tooltip(
+        message: tooltip,
+        child: Text(label, textAlign: TextAlign.center, style: AppText.eyebrow),
+      ),
+    );
 
     return Container(
-      color: AppColors.surfaceLow,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
+      color: AppColors.background,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md + _stripeWidth,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
       ),
       child: Row(
         children: [
-          SizedBox(width: 32, child: Text('#', style: style)),
+          column('POS', _positionWidth, 'Posición'),
           const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text('CLUB', style: style)),
+          const Expanded(child: Text('CLUB', style: AppText.eyebrow)),
           column('PJ', _statWidth, 'Partidos jugados'),
           column('DIF', _statWidth, 'Diferencia de goles'),
           column('PTS', _pointsWidth, 'Puntos'),
@@ -286,47 +311,83 @@ class _StandingsHeader extends StatelessWidget {
 class _StandingRow extends StatelessWidget {
   final int position;
   final Standing standing;
+  final bool isFavorite;
 
   const _StandingRow({
     required this.position,
     required this.standing,
+    required this.isFavorite,
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    // Sobre el fondo rojo suave de Mi Club, el gris secundario más oscuro
+    // mantiene el contraste.
+    final statColor = isFavorite
+        ? AppColors.textSecondary
+        : AppColors.textMuted;
+
     Widget stat(String value) => SizedBox(
-          width: _statWidth,
-          child: Text(
-            value,
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(
-              color: AppColors.textMuted,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        );
+      width: _statWidth,
+      child: Text(
+        value,
+        textAlign: TextAlign.center,
+        style: textTheme.bodyMedium?.copyWith(
+          color: statColor,
+          fontFeatures: AppText.tabular,
+        ),
+      ),
+    );
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
+        color: isFavorite ? AppColors.primarySoft : null,
         border: Border(
-          top: BorderSide(color: AppColors.border),
+          top: const BorderSide(color: AppColors.border),
+          left: BorderSide(
+            color: isFavorite ? AppColors.primaryBright : Colors.transparent,
+            width: _stripeWidth,
+          ),
         ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
+          horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
         ),
         child: Row(
           children: [
-            PositionBadge(position: position),
+            SizedBox(
+              width: _positionWidth,
+              child: PositionBadge(position: position),
+            ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
-              child: Text(
-                standing.team,
-                style: textTheme.titleSmall,
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      standing.team,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: isFavorite
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  if (isFavorite) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: AppColors.favorite,
+                      semanticLabel: 'Mi Club',
+                    ),
+                  ],
+                ],
               ),
             ),
             stat(standing.played?.toString() ?? '–'),
@@ -337,9 +398,9 @@ class _StandingRow extends StatelessWidget {
                 '${standing.points}',
                 textAlign: TextAlign.center,
                 style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.text,
+                  fontFeatures: AppText.tabular,
                 ),
               ),
             ),

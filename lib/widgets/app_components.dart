@@ -2,101 +2,85 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// Ícono genérico de club. NO es un escudo: los escudos oficiales aún no
-/// están disponibles ni autorizados.
+export 'app_bottom_sheet.dart';
+export 'info_banner.dart';
+export 'segmented_tab_bar.dart';
+export 'stats_card.dart';
+export 'surface_card.dart';
+
+/// Avatar circular de club. NO es un escudo: los escudos oficiales aún no
+/// están disponibles ni autorizados, así que se usa un ícono genérico.
 class ClubAvatar extends StatelessWidget {
   final double size;
 
-  const ClubAvatar({super.key, this.size = 40});
+  /// Versión destacada (fondo rojo suave) para el encabezado del club.
+  final bool emphasis;
+
+  const ClubAvatar({super.key, this.size = 40, this.emphasis = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryContainer,
+      decoration: BoxDecoration(
+        color: emphasis ? AppColors.primarySoft : AppColors.surfaceMuted,
         shape: BoxShape.circle,
+        border: Border.all(
+          color: emphasis ? AppColors.primaryContainer : AppColors.border,
+        ),
       ),
       child: Icon(
         Icons.shield_outlined,
-        size: size * 0.55,
-        color: AppColors.primary,
+        size: size * 0.5,
+        color: emphasis ? AppColors.primary : AppColors.textMuted,
         semanticLabel: 'Club (sin escudo)',
       ),
     );
   }
 }
 
-/// Dato destacado: etiqueta pequeña sobre un valor grande.
-class StatTile extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const StatTile({
-    super.key,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLow,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: textTheme.labelSmall,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Posición en la tabla. Los tres primeros se destacan con el color de
-/// identidad (reemplaza los emojis de medalla, que no se ven en la web).
+/// Posición en la tabla. El podio (1° a 3°) va en una píldora oro, plata o
+/// bronce; el resto es solo el número.
 class PositionBadge extends StatelessWidget {
   final int position;
 
   const PositionBadge({super.key, required this.position});
 
+  static (Color, Color)? podiumColors(int position) {
+    switch (position) {
+      case 1:
+        return (AppColors.goldBg, AppColors.goldFg);
+      case 2:
+        return (AppColors.silverBg, AppColors.silverFg);
+      case 3:
+        return (AppColors.bronzeBg, AppColors.bronzeFg);
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final top = position <= 3;
+    final podium = podiumColors(position);
 
     return Container(
-      width: 32,
-      height: 32,
+      width: 30,
+      height: 26,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: top ? AppColors.primary : AppColors.surfaceMid,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
+      decoration: podium == null
+          ? null
+          : BoxDecoration(
+              color: podium.$1,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
       child: Text(
         '$position',
         style: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: top ? AppColors.onPrimary : AppColors.textMuted,
+          fontSize: 13,
+          fontWeight: podium == null ? FontWeight.w600 : FontWeight.w800,
+          color: podium?.$2 ?? AppColors.textMuted,
+          fontFeatures: AppText.tabular,
         ),
       ),
     );
@@ -120,36 +104,71 @@ class MatchStatusBadge extends StatelessWidget {
     }
   }
 
+  static bool isNotable(String status) =>
+      status == 'suspendido' || status == 'reprogramado';
+
   @override
   Widget build(BuildContext context) {
-    if (status != 'suspendido' && status != 'reprogramado') {
-      return const SizedBox.shrink();
-    }
+    if (!isNotable(status)) return const SizedBox.shrink();
 
     final color = colorFor(status);
 
+    return TagChip(
+      label: status[0].toUpperCase() + status.substring(1),
+      foreground: color,
+      background: color.withValues(alpha: 0.1),
+    );
+  }
+}
+
+/// Chip pequeño en píldora: series en juego, estados, "MI CLUB".
+class TagChip extends StatelessWidget {
+  final String label;
+  final Color foreground;
+  final Color background;
+  final bool uppercase;
+
+  const TagChip({
+    super.key,
+    required this.label,
+    this.foreground = AppColors.textSecondary,
+    this.background = AppColors.surfaceMuted,
+    this.uppercase = false,
+  });
+
+  /// Insignia roja de Mi Club.
+  const TagChip.myClub({super.key})
+    : label = 'MI CLUB',
+      foreground = AppColors.primary,
+      background = AppColors.primaryContainer,
+      uppercase = true;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: 2,
+        horizontal: AppSpacing.sm + 2,
+        vertical: 3,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        color: background,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
-        status[0].toUpperCase() + status.substring(1),
+        label,
+        textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: color,
+          fontSize: uppercase ? 10.5 : 12,
+          fontWeight: uppercase ? FontWeight.w700 : FontWeight.w500,
+          letterSpacing: uppercase ? 0.6 : 0,
+          color: foreground,
         ),
       ),
     );
   }
 }
 
-/// Título de sección en mayúsculas pequeñas.
+/// Título de sección: etiqueta en mayúsculas pequeñas, gris y espaciada.
 class SectionHeader extends StatelessWidget {
   final String title;
 
@@ -159,18 +178,66 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg + AppSpacing.xs,
+        AppSpacing.xl,
         AppSpacing.lg,
+        AppSpacing.xs,
+      ),
+      child: Text(title.toUpperCase(), style: AppText.eyebrow),
+    );
+  }
+}
+
+/// Subtítulo de grupo dentro de una lista (p. ej. el día de un cruce).
+class GroupLabel extends StatelessWidget {
+  final String text;
+
+  const GroupLabel(this.text, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg + AppSpacing.xs,
+        AppSpacing.md,
         AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.sm,
+        0,
       ),
       child: Text(
-        title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+}
+
+/// Botón circular de ícono sobre fondo slate-100 (flechas del selector).
+class CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  const CircleIconButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon),
+      style: IconButton.styleFrom(
+        backgroundColor: AppColors.surfaceMuted,
+        foregroundColor: AppColors.text,
+        disabledBackgroundColor: AppColors.background,
+        disabledForegroundColor: AppColors.handle,
+        fixedSize: const Size(40, 40),
       ),
     );
   }
@@ -181,11 +248,7 @@ class ContentWidth extends StatelessWidget {
   final Widget child;
   final double maxWidth;
 
-  const ContentWidth({
-    super.key,
-    required this.child,
-    this.maxWidth = 720,
-  });
+  const ContentWidth({super.key, required this.child, this.maxWidth = 720});
 
   @override
   Widget build(BuildContext context) {

@@ -39,7 +39,7 @@ class _Header extends StatelessWidget {
         );
 
     return Container(
-      color: AppColors.surfaceLow,
+      color: AppColors.background,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,

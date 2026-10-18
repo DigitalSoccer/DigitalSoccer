@@ -82,38 +82,45 @@ class _HomePageState extends State<HomePage> {
 
         return Column(
           children: [
-            ContentWidth(
-              child: _RoundHeader(
-                round: round,
-                // La lista va de la más reciente a la más antigua.
-                onOlder: index < data.rounds.length - 1
-                    ? () => setState(() => _roundIndex = index + 1)
-                    : null,
-                onNewer: index > 0
-                    ? () => setState(() => _roundIndex = index - 1)
-                    : null,
-              ),
-            ),
-
-            ContentWidth(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  0,
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                ),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: 'Buscar club...',
-                    prefixIcon: Icon(Icons.search),
-                    isDense: true,
+            // Panel blanco superior: fecha y buscador. Las pestañas de día
+            // (en FixtureView) continúan el mismo panel.
+            ColoredBox(
+              color: AppColors.surface,
+              child: ContentWidth(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.xs,
+                    AppSpacing.lg,
+                    AppSpacing.md,
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      searchQuery = value;
-                    });
-                  },
+                  child: Column(
+                    children: [
+                      _RoundSelector(
+                        round: round,
+                        // La lista va de la más reciente a la más antigua.
+                        onOlder: index < data.rounds.length - 1
+                            ? () => setState(() => _roundIndex = index + 1)
+                            : null,
+                        onNewer: index > 0
+                            ? () => setState(() => _roundIndex = index - 1)
+                            : null,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      TextField(
+                        decoration: const InputDecoration(
+                          hintText: 'Buscar club...',
+                          prefixIcon: Icon(Icons.search_rounded),
+                          isDense: true,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -126,9 +133,7 @@ class _HomePageState extends State<HomePage> {
                 roundNumber: round.round,
                 searchQuery: searchQuery,
                 highlightClubId: data.favoriteClubId,
-                clubNames: {
-                  for (final club in data.clubs) club.id: club.name,
-                },
+                clubNames: {for (final club in data.clubs) club.id: club.name},
               ),
             ),
           ],
@@ -138,12 +143,14 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _RoundHeader extends StatelessWidget {
+/// Selector de fecha: flechas a los lados y, al centro, el número de fecha,
+/// el rango de días y el origen de los datos.
+class _RoundSelector extends StatelessWidget {
   final FixtureRound round;
   final VoidCallback? onOlder;
   final VoidCallback? onNewer;
 
-  const _RoundHeader({
+  const _RoundSelector({
     required this.round,
     required this.onOlder,
     required this.onNewer,
@@ -175,83 +182,75 @@ class _RoundHeader extends StatelessWidget {
     final range = roundDateRange(round);
     final verified = round.source != null;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: 'Fecha anterior',
-            onPressed: onOlder,
-            icon: const Icon(Icons.chevron_left),
-          ),
-          Expanded(
-            child: Column(
-              children: [
+    return Row(
+      children: [
+        CircleIconButton(
+          icon: Icons.chevron_left_rounded,
+          tooltip: 'Fecha anterior',
+          onPressed: onOlder,
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              Text(
+                'FECHA ${round.round}',
+                style: AppText.eyebrow.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              if (range.isNotEmpty)
                 Text(
-                  'FECHA ${round.round}',
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                    color: AppColors.primary,
+                  range,
+                  textAlign: TextAlign.center,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                if (range.isNotEmpty)
-                  Text(
-                    range,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.text,
-                      fontWeight: FontWeight.w600,
-                    ),
+              InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                onTap: () => _showSource(context),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
                   ),
-                InkWell(
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                  onTap: () => _showSource(context),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: 2,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        verified
+                            ? Icons.verified_outlined
+                            : Icons.help_outline_rounded,
+                        size: 13,
+                        color: AppColors.textMuted,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Flexible(
+                        child: Text(
                           verified
-                              ? Icons.description_outlined
-                              : Icons.help_outline,
-                          size: 14,
-                          color: AppColors.textMuted,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Flexible(
-                          child: Text(
-                            verified
-                                ? 'Fuente: planilla de la asociación'
-                                : 'Fuente sin verificar',
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: AppColors.textMuted,
-                            ),
+                              ? 'Fuente: planilla de la asociación'
+                              : 'Fuente sin verificar',
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          IconButton(
-            tooltip: 'Fecha siguiente',
-            onPressed: onNewer,
-            icon: const Icon(Icons.chevron_right),
-          ),
-        ],
-      ),
+        ),
+        CircleIconButton(
+          icon: Icons.chevron_right_rounded,
+          tooltip: 'Fecha siguiente',
+          onPressed: onNewer,
+        ),
+      ],
     );
   }
 }

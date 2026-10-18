@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de la app: azul acero (base #205375) + blanco.
+/// Design tokens de la app: rojo deportivo sobre superficies blancas y un
+/// fondo slate neutro (equivalentes a la escala de Tailwind).
 ///
 /// Es la DIRECCIÓN VISUAL acordada por el equipo, no los colores oficiales
 /// del Club Arturo Prat ni de ANFA Chiguayante (pendientes de confirmación).
@@ -9,46 +10,76 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // EXPERIMENTO (rama experimento/paleta-roja): paleta roja con base
-  // #F44336. Blanco sobre #F44336 tiene contraste 3.7:1: sirve solo para
-  // texto grande (título de la barra), así que el texto pequeño y los
-  // botones usan un rojo más profundo (`primary`).
+  // Marca. El rojo se usa de forma puntual: navegación activa, acciones,
+  // Mi Club y la etiqueta de la fecha. No se usa como fondo de pantallas.
 
-  /// Rojo de identidad (#F44336): barra superior y acentos (indicadores,
-  /// bordes destacados). Solo admite texto blanco grande y en negrita.
-  static const Color brand = Color(0xFFF44336);
-  static const Color header = brand;
-
-  /// Rojo profundo para elementos interactivos, bloque de Inicio y texto
-  /// destacado. Contraste ≥ 4.5:1 con blanco.
-  static const Color primary = Color(0xFFC62828);
+  /// Rojo profundo (red-700): elementos interactivos y texto destacado.
+  /// Contraste 6.5:1 con blanco.
+  static const Color primary = Color(0xFFB91C1C);
   static const Color onPrimary = Colors.white;
 
-  /// Rojo muy suave para insignias, selección y texto suave sobre rojo.
-  static const Color primaryContainer = Color(0xFFFFEBEE);
-  static const Color onPrimaryContainer = Color(0xFF5F1410);
+  /// Rojo vivo (red-600): solo acentos sin texto (franjas, bordes).
+  static const Color primaryBright = Color(0xFFDC2626);
 
-  static const Color background = Colors.white;
+  /// Rojo muy suave (red-100): insignias y fondos de íconos.
+  static const Color primaryContainer = Color(0xFFFEE2E2);
+  static const Color onPrimaryContainer = Color(0xFF7F1D1D);
 
-  /// Grises cálidos para separar superficies.
-  static const Color surfaceLow = Color(0xFFFAF7F7);
-  static const Color surfaceMid = Color(0xFFF4EFEF);
-  static const Color surfaceHigh = Color(0xFFECE5E5);
+  /// Rojo casi blanco (red-50): fila o tarjeta de Mi Club.
+  static const Color primarySoft = Color(0xFFFEF2F2);
 
-  static const Color border = Color(0xFFE6DCDC);
-  static const Color outline = Color(0xFF9A8E8E);
+  /// Píldora translúcida del ítem activo de la barra inferior (12 %).
+  static const Color navIndicator = Color(0x1FB91C1C);
 
-  /// Texto principal y secundario (gris oscuro neutro).
-  static const Color text = Color(0xFF212121);
-  static const Color textMuted = Color(0xFF5E5757);
+  // Superficies.
 
-  static const Color error = Color(0xFFB4443C);
+  /// Fondo global (slate-50): da contraste a las tarjetas blancas.
+  static const Color background = Color(0xFFF8FAFC);
+
+  /// Tarjetas, hojas inferiores y barras (blanco puro).
+  static const Color surface = Colors.white;
+
+  /// Pistas de pestañas, avatares y chips (slate-100).
+  static const Color surfaceMuted = Color(0xFFF1F5F9);
+
+  /// Borde suave de tarjetas y separadores de filas (slate-100).
+  static const Color border = Color(0xFFF1F5F9);
+
+  /// Borde de campos de texto y divisores visibles (slate-200).
+  static const Color borderStrong = Color(0xFFE2E8F0);
+
+  // Texto.
+
+  /// Títulos y texto principal (slate-900).
+  static const Color text = Color(0xFF0F172A);
+
+  /// Subtítulos y texto sobre `surfaceMuted` (slate-600).
+  static const Color textSecondary = Color(0xFF475569);
+
+  /// Etiquetas y metadatos (slate-500). Solo sobre blanco o `background`:
+  /// sobre `surfaceMuted` no alcanza 4.5:1.
+  static const Color textMuted = Color(0xFF64748B);
+
+  /// Íconos decorativos y controles deshabilitados (slate-400).
+  static const Color outline = Color(0xFF94A3B8);
+
+  /// Manilla de las hojas inferiores (slate-300).
+  static const Color handle = Color(0xFFCBD5E1);
 
   // Semánticos.
-  static const Color favorite = Color(0xFFB8860B);
-  static const Color statusNormal = brand;
+  static const Color error = Color(0xFFB4443C);
+  static const Color favorite = Color(0xFFF59E0B);
+  static const Color statusNormal = handle;
   static const Color statusSuspended = error;
-  static const Color statusRescheduled = Color(0xFFA86A12);
+  static const Color statusRescheduled = Color(0xFFB45309);
+
+  // Podio de la tabla: píldoras oro, plata y bronce (fondo / texto).
+  static const Color goldBg = Color(0xFFFEF3C7);
+  static const Color goldFg = Color(0xFF92400E);
+  static const Color silverBg = Color(0xFFE2E8F0);
+  static const Color silverFg = Color(0xFF334155);
+  static const Color bronzeBg = Color(0xFFFFEDD5);
+  static const Color bronzeFg = Color(0xFF9A3412);
 
   // Tarjetas disciplinarias (íconos de la tabla de jugadores).
   static const Color cardYellow = Color(0xFFF2C200);
@@ -63,14 +94,80 @@ class AppSpacing {
   static const double md = 12;
   static const double lg = 16;
   static const double xl = 24;
+  static const double xxl = 32;
 }
 
 class AppRadius {
   AppRadius._();
 
   static const double sm = 8;
+
+  /// `rounded-xl`: campos, botones y selectores.
   static const double md = 12;
+
+  /// `rounded-2xl`: tarjetas.
   static const double lg = 16;
+
+  /// Esquinas superiores de las hojas inferiores.
+  static const double xl = 24;
+
+  static const double pill = 999;
+}
+
+/// Sombras difusas equivalentes a `shadow-sm` y `shadow-md` de Tailwind,
+/// teñidas con slate-900 en vez de negro puro.
+class AppShadows {
+  AppShadows._();
+
+  static const List<BoxShadow> sm = [
+    BoxShadow(color: Color(0x0D0F172A), offset: Offset(0, 1), blurRadius: 2),
+  ];
+
+  static const List<BoxShadow> md = [
+    BoxShadow(
+      color: Color(0x140F172A),
+      offset: Offset(0, 4),
+      blurRadius: 6,
+      spreadRadius: -1,
+    ),
+    BoxShadow(
+      color: Color(0x0F0F172A),
+      offset: Offset(0, 2),
+      blurRadius: 4,
+      spreadRadius: -2,
+    ),
+  ];
+
+  /// Sombra hacia arriba de la barra de navegación inferior.
+  static const List<BoxShadow> navBar = [
+    BoxShadow(color: Color(0x0F0F172A), offset: Offset(0, -1), blurRadius: 8),
+  ];
+}
+
+/// Estilos de texto que no calzan con un rol de `TextTheme`.
+class AppText {
+  AppText._();
+
+  /// Etiquetas y metadatos: `font-medium text-xs text-slate-500
+  /// tracking-wider`. Se usa con el texto en mayúsculas.
+  static const TextStyle eyebrow = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.6,
+    color: AppColors.textMuted,
+  );
+
+  /// Cifras destacadas (posición, puntos).
+  static const TextStyle metric = TextStyle(
+    fontSize: 28,
+    height: 1.1,
+    fontWeight: FontWeight.w800,
+    color: AppColors.text,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  /// Números de tabla alineados en columnas.
+  static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 }
 
 ThemeData buildAppTheme() {
@@ -80,20 +177,20 @@ ThemeData buildAppTheme() {
     onPrimary: AppColors.onPrimary,
     primaryContainer: AppColors.primaryContainer,
     onPrimaryContainer: AppColors.onPrimaryContainer,
-    secondary: AppColors.brand,
-    onSecondary: AppColors.text,
+    secondary: AppColors.primaryBright,
+    onSecondary: AppColors.onPrimary,
     secondaryContainer: AppColors.primaryContainer,
     onSecondaryContainer: AppColors.onPrimaryContainer,
     error: AppColors.error,
     onError: Colors.white,
-    surface: AppColors.background,
+    surface: AppColors.surface,
     onSurface: AppColors.text,
     onSurfaceVariant: AppColors.textMuted,
-    surfaceContainerLowest: AppColors.background,
-    surfaceContainerLow: AppColors.surfaceLow,
-    surfaceContainer: AppColors.surfaceMid,
-    surfaceContainerHigh: AppColors.surfaceHigh,
-    surfaceContainerHighest: AppColors.surfaceHigh,
+    surfaceContainerLowest: AppColors.surface,
+    surfaceContainerLow: AppColors.background,
+    surfaceContainer: AppColors.surfaceMuted,
+    surfaceContainerHigh: AppColors.surfaceMuted,
+    surfaceContainerHighest: AppColors.borderStrong,
     outline: AppColors.outline,
     outlineVariant: AppColors.border,
   );
@@ -108,44 +205,51 @@ ThemeData buildAppTheme() {
     displayColor: AppColors.text,
   );
 
-  final cardShape = RoundedRectangleBorder(
+  final fieldBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(AppRadius.md),
-    side: const BorderSide(color: AppColors.border),
+    borderSide: const BorderSide(color: AppColors.borderStrong),
+  );
+
+  final buttonShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(AppRadius.md),
   );
 
   return base.copyWith(
     textTheme: text.copyWith(
+      headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
       titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
       titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
       titleSmall: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-      labelSmall: text.labelSmall?.copyWith(
-        color: AppColors.textMuted,
-        letterSpacing: 0.4,
-      ),
+      labelSmall: AppText.eyebrow,
     ),
 
+    // Barra superior compacta y blanca. Se integra con los encabezados
+    // blancos de cada pantalla y muestra una sombra al desplazar.
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.header,
-      foregroundColor: AppColors.onPrimary,
+      backgroundColor: AppColors.surface,
+      foregroundColor: AppColors.text,
       surfaceTintColor: Colors.transparent,
+      shadowColor: Color(0x330F172A),
       elevation: 0,
-      scrolledUnderElevation: 0,
+      scrolledUnderElevation: 1,
       centerTitle: true,
+      toolbarHeight: 56,
       // Tamaño explícito: `ThemeData.textTheme` aún no incluye tamaños
       // (Flutter los agrega en Theme.of), y el título quedaba en 14 px.
       titleTextStyle: TextStyle(
-        fontSize: 20,
+        fontSize: 17,
         fontWeight: FontWeight.w700,
-        color: AppColors.onPrimary,
+        color: AppColors.text,
       ),
     ),
 
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: AppColors.primaryContainer,
+      indicatorColor: AppColors.navIndicator,
+      indicatorShape: const StadiumBorder(),
       elevation: 0,
-      height: 68,
+      height: 64,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => TextStyle(
           fontSize: 12,
@@ -159,6 +263,7 @@ ThemeData buildAppTheme() {
       ),
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
+          size: 24,
           color: states.contains(WidgetState.selected)
               ? AppColors.primary
               : AppColors.textMuted,
@@ -166,32 +271,45 @@ ThemeData buildAppTheme() {
       ),
     ),
 
-    tabBarTheme: const TabBarThemeData(
-      labelColor: AppColors.primary,
-      unselectedLabelColor: AppColors.textMuted,
-      indicatorColor: AppColors.primary,
-      dividerColor: AppColors.border,
-      labelStyle: TextStyle(fontWeight: FontWeight.w700),
-      tabAlignment: TabAlignment.start,
+    // Estilo por defecto de las pestañas: píldora blanca sobre pista gris
+    // (ver `SegmentedTabBar`).
+    tabBarTheme: TabBarThemeData(
+      labelColor: AppColors.text,
+      unselectedLabelColor: AppColors.textSecondary,
+      dividerColor: Colors.transparent,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicator: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        boxShadow: AppShadows.md,
+      ),
+      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+      splashFactory: NoSplash.splashFactory,
     ),
 
-    cardTheme: CardThemeData(
-      color: AppColors.background,
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColors.surface,
       surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs + 2,
-      ),
-      shape: cardShape,
+      modalBarrierColor: Color(0x660F172A),
+      showDragHandle: true,
+      dragHandleColor: AppColors.handle,
+      dragHandleSize: Size(40, 4),
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
     ),
 
     expansionTileTheme: const ExpansionTileThemeData(
-      backgroundColor: AppColors.background,
-      collapsedBackgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
+      collapsedBackgroundColor: Colors.transparent,
       iconColor: AppColors.primary,
-      collapsedIconColor: AppColors.textMuted,
+      collapsedIconColor: AppColors.outline,
       shape: Border(),
       collapsedShape: Border(),
     ),
@@ -209,38 +327,17 @@ ThemeData buildAppTheme() {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surfaceLow,
+      fillColor: AppColors.background,
       prefixIconColor: AppColors.textMuted,
       hintStyle: const TextStyle(color: AppColors.textMuted),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.md),
+      border: fieldBorder,
+      enabledBorder: fieldBorder,
+      focusedBorder: fieldBorder.copyWith(
         borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-      ),
-    ),
-
-    chipTheme: ChipThemeData(
-      backgroundColor: AppColors.surfaceMid,
-      side: BorderSide.none,
-      labelStyle: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textMuted,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
     ),
 
@@ -248,19 +345,28 @@ ThemeData buildAppTheme() {
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
+        minimumSize: const Size(0, 48),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        shape: buttonShape,
       ),
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.border),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
+        backgroundColor: AppColors.surface,
+        minimumSize: const Size(0, 48),
+        side: const BorderSide(color: AppColors.borderStrong),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        shape: buttonShape,
+      ),
+    ),
+
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        shape: buttonShape,
       ),
     ),
 
@@ -272,7 +378,7 @@ ThemeData buildAppTheme() {
       behavior: SnackBarBehavior.floating,
       backgroundColor: AppColors.text,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
     ),
   );

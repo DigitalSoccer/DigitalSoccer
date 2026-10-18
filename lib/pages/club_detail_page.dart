@@ -16,6 +16,8 @@ import '../theme/app_theme.dart';
 import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
+import '../widgets/club_header.dart';
+import '../widgets/club_tile.dart';
 import '../widgets/matchup_card.dart';
 import '../widgets/squad_table.dart';
 import 'matchup_detail_page.dart';
@@ -29,11 +31,7 @@ class ClubDetailPage extends StatefulWidget {
   /// se fija; en la app es hoy).
   final DateTime? today;
 
-  const ClubDetailPage({
-    super.key,
-    required this.club,
-    this.today,
-  });
+  const ClubDetailPage({super.key, required this.club, this.today});
 
   @override
   State<ClubDetailPage> createState() => _ClubDetailPageState();
@@ -117,20 +115,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${widget.club.name} seleccionado como Mi Club',
-        ),
-      ),
+      SnackBar(content: Text('${widget.club.name} seleccionado como Mi Club')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.club.name),
-      ),
+      appBar: AppBar(title: const Text('Ficha del club')),
       body: AsyncBody<_ClubDetailData>(
         future: _future!,
         onRetry: _retry,
@@ -140,12 +132,12 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
             child: NestedScrollView(
               headerSliverBuilder: (context, _) => [
                 SliverToBoxAdapter(
-                  child: ContentWidth(
-                    child: _ClubHeader(
-                      club: widget.club,
-                      position: data.position,
+                  child: ClubHeroHeader(
+                    club: widget.club,
+                    position: data.position,
+                    action: FavoriteStarButton(
                       isFavorite: favoriteClubId == widget.club.id,
-                      onSetFavorite: setAsMyClub,
+                      onPressed: setAsMyClub,
                     ),
                   ),
                 ),
@@ -176,105 +168,11 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
   }
 }
 
-class _ClubHeader extends StatelessWidget {
-  final Club club;
-  final StandingPosition? position;
-  final bool isFavorite;
-  final VoidCallback onSetFavorite;
-
-  const _ClubHeader({
-    required this.club,
-    required this.position,
-    required this.isFavorite,
-    required this.onSetFavorite,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final standing = position;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.md,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Ícono genérico: no representa el escudo del club.
-              const ClubAvatar(size: 56),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      club.name,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (club.field.isNotEmpty)
-                      Text(
-                        club.field,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              IconButton(
-                tooltip: isFavorite ? 'Es Mi Club' : 'Establecer como Mi Club',
-                onPressed: onSetFavorite,
-                icon: Icon(
-                  isFavorite ? Icons.star : Icons.star_border,
-                  color: isFavorite ? AppColors.favorite : AppColors.outline,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          if (standing != null)
-            Row(
-              children: [
-                Expanded(
-                  child: StatTile(
-                    label: 'Posición',
-                    value: '${standing.position}',
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: StatTile(
-                    label: 'Puntos',
-                    value: '${standing.standing.points}',
-                  ),
-                ),
-              ],
-            )
-          else
-            Text(
-              'Sin información en la tabla de posiciones.',
-              style: textTheme.bodyMedium?.copyWith(
-                color: AppColors.textMuted,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Pestañas fijas bajo el encabezado al desplazar.
+/// Pestañas segmentadas, fijas bajo el encabezado al desplazar.
 class _TabsHeader extends SliverPersistentHeaderDelegate {
   const _TabsHeader();
 
-  static const double _height = 48;
+  static const double _height = SegmentedTabBar.height + AppSpacing.lg * 2;
 
   @override
   double get minExtent => _height;
@@ -288,17 +186,15 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(
+    return const ColoredBox(
       color: AppColors.background,
-      child: const ContentWidth(
-        child: TabBar(
-          // El tema alinea las pestañas al inicio (válido solo para barras
-          // desplazables); estas dos ocupan el ancho completo.
-          tabAlignment: TabAlignment.fill,
-          tabs: [
-            Tab(text: 'Plantel'),
-            Tab(text: 'Próximas fechas'),
-          ],
+      child: ContentWidth(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.lg,
+          ),
+          child: SegmentedTabBar(labels: ['Plantel', 'Próximas fechas']),
         ),
       ),
     );
@@ -332,39 +228,52 @@ class _SquadTab extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return ListView(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        bottom: AppSpacing.xl,
-      ),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
         for (final category in categories)
           ContentWidth(
             child: Builder(
               builder: (context) {
-                final players =
-                    SquadService.playersOf(squads, club.id, category);
+                final players = SquadService.playersOf(
+                  squads,
+                  club.id,
+                  category,
+                );
 
-                return Card(
+                return SurfaceCard(
                   margin: const EdgeInsets.fromLTRB(
                     AppSpacing.lg,
-                    AppSpacing.sm,
-                    AppSpacing.lg,
                     0,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
                   ),
                   child: ExpansionTile(
-                    leading: const Icon(
-                      Icons.groups_outlined,
-                      color: AppColors.primary,
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: AppColors.surfaceMuted,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.groups_outlined,
+                        size: 20,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     title: Text(
                       category,
-                      style: textTheme.titleMedium,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     subtitle: Text(
                       players.isEmpty
                           ? 'Plantel aún no disponible'
                           : '${players.length} jugadores',
-                      style: const TextStyle(color: AppColors.textMuted),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
                     ),
                     children: [
                       if (players.isEmpty)
@@ -416,46 +325,19 @@ class _UpcomingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     // `rounds` viene de la más reciente a la más antigua.
     final upcoming = rounds.where(_isUpcoming).toList().reversed.toList();
     final shown = upcoming.isNotEmpty ? upcoming : [rounds.first];
 
     final children = <Widget>[
       if (upcoming.isEmpty)
-        ContentWidth(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              0,
-            ),
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLow,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.info_outline,
-                  size: 20,
-                  color: AppColors.textMuted,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    'Aún no hay próximas fechas cargadas. '
-                    'Se muestra la última fecha programada.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ),
-              ],
+        const ContentWidth(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: InfoBanner(
+              message:
+                  'Aún no hay próximas fechas cargadas. '
+                  'Se muestra la última fecha programada.',
             ),
           ),
         ),
@@ -467,9 +349,10 @@ class _UpcomingTab extends StatelessWidget {
       children.add(
         ContentWidth(
           child: SectionHeader(
-            ['Fecha ${round.round}', range]
-                .where((s) => s.isNotEmpty)
-                .join(' · '),
+            [
+              'Fecha ${round.round}',
+              range,
+            ].where((s) => s.isNotEmpty).join(' · '),
           ),
         ),
       );
@@ -486,19 +369,7 @@ class _UpcomingTab extends StatelessWidget {
         if (matchups.isEmpty) continue;
         plays = true;
 
-        children.add(
-          ContentWidth(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.xs,
-                AppSpacing.lg,
-                0,
-              ),
-              child: Text(dayLabel(day), style: textTheme.titleSmall),
-            ),
-          ),
-        );
+        children.add(ContentWidth(child: GroupLabel(dayLabel(day))));
 
         for (final matchup in matchups) {
           children.add(
@@ -522,24 +393,24 @@ class _UpcomingTab extends StatelessWidget {
       }
 
       if (!plays) {
-        final isBye = round.days.any(
-          (d) => d.byeClubIds.contains(club.id),
-        );
+        final isBye = round.days.any((d) => d.byeClubIds.contains(club.id));
 
         children.add(
           ContentWidth(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                0,
               ),
-              child: Text(
-                isBye
+              child: InfoBanner(
+                icon: isBye
+                    ? Icons.event_available_outlined
+                    : Icons.event_busy_outlined,
+                message: isBye
                     ? 'Libre en la fecha ${round.round}.'
                     : 'Este club no tiene partidos en la fecha cargada.',
-                style: textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textMuted,
-                ),
               ),
             ),
           ),

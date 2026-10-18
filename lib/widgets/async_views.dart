@@ -54,7 +54,7 @@ class EmptyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return _StateMessage(
       icon: icon,
-      iconColor: AppColors.primary,
+      iconColor: AppColors.textMuted,
       message: message,
     );
   }
@@ -85,7 +85,7 @@ class _StateMessage extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: const BoxDecoration(
-                color: AppColors.surfaceMid,
+                color: AppColors.surfaceMuted,
                 shape: BoxShape.circle,
               ),
               child: Icon(

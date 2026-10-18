@@ -72,7 +72,7 @@ void main() {
     );
   });
 
-  testWidgets('la app usa la paleta centralizada azul (#205375) y blanca',
+  testWidgets('la app usa los tokens centralizados (rojo #B91C1C y slate)',
       (tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -80,8 +80,10 @@ void main() {
     final context = tester.element(find.byType(Scaffold).first);
     final theme = Theme.of(context);
 
+    expect(theme.colorScheme.primary, const Color(0xFFB91C1C));
     expect(theme.colorScheme.primary, AppColors.primary);
-    expect(theme.scaffoldBackgroundColor, AppColors.background);
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFF8FAFC));
+    expect(theme.colorScheme.surface, Colors.white);
     expect(theme.colorScheme.onSurface, AppColors.text);
   });
 
@@ -95,38 +97,34 @@ void main() {
     }
 
     final pairs = {
+      'texto / tarjeta': (AppColors.text, AppColors.surface),
       'texto / fondo': (AppColors.text, AppColors.background),
-      'texto secundario / fondo': (AppColors.textMuted, AppColors.background),
-      'texto secundario / gris suave':
-          (AppColors.textMuted, AppColors.surfaceMid),
+      'etiqueta / tarjeta': (AppColors.textMuted, AppColors.surface),
+      'etiqueta / fondo y cabecera de tabla':
+          (AppColors.textMuted, AppColors.background),
+      'texto secundario / pista de pestañas y avisos':
+          (AppColors.textSecondary, AppColors.surfaceMuted),
+      'primario / tarjeta': (AppColors.primary, AppColors.surface),
       'primario / fondo': (AppColors.primary, AppColors.background),
-      'blanco / primario': (AppColors.onPrimary, AppColors.primary),
+      'blanco / botón primario': (AppColors.onPrimary, AppColors.primary),
       'texto / contenedor primario':
           (AppColors.onPrimaryContainer, AppColors.primaryContainer),
-      'primario / contenedor primario':
-          (AppColors.primary, AppColors.primaryContainer),
-      'error / fondo': (AppColors.error, AppColors.background),
-      'texto / cruce de Mi Club': (AppColors.text, AppColors.primaryContainer),
-      'texto secundario / cruce de Mi Club':
-          (AppColors.textMuted, AppColors.primaryContainer),
-      'texto secundario / cabecera de cancha y turno':
-          (AppColors.textMuted, AppColors.surfaceLow),
-      'texto suave / bloque azul de Inicio':
-          (AppColors.primaryContainer, AppColors.primary),
+      'insignia MI CLUB': (AppColors.primary, AppColors.primaryContainer),
+      'opción elegida en hoja inferior':
+          (AppColors.primary, AppColors.primarySoft),
+      'texto / fila de Mi Club': (AppColors.text, AppColors.primarySoft),
+      'texto secundario / fila de Mi Club':
+          (AppColors.textSecondary, AppColors.primarySoft),
+      'podio oro': (AppColors.goldFg, AppColors.goldBg),
+      'podio plata': (AppColors.silverFg, AppColors.silverBg),
+      'podio bronce': (AppColors.bronzeFg, AppColors.bronzeBg),
+      'error / tarjeta': (AppColors.error, AppColors.surface),
     };
 
     pairs.forEach((name, pair) {
       expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5),
           reason: name);
     });
-
-    // Título de la barra superior: texto grande y en negrita (20 px, w700),
-    // para el que WCAG AA exige 3:1.
-    expect(
-      contrast(AppColors.onPrimary, AppColors.header),
-      greaterThanOrEqualTo(3.0),
-      reason: 'título / barra superior',
-    );
   });
 
   group('Diseño adaptable (sin desbordes)', () {
@@ -562,12 +560,19 @@ void main() {
       addTearDown(tester.view.reset);
     }
 
-    Future<void> choose(WidgetTester tester, String option) async {
-      await tester.tap(
-        find.byWidgetPredicate((w) => w is DropdownButtonFormField),
-      );
+    Future<void> openSheet(WidgetTester tester) async {
+      await tester.tap(find.byType(SelectorField));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(option).last);
+    }
+
+    Future<void> choose(WidgetTester tester, String option) async {
+      await openSheet(tester);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(SheetOptionTile),
+          matching: find.text(option),
+        ),
+      );
       await tester.pumpAndSettle();
     }
 
@@ -580,17 +585,56 @@ void main() {
       expect(find.text('Chiguayante Sur'), findsOneWidget);
     });
 
+    testWidgets('el selector abre una hoja inferior con la opción actual',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await openSheet(tester);
+
+      expect(find.text('Elegir tabla'), findsOneWidget);
+      final selected = tester
+          .widgetList<SheetOptionTile>(find.byType(SheetOptionTile))
+          .where((tile) => tile.selected)
+          .map((tile) => tile.label);
+      expect(selected, ['Tabla general']);
+    });
+
+    testWidgets('resalta la fila de Mi Club', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      final star = find.byWidgetPredicate(
+        (w) => w is Icon && w.semanticLabel == 'Mi Club',
+      );
+      expect(star, findsOneWidget);
+      // La estrella está en la fila del club ("A. Prat" en la planilla).
+      expect(
+        tester.getCenter(star).dy,
+        moreOrLessEquals(
+          tester.getCenter(find.text('A. Prat')).dy,
+          epsilon: 2,
+        ),
+      );
+    });
+
     testWidgets('ofrece general, acumulados y series de menor a mayor',
         (tester) async {
       tall(tester);
       await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      final dropdown = tester.widget<DropdownButton<Object?>>(
-        find.byWidgetPredicate((w) => w is DropdownButton),
-      );
-      final labels = dropdown.items!
-          .map((item) => (item.child as Text).data)
+      await openSheet(tester);
+
+      final labels = tester
+          .widgetList<SheetOptionTile>(find.byType(SheetOptionTile))
+          .map((tile) => tile.label)
           .toList();
 
       expect(labels, [
