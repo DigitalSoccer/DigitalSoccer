@@ -9,32 +9,38 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  /// Azul claro de acento (indicadores, bordes destacados).
-  /// No usar como fondo de texto blanco: no tiene contraste suficiente.
-  static const Color brand = Color(0xFF5E8DB5);
+  // EXPERIMENTO (rama experimento/paleta-roja): paleta roja con base
+  // #F44336. Blanco sobre #F44336 tiene contraste 3.7:1: sirve solo para
+  // texto grande (título de la barra), así que el texto pequeño y los
+  // botones usan un rojo más profundo (`primary`).
 
-  /// Azul principal (#205375): barra superior, elementos interactivos y texto
-  /// destacado. Contraste ≥ 4.5:1 sobre blanco.
-  static const Color primary = Color(0xFF205375);
+  /// Rojo de identidad (#F44336): barra superior y acentos (indicadores,
+  /// bordes destacados). Solo admite texto blanco grande y en negrita.
+  static const Color brand = Color(0xFFF44336);
+  static const Color header = brand;
+
+  /// Rojo profundo para elementos interactivos, bloque de Inicio y texto
+  /// destacado. Contraste ≥ 4.5:1 con blanco.
+  static const Color primary = Color(0xFFC62828);
   static const Color onPrimary = Colors.white;
 
-  /// Azul muy suave para cabeceras, insignias y selección.
-  static const Color primaryContainer = Color(0xFFDDE9F3);
-  static const Color onPrimaryContainer = Color(0xFF0E2A3F);
+  /// Rojo muy suave para insignias, selección y texto suave sobre rojo.
+  static const Color primaryContainer = Color(0xFFFFEBEE);
+  static const Color onPrimaryContainer = Color(0xFF5F1410);
 
   static const Color background = Colors.white;
 
-  /// Grises con tinte azul para separar superficies.
-  static const Color surfaceLow = Color(0xFFF5F8FB);
-  static const Color surfaceMid = Color(0xFFECF2F7);
-  static const Color surfaceHigh = Color(0xFFE2EAF2);
+  /// Grises cálidos para separar superficies.
+  static const Color surfaceLow = Color(0xFFFAF7F7);
+  static const Color surfaceMid = Color(0xFFF4EFEF);
+  static const Color surfaceHigh = Color(0xFFECE5E5);
 
-  static const Color border = Color(0xFFD5DFE8);
-  static const Color outline = Color(0xFF8496A8);
+  static const Color border = Color(0xFFE6DCDC);
+  static const Color outline = Color(0xFF9A8E8E);
 
-  /// Texto principal y secundario (azul marino).
-  static const Color text = Color(0xFF15293A);
-  static const Color textMuted = Color(0xFF4F6275);
+  /// Texto principal y secundario (gris oscuro neutro).
+  static const Color text = Color(0xFF212121);
+  static const Color textMuted = Color(0xFF5E5757);
 
   static const Color error = Color(0xFFB4443C);
 
@@ -119,7 +125,7 @@ ThemeData buildAppTheme() {
     ),
 
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.header,
       foregroundColor: AppColors.onPrimary,
       surfaceTintColor: Colors.transparent,
       elevation: 0,

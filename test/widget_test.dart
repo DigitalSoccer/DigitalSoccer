@@ -119,6 +119,14 @@ void main() {
       expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5),
           reason: name);
     });
+
+    // Título de la barra superior: texto grande y en negrita (20 px, w700),
+    // para el que WCAG AA exige 3:1.
+    expect(
+      contrast(AppColors.onPrimary, AppColors.header),
+      greaterThanOrEqualTo(3.0),
+      reason: 'título / barra superior',
+    );
   });
 
   group('Diseño adaptable (sin desbordes)', () {
