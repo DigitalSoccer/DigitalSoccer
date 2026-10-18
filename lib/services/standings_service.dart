@@ -4,31 +4,55 @@ import '../models/standing.dart';
 import 'asset_json.dart';
 
 class StandingsService {
+  static const String generalPath = 'assets/data/standings.json';
   static const String seriesPath = 'assets/data/tablas_series.json';
 
-  static Future<List<Standing>> loadStandings([AssetBundle? bundle]) {
+  /// Tabla general (total acumulado) con su fuente y advertencia.
+  static Future<StandingsTable> loadGeneralTable([AssetBundle? bundle]) {
     return loadJsonAsset(
-      'assets/data/standings.json',
-      parseStandings,
+      generalPath,
+      (data) {
+        // Formato anterior: una lista simple, sin fuente.
+        if (data is List) {
+          return StandingsTable(standings: parseStandings(data));
+        }
+
+        final map = data as Map<String, dynamic>;
+
+        return StandingsTable(
+          standings: parseStandings(map['standings']),
+          source: map['source'] as String?,
+          note: map['note'] as String?,
+        );
+      },
       bundle: bundle,
     );
   }
 
-  /// Tablas por serie (`{"series": {"Honor": [...], ...}}`). Vacío hasta
-  /// que haya datos de cómo se reparten los puntos en cada serie.
-  static Future<Map<String, List<Standing>>> loadSeriesStandings([
-    AssetBundle? bundle,
-  ]) {
+  static Future<List<Standing>> loadStandings([AssetBundle? bundle]) async {
+    return (await loadGeneralTable(bundle)).standings;
+  }
+
+  /// Tablas por serie y subtotales:
+  /// `{"series": {"Honor": [...]}, "acumulados": {"Adultos": [...]}}`.
+  static Future<SeriesTables> loadSeriesStandings([AssetBundle? bundle]) {
     return loadJsonAsset(
       seriesPath,
       (data) {
-        final series = (data as Map<String, dynamic>)['series']
-            as Map<String, dynamic>;
+        final map = data as Map<String, dynamic>;
 
-        return {
-          for (final entry in series.entries)
-            entry.key: parseStandings(entry.value),
-        };
+        // Cada sección es opcional (p. ej. un archivo sin "acumulados").
+        Map<String, List<Standing>> tables(Object? value) => {
+              for (final entry in ((value as Map<String, dynamic>?) ??
+                      const <String, dynamic>{})
+                  .entries)
+                entry.key: parseStandings(entry.value),
+            };
+
+        return SeriesTables(
+          series: tables(map['series']),
+          totals: tables(map['acumulados']),
+        );
       },
       bundle: bundle,
     );
@@ -56,7 +80,13 @@ class StandingsService {
     return standings;
   }
 
-  /// Posición del club en una tabla ya ordenada, o `null` si no figura.
+  /// Posición en la tabla: los clubes con los mismos puntos comparten
+  /// posición (1, 1, 3…), porque no hay reglas de desempate definidas.
+  static int rankOf(List<Standing> standings, Standing standing) {
+    return 1 + standings.where((s) => s.points > standing.points).length;
+  }
+
+  /// Posición del club en una tabla, o `null` si no figura.
   static StandingPosition? positionOf(
     List<Standing> standings,
     String clubId,
@@ -66,7 +96,7 @@ class StandingsService {
     if (index < 0) return null;
 
     return StandingPosition(
-      position: index + 1,
+      position: rankOf(standings, standings[index]),
       standing: standings[index],
     );
   }

@@ -47,3 +47,27 @@ class StandingPosition {
     required this.standing,
   });
 }
+
+/// Tabla general con el origen de los datos y su advertencia oficial.
+class StandingsTable {
+  final List<Standing> standings;
+  final String? source;
+  final String? note;
+
+  StandingsTable({
+    required this.standings,
+    this.source,
+    this.note,
+  });
+}
+
+/// Tablas por serie y subtotales ("acumulados") que publica la asociación.
+class SeriesTables {
+  final Map<String, List<Standing>> series;
+  final Map<String, List<Standing>> totals;
+
+  const SeriesTables({
+    this.series = const {},
+    this.totals = const {},
+  });
+}

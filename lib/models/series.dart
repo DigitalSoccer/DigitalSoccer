@@ -9,6 +9,7 @@ const List<String> seriesOrder = [
   'Primera',
   'Senior',
   'Honor',
+  'Femenina',
 ];
 
 /// Ordena series según [seriesOrder]; las desconocidas van al final en el

@@ -80,3 +80,12 @@ Recomendación: adoptar 3.47.7 para todo el equipo, commitear esos dos archivos 
   edad**. Antes de publicar sus nombres hay que definir con Roberto y el club qué se muestra (por ejemplo,
   solo nombre e inicial del apellido, o nada en series infantiles) y contar con autorización. Con la API
   futura, esa regla puede aplicarse en el servidor según el rol de quien consulta.
+
+## DT-10 — Tabla de posiciones desde el puntaje parcial oficial 2026 (Propuesta, 2026-10-18)
+
+- La tabla general pasa a ser el **Total acumulado** de la planilla oficial de la asociación. Reemplaza
+  los puntos anteriores de `standings.json` (p. ej. Chiguayante Sur 161), cuyo origen nunca se verificó
+  y no coinciden con la planilla; siguen disponibles en el historial de Git.
+- Se cargan las tablas de las 10 series (incluida **Femenina**, que no está en el fixture) y los dos
+  subtotales. Menú: Tabla general, Acumulado infantil y juvenil, Acumulado adultos y cada serie.
+- Empates: posición compartida. Se muestra la fuente y la advertencia oficial de la planilla.

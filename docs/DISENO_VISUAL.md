@@ -103,3 +103,6 @@ Barra inferior: **Inicio · Fixture · Tabla · Clubes** (Inicio reemplaza a "Mi
 - **Menú desplegable "Tabla"** arriba (2026-10-15): "Tabla general" (por defecto) y "Serie …" para
   cada serie del fixture, de menor a mayor. Sin datos de una serie: "La tabla de <serie> aún no está
   disponible." Título de la pantalla: "Tabla de posiciones".
+- **Datos oficiales (2026-10-18):** tabla general = Total acumulado de la planilla de la asociación;
+  menú con "Acumulado infantil y juvenil", "Acumulado adultos" y las 10 series (incluida Femenina).
+  Bajo el menú, la fuente y la advertencia "sujeta a modificaciones". Empates con posición compartida.

@@ -76,9 +76,9 @@ void main() {
 
       expect(pos, isNotNull);
       expect(pos!.standing.team, 'A. Prat');
-      // Valores tal como vienen en standings.json (no calculados).
+      // Total acumulado de la planilla oficial 2026 (no calculado por la app).
       expect(pos.position, 17);
-      expect(pos.standing.points, 42);
+      expect(pos.standing.points, 110);
     });
 
     test('fecha 11: se le asignan sus 5 partidos', () {
@@ -91,21 +91,11 @@ void main() {
   });
 
   group("Bdo. O'Higgins", () {
-    test('la tabla usa apóstrofo tipográfico y el catálogo uno recto', () {
-      final club = ClubDataService.findById(clubs, 'bdo-ohiggins')!;
-      final pos = StandingsService.positionOf(standings, 'bdo-ohiggins')!;
-
-      expect(club.name, "Bdo. O'Higgins");
-      expect(pos.standing.team, 'Bdo. O’Higgins');
-      expect(club.name == pos.standing.team, isFalse,
-          reason: 'por eso la relación debe ser por id');
-    });
-
     test('se encuentra su posición y puntos por id', () {
       final pos = StandingsService.positionOf(standings, 'bdo-ohiggins')!;
 
       expect(pos.position, 5);
-      expect(pos.standing.points, 90);
+      expect(pos.standing.points, 258);
     });
 
     test('se le asignan sus partidos de la fecha cargada', () {
@@ -205,6 +195,99 @@ void main() {
       expect(magallanes.hasTurnos, isTrue);
       // La fecha 11 (formato antiguo) no tiene turnos.
       expect(round(11).days.first.fields.first.hasTurnos, isFalse);
+    });
+  });
+
+  group('Puntaje parcial 2026 (planilla de la asociación)', () {
+    late StandingsTable general;
+    late SeriesTables tables;
+
+    setUpAll(() async {
+      final bundle = realDataBundle();
+      general = await StandingsService.loadGeneralTable(bundle);
+      tables = await StandingsService.loadSeriesStandings(bundle);
+    });
+
+    int pointsOf(List<Standing> table, String clubId) =>
+        table.firstWhere((s) => s.clubId == clubId).points;
+
+    const menores = ['2° Infantil', '1° Infantil', 'Juveniles'];
+    const adultos = [
+      'S. Senior',
+      'Segunda',
+      'Primera',
+      'Senior',
+      'Honor',
+      'H. Ortiz',
+      'Femenina',
+    ];
+
+    test('tiene fuente y la advertencia oficial', () {
+      expect(general.source, contains('Caupolicán'));
+      expect(general.note, contains('sujeta a modificaciones'));
+    });
+
+    test('las 10 series y los 2 acumulados tienen a los 17 clubes', () {
+      final ids = clubs.map((c) => c.id).toSet();
+
+      expect(tables.series.keys.toSet(), {...menores, ...adultos});
+      expect(tables.totals.keys, ['Infantil y juvenil', 'Adultos']);
+
+      for (final table in [
+        general.standings,
+        ...tables.series.values,
+        ...tables.totals.values,
+      ]) {
+        expect(table.map((s) => s.clubId).toSet(), ids);
+      }
+    });
+
+    test('en cada club, las series suman sus acumulados y su total', () {
+      for (final club in clubs) {
+        final menoresSum = menores
+            .map((s) => pointsOf(tables.series[s]!, club.id))
+            .reduce((a, b) => a + b);
+        final adultosSum = adultos
+            .map((s) => pointsOf(tables.series[s]!, club.id))
+            .reduce((a, b) => a + b);
+
+        expect(
+          menoresSum,
+          pointsOf(tables.totals['Infantil y juvenil']!, club.id),
+          reason: club.name,
+        );
+        expect(
+          adultosSum,
+          pointsOf(tables.totals['Adultos']!, club.id),
+          reason: club.name,
+        );
+        expect(
+          menoresSum + adultosSum,
+          pointsOf(general.standings, club.id),
+          reason: club.name,
+        );
+      }
+    });
+
+    test('valores puntuales de la planilla', () {
+      expect(general.standings.first.team, 'Chiguayante Sur');
+      expect(general.standings.first.points, 394);
+      expect(pointsOf(tables.series['Honor']!, 'chiguayante-sur'), 47);
+      expect(pointsOf(tables.series['Femenina']!, 'san-pablo'), 48);
+      expect(pointsOf(tables.series['2° Infantil']!, 'arturo-prat'), 1);
+      expect(pointsOf(tables.totals['Adultos']!, 'arturo-prat'), 82);
+    });
+
+    test('los empates comparten posición', () {
+      // Serie Honor: varios clubes con 0 puntos.
+      final honor = tables.series['Honor']!;
+      final zeros = honor.where((s) => s.points == 0).toList();
+
+      expect(zeros.length, greaterThan(1));
+      final ranks =
+          zeros.map((s) => StandingsService.rankOf(honor, s)).toSet();
+      expect(ranks, hasLength(1));
+      expect(ranks.single, honor.length - zeros.length + 1);
     });
   });
 }

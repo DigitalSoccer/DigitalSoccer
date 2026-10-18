@@ -92,21 +92,30 @@ Formato esperado:
 - `number` y cada estadística son opcionales (sin dato: "–" y 0).
 - Más adelante estos datos vendrán de la API; la app solo cambia de dónde los lee (`SquadService`).
 
-## Tablas por serie (estructura preparada, sin datos)
+## Tabla de posiciones: puntaje parcial 2026
 
-`assets/data/tablas_series.json` está vacío (`{"series": {}}`). Formato esperado: una lista por serie,
-con los mismos campos que `standings.json`:
+La asociación entrega el **"Puntaje parcial, competencia oficial año 2026"**: por club, los puntos de
+cada serie, dos subtotales ("Puntaje acumulado" de series menores y de series adultas) y el **Total
+acumulado**. La planilla advierte: *tabla sujeta a modificaciones por diversas causas de tipo
+reglamentario*.
 
-```json
-{
-  "series": {
-    "Honor": [
-      {"clubId": "arturo-prat", "team": "Arturo Prat", "points": 12,
-       "played": 8, "goalDifference": -2}
-    ]
-  }
-}
-```
+| Archivo | Contenido |
+|---|---|
+| `assets/data/standings.json` | Tabla general = **Total acumulado**, con `source` y `note` |
+| `assets/data/tablas_series.json` | `series`: una tabla por serie; `acumulados`: "Infantil y juvenil" y "Adultos" |
 
-La clave es el nombre de la serie tal como aparece en el fixture. Si este archivo falla, la app sigue
-mostrando la tabla general.
+Equivalencia de columnas de la planilla → series de la app: Segunda Infantil → `2° Infantil`,
+Primera Infantil → `1° Infantil`, Juveniles, Super Senior → `S. Senior`, Segunda Adulta → `Segunda`,
+Primera Adulta → `Primera`, Serie Senior → `Senior`, Serie Honor → `Honor`, H.Ortiz → `H. Ortiz`,
+Femenina.
+
+- Subtotal "Infantil y juvenil" = 2° Infantil + 1° Infantil + Juveniles.
+- Subtotal "Adultos" = S. Senior + Segunda + Primera + Senior + Honor + H. Ortiz + Femenina.
+- Total = ambos subtotales. Las pruebas (`club_relations_test.dart`) verifican estas sumas para los
+  17 clubes, así un error de transcripción se detecta solo.
+- La planilla trae **dos** columnas "Puntaje acumulado" antes de Super Senior; la primera repite la
+  segunda salvo en O'Higgins (12) y El Valle (vacío), así que se usa la segunda, que sí cuadra.
+- Formato de cada fila: `{"clubId": "...", "team": "...", "points": N}`; `played` y `goalDifference`
+  son opcionales (la planilla no los trae: la app muestra "–").
+- Con puntos iguales los clubes **comparten posición** (1, 1, 3…): no hay reglas de desempate oficiales.
+- Para actualizar: transcribir la nueva planilla y regenerar ambos archivos; las pruebas validan las sumas.

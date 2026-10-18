@@ -163,7 +163,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
-        expect(stat('Puntos', '42'), findsOneWidget);
+        expect(stat('Puntos', '110'), findsOneWidget);
       });
     }
   });
@@ -177,7 +177,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(stat('Posición', '17'), findsOneWidget);
-      expect(stat('Puntos', '42'), findsOneWidget);
+      expect(stat('Puntos', '110'), findsOneWidget);
     });
 
     testWidgets("Bdo. O'Higgins muestra su posición y puntos",
@@ -189,7 +189,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(stat('Posición', '5'), findsOneWidget);
-      expect(stat('Puntos', '90'), findsOneWidget);
+      expect(stat('Puntos', '258'), findsOneWidget);
     });
 
     testWidgets('un club fuera de la tabla no inventa posición',
@@ -305,7 +305,7 @@ void main() {
       expect(find.text('¡Bienvenido!'), findsNothing);
       expect(find.text('MI CLUB'), findsOneWidget);
       expect(stat('Posición', '17'), findsOneWidget);
-      expect(stat('Puntos', '42'), findsOneWidget);
+      expect(stat('Puntos', '110'), findsOneWidget);
 
       // La elección queda guardada como club favorito.
       final prefs = await SharedPreferences.getInstance();
@@ -525,7 +525,7 @@ void main() {
       // 17 clubes × 2 columnas sin dato.
       expect(find.text('–'), findsNWidgets(34));
       // Los puntos sí son datos reales.
-      expect(find.text('161'), findsOneWidget);
+      expect(find.text('394'), findsOneWidget);
     });
 
     testWidgets('con valores los muestra con signo en DIF', (tester) async {
@@ -555,7 +555,9 @@ void main() {
     }
 
     Future<void> choose(WidgetTester tester, String option) async {
-      await tester.tap(find.byType(DropdownButtonFormField<String?>));
+      await tester.tap(
+        find.byWidgetPredicate((w) => w is DropdownButtonFormField),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text(option).last);
       await tester.pumpAndSettle();
@@ -570,14 +572,14 @@ void main() {
       expect(find.text('Chiguayante Sur'), findsOneWidget);
     });
 
-    testWidgets('ofrece las series del fixture de menor a mayor',
+    testWidgets('ofrece general, acumulados y series de menor a mayor',
         (tester) async {
       tall(tester);
       await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      final dropdown = tester.widget<DropdownButton<String?>>(
-        find.byType(DropdownButton<String?>),
+      final dropdown = tester.widget<DropdownButton<Object?>>(
+        find.byWidgetPredicate((w) => w is DropdownButton),
       );
       final labels = dropdown.items!
           .map((item) => (item.child as Text).data)
@@ -585,6 +587,8 @@ void main() {
 
       expect(labels, [
         'Tabla general',
+        'Acumulado infantil y juvenil',
+        'Acumulado adultos',
         'Serie 2° Infantil',
         'Serie 1° Infantil',
         'Serie Juveniles',
@@ -594,13 +598,43 @@ void main() {
         'Serie Primera',
         'Serie Senior',
         'Serie Honor',
+        // Femenina está en la planilla de puntaje aunque no en el fixture.
+        'Serie Femenina',
       ]);
+    });
+
+    testWidgets('las series y acumulados muestran la planilla oficial',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('sujeta a modificaciones'), findsOneWidget);
+
+      await choose(tester, 'Serie Honor');
+
+      // Honor: Chiguayante Sur primero con 47; varios clubes en 0.
+      expect(find.text('47'), findsOneWidget);
+      final chig = tester.getTopLeft(find.text('Chiguayante Sur')).dy;
+      final prat = tester.getTopLeft(find.text('A. Prat')).dy;
+      expect(chig, lessThan(prat));
+
+      await choose(tester, 'Acumulado adultos');
+
+      expect(find.text('275'), findsOneWidget);
+      expect(find.text('82'), findsWidgets);
     });
 
     testWidgets('una serie sin datos lo indica y no inventa la tabla',
         (tester) async {
       tall(tester);
-      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpWidget(wrap(
+        const StandingsPage(),
+        FakeAssetBundle({
+          ...realDataFiles(),
+          'assets/data/tablas_series.json': '{"series": {}}',
+        }),
+      ));
       await tester.pumpAndSettle();
 
       await choose(tester, 'Serie Honor');
