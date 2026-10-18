@@ -1,70 +1,23 @@
-[
-  {
-    "team": "Chiguayante Sur",
-    "points": 161
-  },
-  {
-    "team": "Union Angamos",
-    "points": 119
-  },
-  {
-    "team": "Magallanes",
-    "points": 103
-  },
-  {
-    "team": "San Pablo",
-    "points": 95
-  },
-  {
-    "team": "Bdo. O’Higgins",
-    "points": 90
-  },
-  {
-    "team": "Ferrobadminton",
-    "points": 85
-  },
-  {
-    "team": "Independiente",
-    "points": 84
-  },
-  {
-    "team": "Maestranza",
-    "points": 79
-  },
-  {
-    "team": "Nacional",
-    "points": 79
-  },
-  {
-    "team": "Jackson",
-    "points": 76
-  },
-  {
-    "team": "Leinenweber",
-    "points": 64
-  },
-  {
-    "team": "U.L. Bolzhauser",
-    "points": 63
-  },
-  {
-    "team": "El Tigre",
-    "points": 59
-  },
-  {
-    "team": "Schaub F.C.",
-    "points": 49
-  },
-  {
-    "team": "El Valle",
-    "points": 46
-  },
-  {
-    "team": "U.L. Carrera",
-    "points": 44
-  },
-  {
-    "team": "A. Prat",
-    "points": 42
-  }
-]
+{
+  "source": "Puntaje parcial, competencia oficial año 2026, Asociación de Fútbol Caupolicán de Chiguayante. Transcrito manualmente.",
+  "note": "Tabla sujeta a modificaciones por diversas causas de tipo reglamentario.",
+  "standings": [
+    {"clubId": "bdo-ohiggins", "team": "Bdo. O'Higgins", "points": 258},
+    {"clubId": "el-valle", "team": "El Valle", "points": 132},
+    {"clubId": "chiguayante-sur", "team": "Chiguayante Sur", "points": 394},
+    {"clubId": "el-tigre", "team": "El Tigre", "points": 175},
+    {"clubId": "ferrobadminton", "team": "Ferrobadminton", "points": 202},
+    {"clubId": "independiente", "team": "Independiente", "points": 225},
+    {"clubId": "jackson", "team": "Jackson", "points": 223},
+    {"clubId": "leinenweber", "team": "Leinenweber", "points": 152},
+    {"clubId": "maestranza", "team": "Maestranza", "points": 222},
+    {"clubId": "magallanes", "team": "Magallanes", "points": 334},
+    {"clubId": "nacional", "team": "Nacional", "points": 232},
+    {"clubId": "san-pablo", "team": "San Pablo", "points": 308},
+    {"clubId": "schaub-fc", "team": "Schaub F.C.", "points": 149},
+    {"clubId": "union-angamos", "team": "Union Angamos", "points": 312},
+    {"clubId": "ul-carrera", "team": "U.L. Carrera", "points": 138},
+    {"clubId": "ul-bolzhauser", "team": "U.L. Bolzhauser", "points": 169},
+    {"clubId": "arturo-prat", "team": "A. Prat", "points": 110}
+  ]
+}

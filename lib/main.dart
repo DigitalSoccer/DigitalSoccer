@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/main_page.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,10 +14,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'ANFA Chiguayante',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: MainPage(),
+      theme: buildAppTheme(),
+      home: const MainPage(),
     );
   }
 }

@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../theme/app_theme.dart';
+import 'app_components.dart';
+
+/// Una línea del fixture, como en la planilla: hora y serie de un partido.
+/// Los equipos se muestran en el encabezado del cruce (`Matchup`).
 class MatchRow extends StatefulWidget {
   final String matchId;
   final String time;
-  final String home;
-  final String away;
   final String category;
-  final String fieldName;
   final String status;
 
   const MatchRow({
     super.key,
     required this.matchId,
     required this.time,
-    required this.home,
-    required this.away,
     required this.category,
-    required this.fieldName,
     required this.status,
   });
 
@@ -37,6 +36,8 @@ class _MatchRowState extends State<MatchRow> {
   Future<void> loadFavorite() async {
     final prefs = await SharedPreferences.getInstance();
     final favs = prefs.getStringList('favorites') ?? [];
+
+    if (!mounted) return;
 
     setState(() {
       isFavorite = favs.contains(widget.matchId);
@@ -60,111 +61,81 @@ class _MatchRowState extends State<MatchRow> {
       favs,
     );
 
+    if (!mounted) return;
+
     setState(() {
       isFavorite = favs.contains(widget.matchId);
     });
   }
 
-  Color statusColor() {
-    switch (widget.status) {
-      case 'suspendido':
-        return Colors.red;
-
-      case 'reprogramado':
-        return Colors.orange;
-
-      default:
-        return Colors.green;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.xs,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              width: 6,
-              height: 70,
-              decoration: BoxDecoration(
-                color: statusColor(),
-                borderRadius:
-                BorderRadius.circular(10),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 20,
+            decoration: BoxDecoration(
+              color: MatchStatusBadge.colorFor(widget.status),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+          ),
+
+          const SizedBox(width: AppSpacing.sm),
+
+          SizedBox(
+            width: 52,
+            child: Text(
+              widget.time,
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
+          ),
 
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.time,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight:
-                      FontWeight.bold,
-                    ),
+          Expanded(
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  widget.category,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.text,
                   ),
-
-                  const SizedBox(height: 6),
-
-                  Text(
-                    '${widget.home} vs ${widget.away}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight:
-                      FontWeight.w600,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      Chip(
-                        label: Text(
-                          widget.category,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    widget.fieldName,
-                    style: TextStyle(
-                      color:
-                      Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                MatchStatusBadge(status: widget.status),
+              ],
             ),
+          ),
 
-            IconButton(
-              icon: Icon(
-                isFavorite
-                    ? Icons.star
-                    : Icons.star_border,
-                color: isFavorite
-                    ? Colors.amber
-                    : Colors.grey,
-              ),
-              onPressed: toggleFavorite,
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            tooltip: isFavorite
+                ? 'Quitar de favoritos'
+                : 'Marcar como favorito',
+            icon: Icon(
+              isFavorite
+                  ? Icons.star
+                  : Icons.star_border,
+              size: 20,
+              color: isFavorite
+                  ? AppColors.favorite
+                  : AppColors.outline,
             ),
-          ],
-        ),
+            onPressed: toggleFavorite,
+          ),
+        ],
       ),
     );
   }

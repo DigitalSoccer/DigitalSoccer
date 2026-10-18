@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'home_page.dart';
-import 'my_club_page.dart';
-import 'standings_page.dart';
+import '../widgets/app_bottom_nav.dart';
 import 'clubs_page.dart';
+import 'home_page.dart';
+import 'inicio_page.dart';
+import 'standings_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -13,19 +14,14 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0;
+  static const int fixtureIndex = 1;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const MyClubPage(),
-    const StandingsPage(),
-    const ClubsPage(),
-  ];
+  int _selectedIndex = 0;
 
   final List<String> _titles = [
     'ANFA Chiguayante',
-    'Mi Club',
-    'Tabla General',
+    'Fixture',
+    'Tabla de posiciones',
     'Clubes',
   ];
 
@@ -35,32 +31,51 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  static const int standingsIndex = 2;
+
+  Widget _page(int index) {
+    switch (index) {
+      case 0:
+        return InicioPage(
+          onOpenFixture: () => _onItemTapped(fixtureIndex),
+          onOpenStandings: () => _onItemTapped(standingsIndex),
+        );
+      case fixtureIndex:
+        return const HomePage();
+      case standingsIndex:
+        return const StandingsPage();
+      default:
+        return const ClubsPage();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-      ),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      appBar: AppBar(title: Text(_titles[_selectedIndex])),
+      body: _page(_selectedIndex),
+      bottomNavigationBar: AppBottomNav(
+        selectedIndex: _selectedIndex,
+        onSelected: _onItemTapped,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports_soccer),
+          AppNavItem(
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home_rounded,
+            label: 'Inicio',
+          ),
+          AppNavItem(
+            icon: Icons.calendar_month_outlined,
+            selectedIcon: Icons.calendar_month_rounded,
             label: 'Fixture',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: 'Mi Club',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events),
+          AppNavItem(
+            icon: Icons.format_list_numbered_rounded,
+            selectedIcon: Icons.format_list_numbered_rounded,
             label: 'Tabla',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shield),
+          AppNavItem(
+            icon: Icons.shield_outlined,
+            selectedIcon: Icons.shield_rounded,
             label: 'Clubes',
           ),
         ],

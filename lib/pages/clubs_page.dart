@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../models/club.dart';
 import '../services/club_data_service.dart';
 import '../services/club_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
+import '../widgets/async_views.dart';
+import '../widgets/club_tile.dart';
 import 'club_detail_page.dart';
 
 class ClubsPage extends StatefulWidget {
@@ -13,113 +17,89 @@ class ClubsPage extends StatefulWidget {
 }
 
 class _ClubsPageState extends State<ClubsPage> {
-  String? favoriteClub;
+  String? favoriteClubId;
+  Future<List<Club>>? _future;
 
   @override
-  void initState() {
-    super.initState();
-    loadFavoriteClub();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _future ??= _load();
   }
 
-  Future<void> loadFavoriteClub() async {
-    final club =
-    await ClubService.getFavoriteClub();
+  Future<List<Club>> _load() async {
+    final clubs = await ClubDataService.loadClubs(
+      DefaultAssetBundle.of(context),
+    );
 
+    favoriteClubId = await ClubService.getFavoriteClubId(clubs);
+
+    return clubs;
+  }
+
+  void _retry() {
     setState(() {
-      favoriteClub = club;
+      _future = _load();
     });
   }
 
-  Future<void> selectClub(String club) async {
-    await ClubService.setFavoriteClub(club);
+  Future<void> selectClub(Club club) async {
+    await ClubService.setFavoriteClubId(club.id);
 
     setState(() {
-      favoriteClub = club;
+      favoriteClubId = club.id;
     });
 
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '$club seleccionado como Mi Club',
-        ),
-      ),
+      SnackBar(content: Text('${club.name} seleccionado como Mi Club')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Club>>(
-      future: ClubDataService.loadClubs(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(),
+    return AsyncBody<List<Club>>(
+      future: _future!,
+      onRetry: _retry,
+      builder: (context, clubs) {
+        if (clubs.isEmpty) {
+          return const EmptyView(
+            icon: Icons.shield_outlined,
+            message: 'No hay clubes registrados.',
           );
         }
 
-        final clubs = snapshot.data!;
-
         return ListView.builder(
+          padding: const EdgeInsets.only(
+            top: AppSpacing.md,
+            bottom: AppSpacing.xl,
+          ),
           itemCount: clubs.length,
           itemBuilder: (context, index) {
             final club = clubs[index];
 
-            final isFavorite =
-                club.name == favoriteClub;
-
-            return Card(
-              margin:
-              const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
-              child: ListTile(
-                leading: const Icon(
-                  Icons.shield,
-                ),
-
-                title: Text(
-                  club.name,
-                  style: const TextStyle(
-                    fontWeight:
-                    FontWeight.bold,
-                  ),
-                ),
-
-                subtitle: Text(
-                  club.field.isEmpty
-                      ? 'Cancha por definir'
-                      : club.field,
-                ),
-
+            return ContentWidth(
+              child: ClubTile(
+                club: club,
                 onTap: () async {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          ClubDetailPage(
-                            club: club.name,
-                          ),
+                      builder: (_) => ClubDetailPage(club: club),
                     ),
                   );
 
-                  loadFavoriteClub();
-                },
+                  final id = await ClubService.getFavoriteClubId(clubs);
 
-                trailing: IconButton(
-                  icon: Icon(
-                    isFavorite
-                        ? Icons.star
-                        : Icons.star_border,
-                  ),
-                  color: isFavorite
-                      ? Colors.amber
-                      : Colors.grey,
-                  onPressed: () {
-                    selectClub(club.name);
-                  },
+                  if (!mounted) return;
+
+                  setState(() {
+                    favoriteClubId = id;
+                  });
+                },
+                trailing: FavoriteStarButton(
+                  isFavorite: club.id == favoriteClubId,
+                  onPressed: () => selectClub(club),
                 ),
               ),
             );
