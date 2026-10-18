@@ -367,6 +367,9 @@ class _StandingRow extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
+                  // Escudo genérico por ahora; aquí irá el de cada club.
+                  const ClubCrest(size: 22),
+                  const SizedBox(width: AppSpacing.sm),
                   Flexible(
                     child: Text(
                       standing.team,

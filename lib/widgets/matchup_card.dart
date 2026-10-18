@@ -1,28 +1,56 @@
 import 'package:flutter/material.dart';
 
 import '../models/match.dart';
-import '../pages/matchup_detail_page.dart';
 import '../theme/app_theme.dart';
 import 'app_components.dart';
 
-/// Tarjeta de un cruce en tres columnas: local, hora/estado y visita. Arriba
-/// la cancha y abajo un chip con las series en juego. Al tocarla se abre el
-/// detalle.
+/// Tarjeta de un cruce (formato de la maqueta de Inicio, usado en toda la
+/// app): día y número de fecha arriba, los dos equipos con escudo y la hora
+/// al centro; abajo, cancha y series. Al tocarla se abre el detalle.
 class MatchupCard extends StatelessWidget {
   final Matchup matchup;
+
+  /// Cruce de Mi Club: borde rojo e insignia "MI CLUB".
   final bool highlighted;
+
   final VoidCallback onTap;
+
+  /// Encabezado opcional, p. ej. "Sábado 10 oct" y "FECHA 21".
+  final String? dayLabel;
+  final String? roundLabel;
 
   const MatchupCard({
     super.key,
     required this.matchup,
     required this.highlighted,
     required this.onTap,
+    this.dayLabel,
+    this.roundLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final showHeader = dayLabel != null || roundLabel != null || highlighted;
+
+    Widget team(String name) => Expanded(
+          child: Column(
+            children: [
+              // Escudo genérico: no representa el escudo oficial del club.
+              const ClubCrest(size: 36),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        );
 
     return SurfaceCard(
       margin: const EdgeInsets.fromLTRB(
@@ -31,48 +59,61 @@ class MatchupCard extends StatelessWidget {
         AppSpacing.lg,
         0,
       ),
+      shadow: AppShadows.md,
       borderColor: highlighted ? AppColors.primary : null,
       onTap: onTap,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.lg,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 14,
-                color: AppColors.outline,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  matchup.fieldNames.join(' · '),
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMuted,
-                    fontWeight: FontWeight.w500,
-                  ),
+          if (showHeader) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(dayLabel ?? '', style: textTheme.titleMedium),
                 ),
+                if (highlighted) ...[
+                  const TagChip.myClub(),
+                  if (roundLabel != null) const SizedBox(width: AppSpacing.sm),
+                ],
+                if (roundLabel != null)
+                  Text(
+                    roundLabel!,
+                    style: AppText.eyebrow.copyWith(color: AppColors.primary),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              team(matchup.home),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                ),
+                child: _Kickoff(matchup: matchup),
               ),
-              if (highlighted) const TagChip.myClub(),
+              team(matchup.away),
             ],
           ),
-
           const SizedBox(height: AppSpacing.md),
-
-          MatchupScoreline(
-            matchup: matchup,
-            center: _Kickoff(matchup: matchup),
+          Text(
+            matchup.fieldNames.join(' · '),
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          TagChip(label: matchup.categories.join(' · ')),
+          const SizedBox(height: 2),
+          Text(
+            matchup.categories.join(' · '),
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -99,7 +140,7 @@ class _Kickoff extends StatelessWidget {
         Text(
           matchup.firstTime,
           style: const TextStyle(
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.w800,
             color: AppColors.text,
             fontFeatures: AppText.tabular,

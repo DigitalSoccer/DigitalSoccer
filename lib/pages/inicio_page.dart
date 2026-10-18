@@ -14,6 +14,7 @@ import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/club_tile.dart';
+import '../widgets/matchup_card.dart';
 import 'matchup_detail_page.dart';
 
 /// Pestaña de inicio. Sin club elegido, invita a elegir uno; con club,
@@ -313,8 +314,9 @@ class _ClubHome extends StatelessWidget {
         for (final entry in days)
           for (final matchup in entry.matchups)
             ContentWidth(
-              child: _HomeMatchCard(
+              child: MatchupCard(
                 matchup: matchup,
+                highlighted: false,
                 dayLabel: dayLabel(entry.day),
                 roundLabel: 'FECHA ${round.round}',
                 onTap: () => Navigator.push(
@@ -515,118 +517,6 @@ class _MetricCard extends StatelessWidget {
         label: label,
         value: value,
         valueColor: AppColors.primary,
-      ),
-    );
-  }
-}
-
-/// Tarjeta de un partido del club: día y número de fecha arriba, los dos
-/// equipos con escudo genérico y la hora al centro; abajo, cancha y series.
-class _HomeMatchCard extends StatelessWidget {
-  final Matchup matchup;
-  final String dayLabel;
-  final String roundLabel;
-  final VoidCallback onTap;
-
-  const _HomeMatchCard({
-    required this.matchup,
-    required this.dayLabel,
-    required this.roundLabel,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final count = matchup.entries.length;
-
-    Widget team(String name) => Expanded(
-          child: Column(
-            children: [
-              const ClubCrest(size: 36),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        );
-
-    return SurfaceCard(
-      margin: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        0,
-      ),
-      shadow: AppShadows.md,
-      onTap: onTap,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(dayLabel, style: textTheme.titleMedium)),
-              Text(
-                roundLabel,
-                style: AppText.eyebrow.copyWith(color: AppColors.primary),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              team(matchup.home),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      matchup.firstTime,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.text,
-                        fontFeatures: AppText.tabular,
-                      ),
-                    ),
-                    Text(
-                      count == 1 ? '1 partido' : '$count partidos',
-                      style: AppText.eyebrow,
-                    ),
-                  ],
-                ),
-              ),
-              team(matchup.away),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            matchup.fieldNames.join(' · '),
-            textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            matchup.categories.join(' · '),
-            textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
       ),
     );
   }

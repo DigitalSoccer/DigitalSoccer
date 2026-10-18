@@ -9,6 +9,7 @@ import 'package:anfa_chiguayante/services/club_service.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
 import 'package:anfa_chiguayante/widgets/app_components.dart';
 import 'package:anfa_chiguayante/widgets/match_row.dart';
+import 'package:anfa_chiguayante/widgets/matchup_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,7 +61,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Abre en la fecha más reciente, con el formato de la planilla.
-    expect(find.text('FECHA 21'), findsOneWidget);
+    expect(find.text('FECHA 21'), findsWidgets);
     expect(find.text('Sáb 10 – Dom 11 oct 2026'), findsOneWidget);
     expect(find.text('Sábado 10'), findsOneWidget);
     // El primer cruce del sábado (10:00) es Leinenweber vs Nacional.
@@ -387,7 +388,7 @@ void main() {
       await tester.tap(find.text('Ver fixture completo'));
       await tester.pumpAndSettle();
 
-      expect(find.text('FECHA 21'), findsOneWidget);
+      expect(find.text('FECHA 21'), findsWidgets);
     });
 
     for (final size in const [Size(320, 640), Size(1280, 800)]) {
@@ -495,20 +496,20 @@ void main() {
     testWidgets('permite volver a la fecha anterior', (tester) async {
       await pumpHome(tester);
 
-      expect(find.text('FECHA 21'), findsOneWidget);
+      expect(find.text('FECHA 21'), findsWidgets);
       expect(find.text('Fuente: planilla de la asociación'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Fecha anterior'));
       await tester.pumpAndSettle();
 
-      expect(find.text('FECHA 11'), findsOneWidget);
+      expect(find.text('FECHA 11'), findsWidgets);
       // La fecha 11 no tiene origen verificado y se avisa.
       expect(find.text('Fuente sin verificar'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Fecha siguiente'));
       await tester.pumpAndSettle();
 
-      expect(find.text('FECHA 21'), findsOneWidget);
+      expect(find.text('FECHA 21'), findsWidgets);
     });
 
     testWidgets('el detalle del club libre lo indica', (tester) async {
@@ -804,6 +805,44 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Tabla de posiciones'), findsOneWidget);
+    });
+  });
+
+  group('Formato común de tarjetas y escudos en la tabla', () {
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('el Fixture usa la tarjeta de Inicio (día, fecha, escudos)',
+        (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      // Sábado: 12 cruces, cada uno con el día en su encabezado.
+      expect(find.text('Sábado 10 oct'), findsWidgets);
+      // Dos escudos genéricos por tarjeta.
+      expect(
+        find.byType(ClubCrest),
+        findsNWidgets(2 * tester.widgetList(find.byType(MatchupCard)).length),
+      );
+      // El cruce de Mi Club lleva su insignia.
+      expect(find.text('MI CLUB'), findsOneWidget);
+    });
+
+    testWidgets('la tabla muestra un escudo junto a cada club',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ClubCrest), findsNWidgets(17));
     });
   });
 }

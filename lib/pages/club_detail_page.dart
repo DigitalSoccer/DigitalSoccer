@@ -369,14 +369,14 @@ class _UpcomingTab extends StatelessWidget {
         if (matchups.isEmpty) continue;
         plays = true;
 
-        children.add(ContentWidth(child: GroupLabel(dayLabel(day))));
-
         for (final matchup in matchups) {
           children.add(
             ContentWidth(
               child: MatchupCard(
                 matchup: matchup,
                 highlighted: false,
+                dayLabel: dayLabel(day),
+                roundLabel: 'FECHA ${round.round}',
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

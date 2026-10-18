@@ -161,3 +161,9 @@ Basado en la maqueta compartida por Diego ("Design 21"):
 - **Barra inferior propia** (`AppBottomNav`): línea roja sobre el ítem activo, ícono y etiqueta en rojo.
 - **Escudos:** `ClubCrest` es un escudo rojo **genérico**; la maqueta muestra escudos reales que no
   tenemos ni están autorizados. Es el lugar para poner el escudo de cada club cuando exista.
+- **Tarjeta de partido común (2026-10-18):** el formato de Inicio (día y "FECHA N" arriba, escudos,
+  hora al centro, cancha y series abajo) es ahora `MatchupCard` y se usa también en la pestaña
+  Fixture y en "Próximas fechas" de la ficha del club. En el Fixture, el cruce de Mi Club lleva borde
+  rojo e insignia "MI CLUB"; un partido suspendido o reprogramado muestra su estado bajo la hora.
+- **Tabla:** cada fila lleva `ClubCrest` junto al nombre (genérico por ahora; ahí irá el escudo de
+  cada club).

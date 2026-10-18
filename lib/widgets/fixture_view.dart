@@ -116,6 +116,8 @@ class FixtureView extends StatelessWidget {
         MatchupCard(
           matchup: matchup,
           highlighted: highlight != null && matchup.involves(highlight),
+          dayLabel: dayLabel(day),
+          roundLabel: roundNumber == null ? null : 'FECHA $roundNumber',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
