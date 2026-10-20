@@ -197,3 +197,22 @@ Pendiente (etapa 2, pantalla por pantalla): Inicio con chips de serie y
 tarjeta de posición, Fixture, Tabla (#/Club/Pts con fila de mi equipo),
 Clubes, Ficha y la pantalla "Elegir equipo". Los cruces de "Turno" de la
 planilla se mostrarán como **Libre**, como en el mockup.
+
+## Mockup nuevo — etapa 2: Inicio y Tabla (2026-10-20)
+
+- **Inicio** sin barra superior, como el mockup: escudo, nombre del club,
+  botones de Ajustes y de cambiar equipo; chips de serie; tarjeta roja de
+  posición (puesto en amarillo, puntos y distancia al líder y al 3°, solo
+  con puntos); una línea con el partido de la fecha (lleva al Fixture);
+  mini tabla de 3 filas con el equipo al medio; "Últimas noticias" vacío.
+  La línea dice "Tu partido · Fecha N" y no "Próximo partido", porque la
+  fecha cargada puede ya haberse jugado.
+- **Tabla** con título propio, chips y columnas #, Club, Pts (las que trae
+  la planilla). Se quitan PJ y DIF, que solo mostraban guiones; vuelven
+  cuando la ANFA entregue esos datos. Fila de mi equipo en amarillo
+  (`ownTeam`) y tocar un club abre su ficha.
+- Chips: General, series de mayor a menor y los acumulados ("Total
+  adultos", "Total infantil y juvenil"). La elección se guarda y la
+  comparten Inicio y Tabla.
+- Las tablas se leen desde `StandingsCatalog` (capa de datos), no desde
+  las pantallas.

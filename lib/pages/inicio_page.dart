@@ -8,23 +8,31 @@ import '../services/club_data_service.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/override_service.dart';
+import '../services/standings_catalog.dart';
 import '../services/standings_service.dart';
 import '../theme/app_theme.dart';
-import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/club_tile.dart';
-import '../widgets/matchup_card.dart';
-import 'matchup_detail_page.dart';
+import '../widgets/serie_chips.dart';
 
-/// Pestaña de inicio. Sin club elegido, invita a elegir uno; con club,
-/// muestra su posición y sus partidos de la fecha más reciente.
+/// Pestaña de inicio (`docs/diseno.md` 6.2). Sin club elegido, invita a
+/// elegir uno; con club, muestra su posición en la serie elegida, su
+/// partido de la fecha, una mini tabla y las últimas noticias.
 class InicioPage extends StatefulWidget {
-  /// Abren las pestañas Fixture y Tabla (las provee la navegación principal).
+  /// Abren otras pestañas y Ajustes (los provee la navegación principal).
   final VoidCallback? onOpenFixture;
   final VoidCallback? onOpenStandings;
+  final VoidCallback? onOpenNews;
+  final VoidCallback? onOpenSettings;
 
-  const InicioPage({super.key, this.onOpenFixture, this.onOpenStandings});
+  const InicioPage({
+    super.key,
+    this.onOpenFixture,
+    this.onOpenStandings,
+    this.onOpenNews,
+    this.onOpenSettings,
+  });
 
   @override
   State<InicioPage> createState() => _InicioPageState();
@@ -34,20 +42,21 @@ class _InicioData {
   final List<Club> clubs;
   final Club? club;
   final FixtureRound round;
-  final StandingPosition? position;
-  final List<Standing> standings;
+  final StandingsCatalog catalog;
 
   _InicioData({
     required this.clubs,
     required this.club,
     required this.round,
-    required this.position,
-    required this.standings,
+    required this.catalog,
   });
 }
 
 class _InicioPageState extends State<InicioPage> {
   Future<_InicioData>? _future;
+
+  /// Tabla elegida con los chips (compartida con la pestaña Tabla).
+  String? _tableKey;
 
   @override
   void didChangeDependencies() {
@@ -58,10 +67,10 @@ class _InicioPageState extends State<InicioPage> {
   Future<_InicioData> _load() async {
     final bundle = DefaultAssetBundle.of(context);
 
-    final results = await Future.wait([
+    final results = await Future.wait<Object>([
       ClubDataService.loadClubs(bundle),
       DataService.loadData(bundle),
-      StandingsService.loadStandings(bundle),
+      StandingsCatalog.load(bundle),
     ]);
 
     final clubs = results[0] as List<Club>;
@@ -69,17 +78,13 @@ class _InicioPageState extends State<InicioPage> {
       clubs,
       await ClubService.getFavoriteClubId(clubs),
     );
-
-    final standings = results[2] as List<Standing>;
+    _tableKey = await StandingsCatalog.getSelectedKey();
 
     return _InicioData(
       clubs: clubs,
       club: club,
       round: results[1] as FixtureRound,
-      position: club == null
-          ? null
-          : StandingsService.positionOf(standings, club.id),
-      standings: standings,
+      catalog: results[2] as StandingsCatalog,
     );
   }
 
@@ -95,10 +100,17 @@ class _InicioPageState extends State<InicioPage> {
     _reload();
   }
 
+  void _selectTable(String key) {
+    setState(() {
+      _tableKey = key;
+    });
+    StandingsCatalog.setSelectedKey(key);
+  }
+
   Future<void> _changeClub(_InicioData data) async {
     final chosen = await showAppBottomSheet<Club>(
       context: context,
-      title: 'Cambiar mi club',
+      title: 'Cambiar de equipo',
       initialSize: 0.8,
       builder: (context) => [
         for (final club in data.clubs)
@@ -106,10 +118,10 @@ class _InicioPageState extends State<InicioPage> {
             club: club,
             trailing: club.id == data.club?.id
                 ? Padding(
-                    padding: EdgeInsets.only(right: AppSpacing.sm),
+                    padding: const EdgeInsets.only(right: AppSpacing.sm),
                     child: Icon(
                       Icons.check_circle_rounded,
-                      color: context.colors.primary,
+                      color: context.colors.primaryText,
                     ),
                   )
                 : null,
@@ -123,24 +135,633 @@ class _InicioPageState extends State<InicioPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncBody<_InicioData>(
-      future: _future!,
-      onRetry: _reload,
-      builder: (context, data) {
-        final club = data.club;
+    return SafeArea(
+      bottom: false,
+      child: AsyncBody<_InicioData>(
+        future: _future!,
+        onRetry: _reload,
+        builder: (context, data) {
+          final club = data.club;
 
-        if (club == null) {
-          return _ChooseClub(clubs: data.clubs, onSelected: _choose);
-        }
+          if (club == null) {
+            return _ChooseClub(
+              clubs: data.clubs,
+              onSelected: _choose,
+              onOpenSettings: widget.onOpenSettings,
+            );
+          }
 
-        return _ClubHome(
-          club: club,
-          data: data,
-          onChangeClub: () => _changeClub(data),
-          onOpenFixture: widget.onOpenFixture,
-          onOpenStandings: widget.onOpenStandings,
+          final option = data.catalog.byKey(_tableKey);
+
+          return ListView(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+            children: [
+              ContentWidth(
+                child: _Header(
+                  club: club,
+                  onOpenSettings: widget.onOpenSettings,
+                  onChangeClub: () => _changeClub(data),
+                ),
+              ),
+              ContentWidth(
+                child: PillChips(
+                  options: [for (final o in data.catalog.options) o.label],
+                  selected: option.label,
+                  onSelected: (label) => _selectTable(
+                    data.catalog.options.firstWhere((o) => o.label == label).key,
+                  ),
+                ),
+              ),
+              ContentWidth(
+                child: _PositionCard(option: option, clubId: club.id),
+              ),
+              ContentWidth(
+                child: _RoundMatchCard(
+                  round: data.round,
+                  club: club,
+                  onTap: widget.onOpenFixture,
+                ),
+              ),
+              ContentWidth(
+                child: _MiniTable(
+                  option: option,
+                  clubId: club.id,
+                  onOpenStandings: widget.onOpenStandings,
+                ),
+              ),
+              ContentWidth(child: _LatestNews(onOpenNews: widget.onOpenNews)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Botón redondo de 44 con borde (ajustes, cambiar de equipo).
+class _RoundButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  const _RoundButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      style: IconButton.styleFrom(
+        fixedSize: const Size(44, 44),
+        backgroundColor: c.surface,
+        foregroundColor: c.text,
+        side: BorderSide(color: c.border),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final Club club;
+  final VoidCallback? onOpenSettings;
+  final VoidCallback onChangeClub;
+
+  const _Header({
+    required this.club,
+    required this.onOpenSettings,
+    required this.onChangeClub,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.lg,
+        AppSpacing.screen,
+        AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          ClubAvatar(size: 48, clubId: club.id),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  club.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.display(context, size: 28).copyWith(height: 1),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'ANFA Caupolicán',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.colors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _RoundButton(
+            icon: Icons.tune_rounded,
+            tooltip: 'Ajustes y apariencia',
+            onPressed: onOpenSettings,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _RoundButton(
+            icon: Icons.swap_horiz_rounded,
+            tooltip: 'Cambiar de equipo',
+            onPressed: onChangeClub,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _points(int n) => n == 1 ? '1 punto' : '$n puntos';
+
+/// Tarjeta roja de posición: puesto en amarillo, puntos y distancia al
+/// líder y al 3° (se calculan solo con los puntos).
+class _PositionCard extends StatelessWidget {
+  final TableOption option;
+  final String clubId;
+
+  const _PositionCard({required this.option, required this.clubId});
+
+  /// Las dos líneas bajo la posición.
+  static List<String> gaps(List<Standing> standings, Standing mine) {
+    final rank = StandingsService.rankOf(standings, mine);
+    final leader = standings.first.points;
+    final lines = <String>[];
+
+    if (rank == 1) {
+      final tied = standings.where((s) => s.points == leader).length > 1;
+      lines.add(tied ? 'Comparte el 1° lugar' : 'Lidera la tabla');
+    } else {
+      lines.add('A ${_points(leader - mine.points)} del líder');
+    }
+
+    if (rank > 3 && standings.length >= 3) {
+      lines.add('A ${_points(standings[2].points - mine.points)} del 3°');
+    } else {
+      final below = standings.where((s) => s.points < mine.points);
+      if (below.isNotEmpty) {
+        final next = below.first;
+        lines.add(
+          '${_points(mine.points - next.points)} sobre el '
+          '${StandingsService.rankOf(standings, next)}°',
         );
-      },
+      }
+    }
+
+    return lines;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final standings = option.standings;
+    final position = StandingsService.positionOf(standings, clubId);
+
+    final labelStyle = TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.8,
+      color: c.onPrimaryMuted,
+    );
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.lg,
+        AppSpacing.screen,
+        0,
+      ),
+      padding: const EdgeInsets.all(AppSpacing.screen),
+      decoration: BoxDecoration(
+        color: c.primary,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      child: position == null
+          ? Text(
+              'Tu equipo no aparece en la tabla ${option.label}.',
+              style: TextStyle(fontSize: 15, color: c.onPrimary),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'POSICIÓN · ${option.label.toUpperCase()}',
+                  style: labelStyle,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Wrap(
+                        spacing: AppSpacing.sm,
+                        crossAxisAlignment: WrapCrossAlignment.end,
+                        children: [
+                          Text(
+                            '${position.position}°',
+                            style: AppText.display(
+                              context,
+                              size: 76,
+                              color: c.accent,
+                            ).copyWith(height: 1),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'de ${standings.length} equipos',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: c.onPrimaryMuted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${position.standing.points}',
+                          style: AppText.display(
+                            context,
+                            size: 48,
+                            color: c.onPrimary,
+                          ).copyWith(height: 1),
+                        ),
+                        Text(
+                          'puntos',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: c.onPrimaryMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 14),
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  decoration: BoxDecoration(
+                    border: Border(top: BorderSide(color: c.onPrimaryLine)),
+                  ),
+                  child: Wrap(
+                    spacing: AppSpacing.screen,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      for (final line in gaps(standings, position.standing))
+                        Text(
+                          line,
+                          style: TextStyle(fontSize: 14, color: c.onPrimary),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+/// Una línea con el partido del club en la fecha cargada; lleva al Fixture.
+class _RoundMatchCard extends StatelessWidget {
+  final FixtureRound round;
+  final Club club;
+  final VoidCallback? onTap;
+
+  const _RoundMatchCard({
+    required this.round,
+    required this.club,
+    required this.onTap,
+  });
+
+  String _summary() {
+    for (final day in round.days) {
+      final matchups = Matchup.fromDay(
+        day,
+        map: OverrideService.apply,
+        where: (m) => m.involves(club.id),
+      );
+      if (matchups.isEmpty) continue;
+
+      final matchup = matchups.first;
+      final rival = matchup.homeId == club.id ? matchup.away : matchup.home;
+      final dayName = day.day.length > 3 ? day.day.substring(0, 3) : day.day;
+      final when = day.date == null ? dayName : '$dayName ${day.date!.day}';
+
+      return 'vs $rival · $when, ${matchup.firstTime}';
+    }
+
+    final isBye = round.days.any((d) => d.byeClubIds.contains(club.id));
+    return isBye ? 'Libre en esta fecha' : 'Sin partidos en esta fecha';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return SurfaceCard(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.md,
+        AppSpacing.screen,
+        0,
+      ),
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.calendar_month_outlined, color: c.primaryText),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TU PARTIDO · FECHA ${round.round}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.7,
+                    color: c.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _summary(),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: c.text,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: c.outline),
+        ],
+      ),
+    );
+  }
+}
+
+/// Encabezado de sección con título en Barlow Condensed y un enlace.
+class _SectionLink extends StatelessWidget {
+  final String title;
+  final String action;
+  final VoidCallback? onTap;
+  final double size;
+
+  const _SectionLink({
+    required this.title,
+    required this.action,
+    required this.onTap,
+    this.size = 24,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(title, style: AppText.display(context, size: size))),
+        if (onTap != null)
+          TextButton(
+            onPressed: onTap,
+            style: TextButton.styleFrom(
+              foregroundColor: context.colors.primaryText,
+              minimumSize: const Size(44, 44),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              textStyle: const TextStyle(
+                fontFamily: AppFonts.body,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            child: Text(action),
+          ),
+      ],
+    );
+  }
+}
+
+/// Tres filas de la tabla: el equipo del usuario al medio, con el de
+/// arriba y el de abajo. Con empates, comparten número de posición.
+class _MiniTable extends StatelessWidget {
+  final TableOption option;
+  final String clubId;
+  final VoidCallback? onOpenStandings;
+
+  const _MiniTable({
+    required this.option,
+    required this.clubId,
+    required this.onOpenStandings,
+  });
+
+  static const int rows = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final standings = option.standings;
+    final index = standings.indexWhere((s) => s.clubId == clubId);
+
+    var start = index < 0 ? 0 : index - 1;
+    start = start.clamp(0, (standings.length - rows).clamp(0, standings.length));
+    final visible = standings.skip(start).take(rows);
+
+    final headerStyle = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.5,
+      color: c.textMuted,
+    );
+
+    return SurfaceCard(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.lg,
+        AppSpacing.screen,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 14, right: 6),
+            child: _SectionLink(
+              title: 'Tabla · ${option.label}',
+              action: 'Ver completa',
+              onTap: onOpenStandings,
+              size: 22,
+            ),
+          ),
+          Container(
+            height: 28,
+            color: c.background,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                SizedBox(width: 26, child: Text('#', style: headerStyle)),
+                Expanded(child: Text('CLUB', style: headerStyle)),
+                SizedBox(
+                  width: 44,
+                  child: Text(
+                    'PTS',
+                    textAlign: TextAlign.right,
+                    style: headerStyle,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (final standing in visible)
+            _MiniRow(
+              rank: StandingsService.rankOf(standings, standing),
+              standing: standing,
+              isMine: standing.clubId == clubId,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniRow extends StatelessWidget {
+  final int rank;
+  final Standing standing;
+  final bool isMine;
+
+  const _MiniRow({
+    required this.rank,
+    required this.standing,
+    required this.isMine,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final name = ClubsScope.clubOf(context, standing.clubId)?.name ??
+        standing.team;
+
+    return Container(
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: isMine ? c.ownTeam : null,
+        border: Border(top: BorderSide(color: c.surfaceMuted)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 26,
+            child: Text(
+              '$rank',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: c.text,
+                fontFeatures: AppText.tabular,
+              ),
+            ),
+          ),
+          ClubCrest(size: 28, clubId: standing.clubId),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: isMine ? FontWeight.w700 : FontWeight.w500,
+                color: c.text,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 44,
+            child: Text(
+              '${standing.points}',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: c.text,
+                fontFeatures: AppText.tabular,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Últimas noticias: aún no hay fuente de noticias, así que se muestra el
+/// estado vacío con el enlace a la pestaña Noticias.
+class _LatestNews extends StatelessWidget {
+  final VoidCallback? onOpenNews;
+
+  const _LatestNews({required this.onOpenNews});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        AppSpacing.lg,
+        AppSpacing.screen,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SectionLink(
+            title: 'Últimas noticias',
+            action: 'Ver todas',
+            onTap: onOpenNews,
+          ),
+          SurfaceCard(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Icon(Icons.newspaper_outlined, color: c.textMuted),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'Aún no hay noticias publicadas.',
+                    style: TextStyle(fontSize: 14, color: c.textMuted),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -149,61 +770,65 @@ class _InicioPageState extends State<InicioPage> {
 class _ChooseClub extends StatelessWidget {
   final List<Club> clubs;
   final ValueChanged<Club> onSelected;
+  final VoidCallback? onOpenSettings;
 
-  const _ChooseClub({required this.clubs, required this.onSelected});
+  const _ChooseClub({
+    required this.clubs,
+    required this.onSelected,
+    required this.onOpenSettings,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final c = context.colors;
 
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: context.colors.surface,
-            border: Border(bottom: BorderSide(color: context.colors.border)),
+        ContentWidth(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              AppSpacing.lg,
+              AppSpacing.screen,
+              0,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'ANFA Chiguayante',
+                    style: AppText.display(context, size: 28),
+                  ),
+                ),
+                _RoundButton(
+                  icon: Icons.tune_rounded,
+                  tooltip: 'Ajustes y apariencia',
+                  onPressed: onOpenSettings,
+                ),
+              ],
+            ),
           ),
-          child: ContentWidth(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.md,
-                AppSpacing.xl,
-                AppSpacing.xl,
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: context.colors.primarySoft,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.sports_soccer_rounded,
-                      size: 32,
-                      color: context.colors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    '¡Bienvenido!',
-                    textAlign: TextAlign.center,
-                    style: textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Elige tu club para ver sus partidos de la fecha y su '
-                    'posición en la tabla.',
-                    textAlign: TextAlign.center,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: context.colors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+        ),
+        ContentWidth(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              AppSpacing.lg,
+              AppSpacing.screen,
+              AppSpacing.sm,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('¡Bienvenido!', style: AppText.display(context, size: 24)),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Elige tu club para ver su posición en la tabla y su '
+                  'partido de la fecha.',
+                  style: TextStyle(fontSize: 15, color: c.textSecondary),
+                ),
+              ],
             ),
           ),
         ),
@@ -222,441 +847,14 @@ class _ChooseClub extends StatelessWidget {
               child: ClubTile(
                 club: club,
                 trailing: Padding(
-                  padding: EdgeInsets.only(right: AppSpacing.sm),
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    color: context.colors.outline,
-                  ),
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: Icon(Icons.chevron_right_rounded, color: c.outline),
                 ),
                 onTap: () => onSelected(club),
               ),
             ),
         ],
       ],
-    );
-  }
-}
-
-/// Inicio con club elegido, al estilo de la maqueta: encabezado rojo con el
-/// panel "MI CLUB", tarjetas de posición y puntos montadas sobre el rojo, los
-/// partidos del club en la fecha y un resumen de la tabla.
-class _ClubHome extends StatelessWidget {
-  final Club club;
-  final _InicioData data;
-  final VoidCallback onChangeClub;
-  final VoidCallback? onOpenFixture;
-  final VoidCallback? onOpenStandings;
-
-  const _ClubHome({
-    required this.club,
-    required this.data,
-    required this.onChangeClub,
-    required this.onOpenFixture,
-    required this.onOpenStandings,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final round = data.round;
-
-    final days = [
-      for (final day in round.days)
-        (
-          day: day,
-          matchups: Matchup.fromDay(
-            day,
-            map: OverrideService.apply,
-            where: (m) => m.involves(club.id),
-          ),
-        ),
-    ];
-    final playsThisRound = days.any((d) => d.matchups.isNotEmpty);
-    final isBye = round.days.any((d) => d.byeClubIds.contains(club.id));
-    final range = roundDateRange(round);
-
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      children: [
-        _RedHeader(
-          club: club,
-          position: data.position,
-          onChangeClub: onChangeClub,
-        ),
-
-        ContentWidth(
-          child: SectionHeader(
-            ['Fecha ${round.round}', range]
-                .where((s) => s.isNotEmpty)
-                .join(' · '),
-          ),
-        ),
-
-        if (!playsThisRound)
-          ContentWidth(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
-                0,
-              ),
-              child: InfoBanner(
-                icon: isBye
-                    ? Icons.event_available_outlined
-                    : Icons.event_busy_outlined,
-                message: isBye
-                    ? 'Libre en la fecha ${round.round}.'
-                    : 'Sin partidos en la fecha ${round.round}.',
-              ),
-            ),
-          ),
-
-        for (final entry in days)
-          for (final matchup in entry.matchups)
-            ContentWidth(
-              child: MatchupCard(
-                matchup: matchup,
-                highlighted: false,
-                dayLabel: dayLabel(entry.day),
-                roundLabel: 'FECHA ${round.round}',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => MatchupDetailPage(
-                      matchup: matchup,
-                      subtitle: 'Fecha ${round.round} · ${dayLabel(entry.day)}',
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-        if (data.standings.isNotEmpty)
-          ContentWidth(
-            child: _StandingsPreview(
-              standings: data.standings,
-              clubId: club.id,
-              onOpenStandings: onOpenStandings,
-            ),
-          ),
-
-        if (onOpenFixture != null)
-          ContentWidth(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                0,
-              ),
-              child: OutlinedButton.icon(
-                onPressed: onOpenFixture,
-                icon: const Icon(Icons.calendar_month_outlined),
-                label: const Text('Ver fixture completo'),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// Encabezado rojo con el panel "MI CLUB" y, montadas sobre su borde
-/// inferior, las tarjetas de POSICIÓN y PUNTOS.
-class _RedHeader extends StatelessWidget {
-  final Club club;
-  final StandingPosition? position;
-  final VoidCallback onChangeClub;
-
-  const _RedHeader({
-    required this.club,
-    required this.position,
-    required this.onChangeClub,
-  });
-
-  /// Cuánto sobresalen las tarjetas por debajo del rojo.
-  static const double _overlap = 44;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final standing = position;
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          bottom: _overlap,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: context.colors.primary,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(AppRadius.xl),
-              ),
-            ),
-          ),
-        ),
-        ContentWidth(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.xs,
-              AppSpacing.lg,
-              0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Panel "MI CLUB".
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: context.colors.primaryDeep,
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                  ),
-                  child: Row(
-                    children: [
-                      ClubCrest(size: 52, onRed: true, clubId: club.id),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'MI CLUB',
-                              style: AppText.eyebrow(context).copyWith(
-                                color: context.colors.primaryContainer,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              club.name,
-                              style: textTheme.titleLarge?.copyWith(
-                                color: context.colors.onPrimary,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            if (club.field.isNotEmpty)
-                              Text(
-                                club.field,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: context.colors.primaryContainer,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      FilledButton.icon(
-                        onPressed: onChangeClub,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: context.colors.surface,
-                          foregroundColor: context.colors.primary,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-                        label: const Text('Cambiar'),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                if (standing != null)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MetricCard(
-                          label: 'Posición',
-                          value: '${standing.position}',
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: _MetricCard(
-                          label: 'Puntos',
-                          value: '${standing.standing.points}',
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  const SurfaceCard(
-                    shadow: AppShadows.md,
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    child: Text(
-                      'Sin información en la tabla de posiciones.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _MetricCard({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return SurfaceCard(
-      shadow: AppShadows.md,
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-      child: StatTile(
-        label: label,
-        value: value,
-        valueColor: context.colors.primary,
-      ),
-    );
-  }
-}
-
-/// Resumen de la tabla general: los tres primeros y, si está más abajo, la
-/// fila del club elegido. "Ver tabla" abre la pestaña Tabla.
-class _StandingsPreview extends StatelessWidget {
-  final List<Standing> standings;
-  final String clubId;
-  final VoidCallback? onOpenStandings;
-
-  const _StandingsPreview({
-    required this.standings,
-    required this.clubId,
-    required this.onOpenStandings,
-  });
-
-  static const int _top = 3;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final clubIndex = standings.indexWhere((s) => s.clubId == clubId);
-
-    final rows = <Widget>[
-      for (var i = 0; i < standings.length && i < _top; i++)
-        _PreviewRow(
-          rank: StandingsService.rankOf(standings, standings[i]),
-          standing: standings[i],
-          isMyClub: standings[i].clubId == clubId,
-        ),
-      if (clubIndex >= _top) ...[
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Text(
-            '···',
-            textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(color: context.colors.outline),
-          ),
-        ),
-        _PreviewRow(
-          rank: StandingsService.rankOf(standings, standings[clubIndex]),
-          standing: standings[clubIndex],
-          isMyClub: true,
-        ),
-      ],
-    ];
-
-    return SurfaceCard(
-      margin: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        0,
-      ),
-      shadow: AppShadows.md,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.md,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text('Tabla', style: textTheme.titleMedium)),
-              if (onOpenStandings != null)
-                TextButton(
-                  onPressed: onOpenStandings,
-                  child: const Text('Ver tabla'),
-                ),
-            ],
-          ),
-          ...rows,
-        ],
-      ),
-    );
-  }
-}
-
-class _PreviewRow extends StatelessWidget {
-  final int rank;
-  final Standing standing;
-  final bool isMyClub;
-
-  const _PreviewRow({
-    required this.rank,
-    required this.standing,
-    required this.isMyClub,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      margin: const EdgeInsets.only(right: AppSpacing.sm, top: 2),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: isMyClub ? context.colors.primarySoft : null,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24,
-            child: Text(
-              '$rank',
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: isMyClub ? context.colors.primary : context.colors.text,
-              ),
-            ),
-          ),
-          ClubCrest(size: 22, clubId: standing.clubId),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              standing.team,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: isMyClub ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-          ),
-          Text(
-            '${standing.points} pts',
-            style: textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              fontFeatures: AppText.tabular,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

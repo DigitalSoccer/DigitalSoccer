@@ -20,6 +20,10 @@ class _MainPageState extends State<MainPage> {
   static const int inicioIndex = 0;
   static const int fixtureIndex = 1;
   static const int standingsIndex = 2;
+  static const int newsIndex = 3;
+
+  /// Pestañas con encabezado propio (como el mockup), sin barra superior.
+  static const Set<int> selfHeaded = {inicioIndex, standingsIndex};
 
   int _selectedIndex = inicioIndex;
 
@@ -58,12 +62,14 @@ class _MainPageState extends State<MainPage> {
           key: ValueKey(_inicioVersion),
           onOpenFixture: () => _onItemTapped(fixtureIndex),
           onOpenStandings: () => _onItemTapped(standingsIndex),
+          onOpenNews: () => _onItemTapped(newsIndex),
+          onOpenSettings: _openSettings,
         );
       case fixtureIndex:
         return const HomePage();
       case standingsIndex:
         return const StandingsPage();
-      case 3:
+      case newsIndex:
         return const NewsPage();
       default:
         return const ClubsPage();
@@ -73,20 +79,9 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-        actions: [
-          if (_selectedIndex == inicioIndex)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: IconButton(
-                tooltip: 'Ajustes y apariencia',
-                icon: const Icon(Icons.tune_rounded),
-                onPressed: _openSettings,
-              ),
-            ),
-        ],
-      ),
+      appBar: selfHeaded.contains(_selectedIndex)
+          ? null
+          : AppBar(title: Text(_titles[_selectedIndex])),
       body: _page(_selectedIndex),
       bottomNavigationBar: AppBottomNav(
         selectedIndex: _selectedIndex,

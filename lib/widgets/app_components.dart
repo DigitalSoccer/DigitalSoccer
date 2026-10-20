@@ -271,7 +271,9 @@ class CircleIconButton extends StatelessWidget {
   }
 }
 
-/// Limita el ancho del contenido en pantallas anchas (escritorio/web).
+/// Limita el ancho del contenido en pantallas anchas (escritorio/web). El
+/// contenido ocupa todo el ancho disponible hasta [maxWidth], así los
+/// títulos quedan alineados a la izquierda y no centrados.
 class ContentWidth extends StatelessWidget {
   final Widget child;
   final double maxWidth;
@@ -284,7 +286,7 @@ class ContentWidth extends StatelessWidget {
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
-        child: child,
+        child: SizedBox(width: double.infinity, child: child),
       ),
     );
   }
