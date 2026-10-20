@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tabla de posiciones (oscuro)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+:root{color-scheme:dark}
+*{scrollbar-width:thin;scrollbar-color:#4A3F3E transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-thumb{background:#4A3F3E;border-radius:4px}
+*::-webkit-scrollbar-track{background:transparent}
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #14100F; color: #F4ECEA; font-family: 'Barlow', system-ui, sans-serif; overflow: hidden">
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto">
+    <div style="padding: 28px 20px 12px 20px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1">Tabla de posiciones</h1>
+      <div style="font-size: 14px; color: #B3A6A4; margin-top: 6px">Campeonato 2026 · puntos acumulados</div>
+    </div>
+
+    <div style="display: flex; gap: 8px; padding: 0 20px; overflow-x: auto">
+      <sc-for list="{{series}}" as="s" hint-placeholder-count="5">
+        <div style="flex: none; height: 44px; padding: 0 18px; display: flex; align-items: center; font-size: 15px; font-weight: 600; border-radius: 22px; background: {{s.bg}}; color: {{s.fg}}; border: 1px solid {{s.border}}">{{s.label}}</div>
+      </sc-for>
+    </div>
+
+    <div style="margin: 14px 20px 0 20px; background: #1F1918; border: 1px solid #3A302F; border-radius: 16px; overflow: hidden">
+      <div style="display: flex; align-items: center; padding: 0 10px; height: 32px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #B3A6A4; background: #2A2221">
+        <div style="width: 24px">#</div>
+        <div style="flex: 1">CLUB</div>
+        <div style="width: 48px; text-align: right">PTS</div>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+        <a href="Club-oscuro.dc.html" style="display: flex; align-items: center; padding: 0 10px; min-height: 52px; border-top: 1px solid #2A2221; background: {{r.rowBg}}">
+          <div style="width: 24px; font-size: 15px; font-weight: 700">{{r.pos}}</div>
+          <div style="flex: 1; display: flex; align-items: center; gap: 7px; min-width: 0">
+            <div style="flex: none; width: 24px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 11px; background: {{r.bg}}; color: {{r.fg}}">{{r.ini}}</div>
+            <div style="font-size: 14px; line-height: 1.15; font-weight: {{r.weight}}">{{r.name}}</div>
+          </div>
+          <div style="width: 48px; text-align: right; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums">{{r.pts}}</div>
+        </a>
+      </sc-for>
+    </div>
+
+    <div style="margin: 12px 20px 24px 20px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #B3A6A4; line-height: 1.4">
+      <div style="flex: none; width: 14px; height: 14px; border-radius: 4px; background: #3D3410; border: 1px solid #7A6A1F"></div>
+      Tu equipo. Toca un club para ver su ficha.
+    </div>
+  </div>
+
+  <div style="display: flex; height: 72px; background: #1F1918; border-top: 1px solid #3A302F; padding: 0 4px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+      <a href="{{t.href}}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 56px; color: {{t.color}}; font-weight: {{t.weight}}">
+        <div style="width: 28px; height: 3px; border-radius: 2px; background: {{t.bar}}"></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg>
+        <div style="font-size: 12px">{{t.label}}</div>
+      </a>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const K = {
+      'A. Prat': ['AP', '#0F766E', '#FFFFFF'],
+      "Bdo. O'Higgins": ['BO', '#1E40AF', '#FFFFFF'],
+      'Chiguayante Sur': ['CS', '#0E7490', '#FFFFFF'],
+      'El Tigre': ['ET', '#A16207', '#FFFFFF'],
+      'El Valle': ['EV', '#4D7C0F', '#FFFFFF'],
+      'Ferrobadminton': ['FB', '#6B7280', '#FFFFFF'],
+      'Independiente': ['IN', '#86198F', '#FFFFFF'],
+      'Jackson': ['JA', '#9A3412', '#FFFFFF'],
+      'Leinenweber': ['LE', '#BE185D', '#FFFFFF'],
+      'Maestranza': ['ME', '#3730A3', '#FFFFFF'],
+      'Magallanes': ['MG', '#166534', '#FFFFFF'],
+      'Nacional': ['NA', '#92400E', '#FFFFFF'],
+      'San Pablo': ['SP', '#0369A1', '#FFFFFF'],
+      'Shaub F.C.': ['SF', '#78716C', '#FFFFFF'],
+      'U.L. Bolzhauser': ['UB', '#7E22CE', '#FFFFFF'],
+      'U.L. Carrera': ['UC', '#475569', '#FFFFFF'],
+      'Unión Angamos': ['UA', '#B45309', '#FFFFFF']
+    };
+    const data = [
+      ['U.L. Carrera', 49],
+      ['Chiguayante Sur', 44],
+      ['Unión Angamos', 37],
+      ["Bdo. O'Higgins", 36],
+      ['El Valle', 35],
+      ['San Pablo', 35],
+      ['Magallanes', 34],
+      ['Jackson', 30],
+      ['Independiente', 28],
+      ['U.L. Bolzhauser', 28],
+      ['Nacional', 20],
+      ['El Tigre', 19],
+      ['A. Prat', 14],
+      ['Leinenweber', 10],
+      ['Ferrobadminton', 9],
+      ['Maestranza', 6],
+      ['Shaub F.C.', 6]
+    ];
+    const S = ['Honor', '1ª Adulta', '2ª Adulta', 'Senior', 'Infantil'];
+    const T = [
+      ['inicio', 'Inicio', 'Inicio-oscuro.dc.html', 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
+      ['fixture', 'Fixture', 'Fixture-oscuro.dc.html', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4'],
+      ['tabla', 'Tabla', 'Tabla-oscuro.dc.html', 'M5 20V10 M12 20V4 M19 20v-7'],
+      ['noticias', 'Noticias', 'Noticias-oscuro.dc.html', 'M5 4h12v16H7a2 2 0 0 1-2-2z M17 8h2v10a2 2 0 0 1-2 2 M8 8h6 M8 12h6 M8 16h4'],
+      ['clubes', 'Clubes', 'Clubes-oscuro.dc.html', 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z']
+    ];
+    const active = 'tabla';
+    return {
+      rows: data.map(([name, pts]) => {
+        const sel = name === "Bdo. O'Higgins";
+        const pos = data.findIndex((d) => d[1] === pts) + 1;
+        const [ini, bg, fg] = K[name];
+        return { pos, name, pts, ini, bg, fg, rowBg: sel ? '#3D3410' : '#1F1918', weight: sel ? '700' : '500' };
+      }),
+      series: S.map((label) => {
+        const sel = label === '1ª Adulta';
+        return { label, bg: sel ? '#B3202A' : '#1F1918', fg: sel ? '#FFFFFF' : '#F4ECEA', border: sel ? '#B3202A' : '#4A3F3E' };
+      }),
+      tabs: T.map(([k, label, href, d]) => ({
+        label, href, d,
+        color: k === active ? '#FF7A82' : '#B3A6A4',
+        bar: k === active ? '#FF7A82' : 'transparent',
+        weight: k === active ? '700' : '500'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

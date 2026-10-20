@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Fixture</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F3F2; color: #1A1112; font-family: 'Barlow', system-ui, sans-serif; overflow: hidden">
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto">
+    <div style="padding: 28px 20px 12px 20px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1">Fixture</h1>
+    </div>
+
+    <div style="padding: 0 20px; position: relative">
+      <label for="q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0)">Buscar club</label>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#625857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; left: 34px; top: 12px"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 0 0 0-14z M21 21l-4.5-4.5"></path></svg>
+      <input id="q" type="text" placeholder="Buscar club" style="width: 100%; height: 44px; padding: 0 14px 0 44px; font-size: 16px; color: #1A1112; background: #FFFFFF; border: 1px solid #D2C9C8; border-radius: 12px">
+    </div>
+
+    <div style="display: flex; gap: 8px; padding: 12px 20px 0 20px; overflow-x: auto">
+      <sc-for list="{{series}}" as="s" hint-placeholder-count="5">
+        <div style="flex: none; height: 44px; padding: 0 18px; display: flex; align-items: center; font-size: 15px; font-weight: 600; border-radius: 22px; background: {{s.bg}}; color: {{s.fg}}; border: 1px solid {{s.border}}">{{s.label}}</div>
+      </sc-for>
+    </div>
+
+    <div style="margin: 12px 20px 0 20px; display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 14px; height: 60px; padding: 0 6px">
+      <button type="button" aria-label="Fecha anterior" style="width: 48px; height: 48px; border: 0; border-radius: 24px; background: transparent; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+      <div style="text-align: center">
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; line-height: 1">Fecha 6</div>
+        <div style="font-size: 13px; color: #625857; margin-top: 2px">Sáb 24 – Dom 25 de octubre</div>
+      </div>
+      <button type="button" aria-label="Fecha siguiente" style="width: 48px; height: 48px; border: 0; border-radius: 24px; background: transparent; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+
+    <div style="margin: 4px 20px 0 20px; display: flex; align-items: center; justify-content: space-between; min-height: 52px">
+      <div style="font-size: 15px; font-weight: 600">Solo mis partidos</div>
+      <button type="button" role="switch" aria-checked="false" aria-label="Solo mis partidos" style="width: 52px; height: 44px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; justify-content: flex-end">
+        <div style="width: 48px; height: 28px; border-radius: 14px; background: #D2C9C8; display: flex; align-items: center; padding: 3px">
+          <div style="width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF"></div>
+        </div>
+      </button>
+    </div>
+
+    <div style="margin: 0 20px 4px 20px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; background: #F1ECEB; border-radius: 14px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B3202A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3H9z M7 5H5v16h14V5h-2 M9 12h6 M9 16h4"></path></svg>
+      <div style="flex: 1; font-size: 14px; line-height: 1.35"><b>Turno de la fecha:</b> U.L. Bolzhauser<div style="color: #625857; font-size: 13px">Descansa y anota los resultados</div></div>
+    </div>
+
+    <sc-for list="{{days}}" as="d" hint-placeholder-count="2">
+      <div style="padding: 8px 20px 0 20px">
+        <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #625857; margin-bottom: 8px">{{d.label}}</div>
+        <sc-for list="{{d.matches}}" as="m" hint-placeholder-count="3">
+          <div style="margin-bottom: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid #E5DEDD; background: {{m.bg}}">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div style="width: 58px; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; line-height: 1">{{m.time}}</div>
+              <div style="width: 1px; align-self: stretch; background: #E5DEDD"></div>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div style="width: 26px; height: 26px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; background: {{m.hBg}}; color: {{m.hFg}}">{{m.hIni}}</div>
+                  <div style="font-size: 15px; font-weight: {{m.hW}}">{{m.home}}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div style="width: 26px; height: 26px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; background: {{m.aBg}}; color: {{m.aFg}}">{{m.aIni}}</div>
+                  <div style="font-size: 15px; font-weight: {{m.aW}}">{{m.away}}</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #DAD2D1; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #625857">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#625857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z M12 12a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z"></path></svg>
+                {{m.cancha}}
+              </div>
+              <div style="font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; background: {{m.tagBg}}; color: {{m.tagFg}}">{{m.tag}}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="height: 16px"></div>
+  </div>
+
+  <div style="display: flex; height: 72px; background: #FFFFFF; border-top: 1px solid #E5DEDD; padding: 0 4px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+      <a href="{{t.href}}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 56px; color: {{t.color}}; font-weight: {{t.weight}}">
+        <div style="width: 28px; height: 3px; border-radius: 2px; background: {{t.bar}}"></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg>
+        <div style="font-size: 12px">{{t.label}}</div>
+      </a>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const K = {
+      'A. Prat': ['AP', '#0F766E', '#FFFFFF'],
+      "Bdo. O'Higgins": ['BO', '#1E40AF', '#FFFFFF'],
+      'Chiguayante Sur': ['CS', '#0E7490', '#FFFFFF'],
+      'El Tigre': ['ET', '#A16207', '#FFFFFF'],
+      'El Valle': ['EV', '#4D7C0F', '#FFFFFF'],
+      'Ferrobadminton': ['FB', '#374151', '#FFFFFF'],
+      'Independiente': ['IN', '#86198F', '#FFFFFF'],
+      'Jackson': ['JA', '#9A3412', '#FFFFFF'],
+      'Leinenweber': ['LE', '#BE185D', '#FFFFFF'],
+      'Maestranza': ['ME', '#3730A3', '#FFFFFF'],
+      'Magallanes': ['MG', '#166534', '#FFFFFF'],
+      'Nacional': ['NA', '#92400E', '#FFFFFF'],
+      'San Pablo': ['SP', '#0369A1', '#FFFFFF'],
+      'Shaub F.C.': ['SF', '#57534E', '#FFFFFF'],
+      'U.L. Bolzhauser': ['UB', '#7E22CE', '#FFFFFF'],
+      'U.L. Carrera': ['UC', '#1F2937', '#FFFFFF'],
+      'Unión Angamos': ['UA', '#B45309', '#FFFFFF']
+    };
+    const mine = "Bdo. O'Higgins";
+    const mk = (time, home, away, cancha, status) => {
+      const isMine = home === mine || away === mine;
+      const susp = status === 'susp';
+      return {
+        time, home, away, cancha,
+        hIni: K[home][0], hBg: K[home][1], hFg: K[home][2],
+        aIni: K[away][0], aBg: K[away][1], aFg: K[away][2],
+        hW: home === mine ? '700' : '500',
+        aW: away === mine ? '700' : '500',
+        bg: isMine ? '#FDF3C4' : '#FFFFFF',
+        tag: susp ? 'Suspendido' : (isMine ? 'Tu equipo' : 'Programado'),
+        tagBg: susp ? '#FDEBD9' : (isMine ? '#B3202A' : '#F1ECEB'),
+        tagFg: susp ? '#8A3A00' : (isMine ? '#FFFFFF' : '#4A3F3E')
+      };
+    };
+    const days = [
+      { label: 'Sábado 24', matches: [
+        mk('14:00', 'Magallanes', 'Nacional', 'Cancha 1'),
+        mk('14:00', 'Jackson', 'Independiente', 'Cancha 2'),
+        mk('16:00', "Bdo. O'Higgins", 'Unión Angamos', 'Cancha 1'),
+        mk('16:00', 'U.L. Carrera', 'Ferrobadminton', 'Cancha 2')
+      ] },
+      { label: 'Domingo 25', matches: [
+        mk('10:00', 'Chiguayante Sur', 'San Pablo', 'Cancha 1'),
+        mk('10:00', 'El Valle', 'A. Prat', 'Cancha 2'),
+        mk('12:00', 'El Tigre', 'Leinenweber', 'Cancha 1'),
+        mk('12:00', 'Maestranza', 'Shaub F.C.', 'Cancha 2', 'susp')
+      ] }
+    ];
+    const S = ['Honor', '1ª Adulta', '2ª Adulta', 'Senior', 'Infantil'];
+    const T = [
+      ['inicio', 'Inicio', 'Inicio.dc.html', 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
+      ['fixture', 'Fixture', 'Fixture.dc.html', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4'],
+      ['tabla', 'Tabla', 'Tabla.dc.html', 'M5 20V10 M12 20V4 M19 20v-7'],
+      ['noticias', 'Noticias', 'Noticias.dc.html', 'M5 4h12v16H7a2 2 0 0 1-2-2z M17 8h2v10a2 2 0 0 1-2 2 M8 8h6 M8 12h6 M8 16h4'],
+      ['clubes', 'Clubes', 'Clubes.dc.html', 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z']
+    ];
+    const active = 'fixture';
+    return {
+      days,
+      series: S.map((label) => {
+        const sel = label === '1ª Adulta';
+        return { label, bg: sel ? '#B3202A' : '#FFFFFF', fg: sel ? '#FFFFFF' : '#1A1112', border: sel ? '#B3202A' : '#D2C9C8' };
+      }),
+      tabs: T.map(([k, label, href, d]) => ({
+        label, href, d,
+        color: k === active ? '#B3202A' : '#625857',
+        bar: k === active ? '#B3202A' : 'transparent',
+        weight: k === active ? '700' : '500'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ficha del club (oscuro)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+:root{color-scheme:dark}
+*{scrollbar-width:thin;scrollbar-color:#4A3F3E transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-thumb{background:#4A3F3E;border-radius:4px}
+*::-webkit-scrollbar-track{background:transparent}
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #14100F; color: #F4ECEA; font-family: 'Barlow', system-ui, sans-serif; overflow: hidden">
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto">
+    <div style="padding: 16px 12px 0 12px">
+      <a href="Clubes-oscuro.dc.html" aria-label="Volver a clubes" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F4ECEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; padding: 0 20px">
+      <div style="width: 92px; height: 92px; border-radius: 46px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 38px; background: #1E40AF; color: #FFFFFF">BO</div>
+      <h1 style="margin: 12px 0 0 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1">Bdo. O'Higgins</h1>
+      <div style="font-size: 14px; color: #B3A6A4; margin-top: 4px">ANFA Caupolicán · Chiguayante</div>
+    </div>
+
+    <div style="display: flex; gap: 8px; padding: 16px 20px 0 20px; overflow-x: auto">
+      <sc-for list="{{series}}" as="s" hint-placeholder-count="5">
+        <div style="flex: none; height: 44px; padding: 0 18px; display: flex; align-items: center; font-size: 15px; font-weight: 600; border-radius: 22px; background: {{s.bg}}; color: {{s.fg}}; border: 1px solid {{s.border}}">{{s.label}}</div>
+      </sc-for>
+    </div>
+
+    <div style="margin: 16px 20px 0 20px; display: flex; gap: 10px">
+      <div style="flex: 1; padding: 12px 14px; background: #B3202A; color: #FFFFFF; border-radius: 14px">
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #F8D4D6">Posición</div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1.1; color: #F5C400">4°</div>
+      </div>
+      <div style="flex: 1; padding: 12px 14px; background: #1F1918; border: 1px solid #3A302F; border-radius: 14px">
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #B3A6A4">Puntos</div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1.1">36</div>
+      </div>
+      <div style="flex: 1; padding: 12px 14px; background: #1F1918; border: 1px solid #3A302F; border-radius: 14px">
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #B3A6A4">Del líder</div>
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1.1">−13</div>
+      </div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700">Próximos partidos</div>
+    <div style="margin: 8px 20px 0 20px; background: #1F1918; border: 1px solid #3A302F; border-radius: 16px; overflow: hidden">
+      <sc-for list="{{games}}" as="g" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; border-bottom: 1px solid #2A2221">
+          <div style="width: 54px; text-align: center">
+            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #B3A6A4">{{g.dow}}</div>
+            <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; line-height: 1">{{g.day}}</div>
+          </div>
+          <div style="flex: 1">
+            <div style="font-size: 15px; font-weight: 700">vs {{g.rival}}</div>
+            <div style="font-size: 13px; color: #B3A6A4; margin-top: 2px">{{g.detail}}</div>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; background: #2A2221; color: #D8CCCA">{{g.fecha}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700">Plantel · 1ª Adulta</div>
+    <div style="margin: 8px 20px 24px 20px; background: #1F1918; border: 1px solid #3A302F; border-radius: 16px; overflow: hidden">
+      <sc-for list="{{players}}" as="p" hint-placeholder-count="6">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 14px; border-bottom: 1px solid #2A2221">
+          <div style="width: 32px; height: 32px; border-radius: 16px; background: #2A2221; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px">{{p.num}}</div>
+          <div style="flex: 1; font-size: 15px; font-weight: 600">[Nombre jugador]</div>
+          <div style="font-size: 13px; color: #B3A6A4">{{p.pos}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: flex; height: 72px; background: #1F1918; border-top: 1px solid #3A302F; padding: 0 4px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+      <a href="{{t.href}}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 56px; color: {{t.color}}; font-weight: {{t.weight}}">
+        <div style="width: 28px; height: 3px; border-radius: 2px; background: {{t.bar}}"></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg>
+        <div style="font-size: 12px">{{t.label}}</div>
+      </a>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = ['Honor', '1ª Adulta', '2ª Adulta', 'Senior', 'Infantil'];
+    const games = [
+      { dow: 'Sáb', day: '24', rival: 'Unión Angamos', detail: '16:00 · Cancha 1', fecha: 'Fecha 6' },
+      { dow: 'Sáb', day: '31', rival: 'Magallanes', detail: 'Horario por confirmar', fecha: 'Fecha 7' }
+    ];
+    const players = [
+      { num: '1', pos: 'Arquero' },
+      { num: '4', pos: 'Defensa' },
+      { num: '6', pos: 'Defensa' },
+      { num: '8', pos: 'Mediocampista' },
+      { num: '10', pos: 'Mediocampista' },
+      { num: '9', pos: 'Delantero' }
+    ];
+    const T = [
+      ['inicio', 'Inicio', 'Inicio-oscuro.dc.html', 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
+      ['fixture', 'Fixture', 'Fixture-oscuro.dc.html', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4'],
+      ['tabla', 'Tabla', 'Tabla-oscuro.dc.html', 'M5 20V10 M12 20V4 M19 20v-7'],
+      ['noticias', 'Noticias', 'Noticias-oscuro.dc.html', 'M5 4h12v16H7a2 2 0 0 1-2-2z M17 8h2v10a2 2 0 0 1-2 2 M8 8h6 M8 12h6 M8 16h4'],
+      ['clubes', 'Clubes', 'Clubes-oscuro.dc.html', 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z']
+    ];
+    const active = 'clubes';
+    return {
+      games,
+      players,
+      series: S.map((label) => {
+        const sel = label === '1ª Adulta';
+        return { label, bg: sel ? '#B3202A' : '#1F1918', fg: sel ? '#FFFFFF' : '#F4ECEA', border: sel ? '#B3202A' : '#4A3F3E' };
+      }),
+      tabs: T.map(([k, label, href, d]) => ({
+        label, href, d,
+        color: k === active ? '#FF7A82' : '#B3A6A4',
+        bar: k === active ? '#FF7A82' : 'transparent',
+        weight: k === active ? '700' : '500'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-20T14:55:00Z" },
+  "title": "App ANFA Caupolicán",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 844, "title": "1 · Elegir equipo", "is_interactive": true },
+    "Inicio.dc.html": { "x": 470, "y": 0, "w": 390, "h": 844, "title": "2 · Inicio", "is_interactive": true },
+    "Fixture.dc.html": { "x": 940, "y": 0, "w": 390, "h": 844, "title": "3 · Fixture", "is_interactive": true },
+    "Tabla.dc.html": { "x": 1410, "y": 0, "w": 390, "h": 844, "title": "4 · Tabla", "is_interactive": true },
+    "Noticias.dc.html": { "x": 1880, "y": 0, "w": 390, "h": 844, "title": "5 · Noticias", "is_interactive": true },
+    "Clubes.dc.html": { "x": 2350, "y": 0, "w": 390, "h": 844, "title": "6 · Clubes", "is_interactive": true },
+    "Club.dc.html": { "x": 2820, "y": 0, "w": 390, "h": 844, "title": "7 · Ficha del club", "is_interactive": true },
+    "Admin.dc.html": { "x": 3290, "y": 0, "w": 390, "h": 844, "title": "8 · Panel directiva", "is_interactive": true },
+    "Main-oscuro.dc.html": { "x": 0, "y": 1300, "w": 390, "h": 844, "title": "1 · Elegir equipo (oscuro)", "is_interactive": true },
+    "Inicio-oscuro.dc.html": { "x": 470, "y": 1300, "w": 390, "h": 844, "title": "2 · Inicio (oscuro)", "is_interactive": true },
+    "Fixture-oscuro.dc.html": { "x": 940, "y": 1300, "w": 390, "h": 844, "title": "3 · Fixture (oscuro)", "is_interactive": true },
+    "Tabla-oscuro.dc.html": { "x": 1410, "y": 1300, "w": 390, "h": 844, "title": "4 · Tabla (oscuro)", "is_interactive": true },
+    "Noticias-oscuro.dc.html": { "x": 1880, "y": 1300, "w": 390, "h": 844, "title": "5 · Noticias (oscuro)", "is_interactive": true },
+    "Clubes-oscuro.dc.html": { "x": 2350, "y": 1300, "w": 390, "h": 844, "title": "6 · Clubes (oscuro)", "is_interactive": true },
+    "Club-oscuro.dc.html": { "x": 2820, "y": 1300, "w": 390, "h": 844, "title": "7 · Ficha del club (oscuro)", "is_interactive": true },
+    "Admin-oscuro.dc.html": { "x": 3290, "y": 1300, "w": 390, "h": 844, "title": "8 · Panel del turno (oscuro)", "is_interactive": true },
+    "Ajustes.dc.html": { "x": 3760, "y": 0, "w": 390, "h": 844, "title": "9 · Ajustes", "is_interactive": true },
+    "Ajustes-oscuro.dc.html": { "x": 3760, "y": 1300, "w": 390, "h": 844, "title": "9 · Ajustes (oscuro)", "is_interactive": true }
+  },
+  "order": [
+    "Main.dc.html",
+    "Inicio.dc.html",
+    "Fixture.dc.html",
+    "Tabla.dc.html",
+    "Noticias.dc.html",
+    "Clubes.dc.html",
+    "Club.dc.html",
+    "Admin.dc.html",
+    "Main-oscuro.dc.html",
+    "Inicio-oscuro.dc.html",
+    "Fixture-oscuro.dc.html",
+    "Tabla-oscuro.dc.html",
+    "Noticias-oscuro.dc.html",
+    "Clubes-oscuro.dc.html",
+    "Club-oscuro.dc.html",
+    "Admin-oscuro.dc.html",
+    "Ajustes.dc.html",
+    "Ajustes-oscuro.dc.html"
+  ],
+  "notes": {
+    "titulo": { "x": 0, "y": -300, "text": "App ANFA Caupolicán · Versión clara", "kind": "title1", "maxW": 4150 },
+    "titulo2": { "x": 0, "y": 1000, "text": "Versión oscura, para comparar", "kind": "title1", "maxW": 4150 },
+    "aviso": { "x": 0, "y": -130, "w": 520, "maxH": 80, "text": "Datos reales: los 17 clubes y los puntos de cada serie. De ejemplo: fixture, horarios, canchas, noticias y plantel.", "size": "m", "fill": "orange" }
+  },
+  "designSystems": []
+}

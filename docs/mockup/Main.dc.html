@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Elegir equipo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F3F2; color: #1A1112; font-family: 'Barlow', system-ui, sans-serif; overflow: hidden">
+  <div style="padding: 36px 20px 0 20px">
+    <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #B3202A">ANFA Caupolicán · Chiguayante</div>
+    <h1 style="margin: 6px 0 0 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1.05; font-weight: 700">¿Cuál es tu equipo?</h1>
+    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.4; color: #625857">Elige tu club y tu serie. Puedes cambiarlo cuando quieras y seguir más de un equipo.</p>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px; position: relative">
+    <label for="q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0)">Buscar club</label>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#625857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; left: 34px; top: 32px"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 0 0 0-14z M21 21l-4.5-4.5"></path></svg>
+    <input id="q" type="text" placeholder="Buscar club" style="width: 100%; height: 48px; padding: 0 14px 0 44px; font-size: 16px; color: #1A1112; background: #FFFFFF; border: 1px solid #D2C9C8; border-radius: 12px">
+  </div>
+
+  <div style="margin: 12px 20px 0 20px; height: 280px; overflow-y: auto; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 14px">
+    <sc-for list="{{clubs}}" as="c" hint-placeholder-count="5">
+      <div style="display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 14px; border-bottom: 1px solid #F1ECEB; background: {{c.rowBg}}">
+        <div style="width: 36px; height: 36px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; background: {{c.bg}}; color: {{c.fg}}">{{c.ini}}</div>
+        <div style="flex: 1; font-size: 16px; font-weight: {{c.weight}}">{{c.name}}</div>
+        <sc-if value="{{c.sel}}" hint-placeholder-val="{{ false }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B3202A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Seleccionado" role="img"><path d="M5 12l5 5 9-10"></path></svg>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #625857">Serie</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px">
+      <sc-for list="{{series}}" as="s" hint-placeholder-count="5">
+        <div style="height: 44px; padding: 0 18px; display: flex; align-items: center; font-size: 15px; font-weight: 600; border-radius: 22px; background: {{s.bg}}; color: {{s.fg}}; border: 1px solid {{s.border}}">{{s.label}}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex: 1"></div>
+
+  <div style="padding: 0 20px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <a href="Inicio.dc.html" style="width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; background: #B3202A; color: #FFFFFF; font-size: 17px; font-weight: 700; border-radius: 14px">Continuar</a>
+    <a href="Inicio.dc.html" style="height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600; color: #B3202A; text-decoration: underline">Solo quiero mirar</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const C = [
+      ['AP', 'A. Prat', '#0F766E', '#FFFFFF'],
+      ['BO', "Bdo. O'Higgins", '#1E40AF', '#FFFFFF'],
+      ['CS', 'Chiguayante Sur', '#0E7490', '#FFFFFF'],
+      ['ET', 'El Tigre', '#A16207', '#FFFFFF'],
+      ['EV', 'El Valle', '#4D7C0F', '#FFFFFF'],
+      ['FB', 'Ferrobadminton', '#374151', '#FFFFFF'],
+      ['IN', 'Independiente', '#86198F', '#FFFFFF'],
+      ['JA', 'Jackson', '#9A3412', '#FFFFFF'],
+      ['LE', 'Leinenweber', '#BE185D', '#FFFFFF'],
+      ['ME', 'Maestranza', '#3730A3', '#FFFFFF'],
+      ['MG', 'Magallanes', '#166534', '#FFFFFF'],
+      ['NA', 'Nacional', '#92400E', '#FFFFFF'],
+      ['SP', 'San Pablo', '#0369A1', '#FFFFFF'],
+      ['SF', 'Shaub F.C.', '#57534E', '#FFFFFF'],
+      ['UB', 'U.L. Bolzhauser', '#7E22CE', '#FFFFFF'],
+      ['UC', 'U.L. Carrera', '#1F2937', '#FFFFFF'],
+      ['UA', 'Unión Angamos', '#B45309', '#FFFFFF']
+    ];
+    const S = ['Honor', '1ª Adulta', '2ª Adulta', 'Senior', 'Infantil'];
+    return {
+      clubs: C.map(([ini, name, bg, fg]) => {
+        const sel = name === "Bdo. O'Higgins";
+        return { ini, name, bg, fg, sel, rowBg: sel ? '#FBE9EA' : '#FFFFFF', weight: sel ? '700' : '500' };
+      }),
+      series: S.map((label) => {
+        const sel = label === '1ª Adulta';
+        return { label, bg: sel ? '#B3202A' : '#FFFFFF', fg: sel ? '#FFFFFF' : '#1A1112', border: sel ? '#B3202A' : '#D2C9C8' };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

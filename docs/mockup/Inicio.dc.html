@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inicio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F3F2; color: #1A1112; font-family: 'Barlow', system-ui, sans-serif; overflow: hidden">
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 28px 20px 12px 20px">
+      <div style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; background: #1E40AF; color: #FFFFFF">BO</div>
+      <div style="flex: 1">
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; line-height: 1">Bdo. O'Higgins</div>
+        <div style="font-size: 13px; color: #625857; margin-top: 3px">ANFA Caupolicán</div>
+      </div>
+      <a href="Ajustes.dc.html" aria-label="Ajustes y apariencia" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 1px solid #E5DEDD">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10 M18 6h2 M4 12h4 M12 12h8 M4 18h12 M20 18h0 M16 4v4 M10 10v4 M18 16v4"></path></svg>
+      </a>
+      <a href="Main.dc.html" aria-label="Cambiar de equipo" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 1px solid #E5DEDD">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4L3 8l4 4 M3 8h14 M17 20l4-4-4-4 M21 16H7"></path></svg>
+      </a>
+    </div>
+
+    <div style="display: flex; gap: 8px; padding: 0 20px; overflow-x: auto">
+      <sc-for list="{{series}}" as="s" hint-placeholder-count="5">
+        <div style="flex: none; height: 44px; padding: 0 18px; display: flex; align-items: center; font-size: 15px; font-weight: 600; border-radius: 22px; background: {{s.bg}}; color: {{s.fg}}; border: 1px solid {{s.border}}">{{s.label}}</div>
+      </sc-for>
+    </div>
+
+    <div style="margin: 16px 20px 0 20px; padding: 20px; border-radius: 20px; background: #B3202A; color: #FFFFFF">
+      <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #F8D4D6">Posición · 1ª Adulta</div>
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 4px">
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 76px; font-weight: 700; line-height: 1; color: #F5C400">4°</div>
+          <div style="font-size: 15px; color: #F8D4D6">de 17 equipos</div>
+        </div>
+        <div style="text-align: right">
+          <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 48px; font-weight: 700; line-height: 1">36</div>
+          <div style="font-size: 13px; color: #F8D4D6">puntos</div>
+        </div>
+      </div>
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #D0505A; display: flex; gap: 20px; font-size: 14px; color: #FDECEC">
+        <div>A <b>13</b> puntos del líder</div><div>A <b>1</b> punto del 3°</div>
+      </div>
+    </div>
+
+    <a href="Fixture.dc.html" style="margin: 12px 20px 0 20px; min-height: 64px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 14px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B3202A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4"></path></svg>
+      <div style="flex: 1">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #625857">Próximo partido</div>
+        <div style="font-size: 15px; font-weight: 600; margin-top: 2px">vs Unión Angamos · Sáb 24, 16:00</div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#625857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+    </a>
+
+    <div style="margin: 16px 20px 0 20px; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 16px; overflow: hidden">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 14px; min-height: 48px">
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700">Tabla · 1ª Adulta</div>
+        <a href="Tabla.dc.html" style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; font-size: 14px; font-weight: 700; color: #B3202A">Ver completa</a>
+      </div>
+      <div style="display: flex; align-items: center; padding: 0 14px; height: 28px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #625857; background: #F6F3F2">
+        <div style="width: 26px">#</div><div style="flex: 1">CLUB</div><div style="width: 44px; text-align: right">PTS</div>
+      </div>
+      <sc-for list="{{mini}}" as="r" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; padding: 0 14px; height: 52px; border-top: 1px solid #F1ECEB; background: {{r.rowBg}}">
+          <div style="width: 26px; font-size: 15px; font-weight: 700">{{r.pos}}</div>
+          <div style="flex: 1; display: flex; align-items: center; gap: 10px">
+            <div style="width: 28px; height: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; background: {{r.bg}}; color: {{r.fg}}">{{r.ini}}</div>
+            <div style="font-size: 15px; font-weight: {{r.weight}}">{{r.name}}</div>
+          </div>
+          <div style="width: 44px; text-align: right; font-size: 16px; font-weight: 700">{{r.pts}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin: 16px 20px 0 20px">
+      <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700">Últimas noticias</div>
+      <a href="Noticias.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 700; color: #B3202A">Ver todas</a>
+    </div>
+
+    <a href="Noticias.dc.html" style="margin: 0 20px; padding: 14px; display: block; background: #FDEBD9; border-radius: 16px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8A3A00">Aviso · Fijado</div>
+      <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; margin-top: 4px">Fecha 6: Maestranza vs Shaub F.C., suspendido</div>
+      <div style="font-size: 14px; line-height: 1.4; color: #5A3A1F; margin-top: 4px">La directiva informará la nueva fecha por este medio.</div>
+    </a>
+
+    <a href="Noticias.dc.html" style="margin: 10px 20px 24px 20px; padding: 14px; display: block; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 16px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B3202A">Resumen · Fecha 5</div>
+      <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; margin-top: 4px">U.L. Carrera lidera la Primera Adulta</div>
+      <div style="font-size: 14px; line-height: 1.4; color: #625857; margin-top: 4px">Suma 49 puntos, 5 más que Chiguayante Sur. Bdo. O'Higgins es cuarto y el sábado juega contra el tercero.</div>
+    </a>
+  </div>
+
+  <div style="display: flex; height: 72px; background: #FFFFFF; border-top: 1px solid #E5DEDD; padding: 0 4px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+      <a href="{{t.href}}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 56px; color: {{t.color}}; font-weight: {{t.weight}}">
+        <div style="width: 28px; height: 3px; border-radius: 2px; background: {{t.bar}}"></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg>
+        <div style="font-size: 12px">{{t.label}}</div>
+      </a>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const K = {
+      'Unión Angamos': ['UA', '#B45309', '#FFFFFF'],
+      "Bdo. O'Higgins": ['BO', '#1E40AF', '#FFFFFF'],
+      'El Valle': ['EV', '#4D7C0F', '#FFFFFF']
+    };
+    const rows = [
+      [3, 'Unión Angamos', 37],
+      [4, "Bdo. O'Higgins", 36],
+      [5, 'El Valle', 35]
+    ];
+    const S = ['Honor', '1ª Adulta', '2ª Adulta', 'Senior', 'Infantil'];
+    const T = [
+      ['inicio', 'Inicio', 'Inicio.dc.html', 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
+      ['fixture', 'Fixture', 'Fixture.dc.html', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4'],
+      ['tabla', 'Tabla', 'Tabla.dc.html', 'M5 20V10 M12 20V4 M19 20v-7'],
+      ['noticias', 'Noticias', 'Noticias.dc.html', 'M5 4h12v16H7a2 2 0 0 1-2-2z M17 8h2v10a2 2 0 0 1-2 2 M8 8h6 M8 12h6 M8 16h4'],
+      ['clubes', 'Clubes', 'Clubes.dc.html', 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z']
+    ];
+    const active = 'inicio';
+    return {
+      series: S.map((label) => {
+        const sel = label === '1ª Adulta';
+        return { label, bg: sel ? '#B3202A' : '#FFFFFF', fg: sel ? '#FFFFFF' : '#1A1112', border: sel ? '#B3202A' : '#D2C9C8' };
+      }),
+      mini: rows.map(([pos, name, pts]) => {
+        const sel = name === "Bdo. O'Higgins";
+        const [ini, bg, fg] = K[name];
+        return { pos, name, pts, ini, bg, fg, rowBg: sel ? '#FDF3C4' : '#FFFFFF', weight: sel ? '700' : '500' };
+      }),
+      tabs: T.map(([k, label, href, d]) => ({
+        label, href, d,
+        color: k === active ? '#B3202A' : '#625857',
+        bar: k === active ? '#B3202A' : 'transparent',
+        weight: k === active ? '700' : '500'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

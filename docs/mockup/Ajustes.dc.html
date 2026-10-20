@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ajustes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F3F2; color: #1A1112; font-family: 'Barlow', system-ui, sans-serif; overflow: hidden">
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto">
+    <div style="padding: 16px 12px 0 12px">
+      <a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </a>
+    </div>
+    <div style="padding: 4px 20px 0 20px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; line-height: 1">Ajustes</h1>
+    </div>
+
+    <div style="padding: 24px 20px 0 20px">
+      <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #625857">Apariencia</div>
+      <div style="font-size: 14px; color: #625857; margin-top: 4px">Elige cómo quieres ver la app.</div>
+
+      <div style="margin-top: 12px; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 16px; overflow: hidden">
+        <button type="button" role="radio" aria-checked="{{autoChecked}}" onClick="{{setAuto}}" style="width: 100%; min-height: 72px; padding: 0 14px; display: flex; align-items: center; gap: 14px; border: 0; border-bottom: 1px solid #F1ECEB; background: {{autoBg}}; text-align: left; color: #1A1112">
+          <div style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: #F1ECEB; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z M11 18h2"></path></svg>
+          </div>
+          <div style="flex: 1">
+            <div style="font-size: 16px; font-weight: 700">Automático</div>
+            <div style="font-size: 13px; color: #625857; margin-top: 2px">Sigue el modo de tu teléfono</div>
+          </div>
+          <div style="flex: none; width: 24px; height: 24px; border-radius: 12px; border: 2px solid {{autoRing}}; display: flex; align-items: center; justify-content: center">
+            <div style="width: 12px; height: 12px; border-radius: 6px; background: {{autoDot}}"></div>
+          </div>
+        </button>
+
+        <button type="button" role="radio" aria-checked="{{lightChecked}}" onClick="{{setLight}}" style="width: 100%; min-height: 72px; padding: 0 14px; display: flex; align-items: center; gap: 14px; border: 0; border-bottom: 1px solid #F1ECEB; background: {{lightBg}}; text-align: left; color: #1A1112">
+          <div style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: #F1ECEB; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4"></path></svg>
+          </div>
+          <div style="flex: 1">
+            <div style="font-size: 16px; font-weight: 700">Claro</div>
+            <div style="font-size: 13px; color: #625857; margin-top: 2px">Fondo claro, ideal de día y al sol</div>
+          </div>
+          <div style="flex: none; width: 24px; height: 24px; border-radius: 12px; border: 2px solid {{lightRing}}; display: flex; align-items: center; justify-content: center">
+            <div style="width: 12px; height: 12px; border-radius: 6px; background: {{lightDot}}"></div>
+          </div>
+        </button>
+
+        <a href="Ajustes-oscuro.dc.html" role="radio" aria-checked="false" style="width: 100%; min-height: 72px; padding: 0 14px; display: flex; align-items: center; gap: 14px; background: #FFFFFF; color: #1A1112">
+          <div style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: #F1ECEB; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1112" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+          </div>
+          <div style="flex: 1">
+            <div style="font-size: 16px; font-weight: 700">Oscuro</div>
+            <div style="font-size: 13px; color: #625857; margin-top: 2px">Fondo oscuro, más cómodo de noche</div>
+          </div>
+          <div style="flex: none; width: 24px; height: 24px; border-radius: 12px; border: 2px solid #D2C9C8"></div>
+        </a>
+      </div>
+      <div style="margin-top: 10px; font-size: 13px; line-height: 1.4; color: #625857">Tu elección se guarda en este teléfono.</div>
+    </div>
+
+    <div style="padding: 24px 20px 24px 20px">
+      <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #625857">Mi equipo</div>
+      <a href="Main.dc.html" style="margin-top: 12px; min-height: 72px; padding: 0 14px; display: flex; align-items: center; gap: 14px; background: #FFFFFF; border: 1px solid #E5DEDD; border-radius: 16px">
+        <div style="flex: none; width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; background: #1E40AF; color: #FFFFFF">BO</div>
+        <div style="flex: 1">
+          <div style="font-size: 16px; font-weight: 700">Bdo. O'Higgins</div>
+          <div style="font-size: 13px; color: #625857; margin-top: 2px">1ª Adulta · Cambiar</div>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#625857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { mode: 'light' };
+  renderVals() {
+    const m = this.state.mode || 'light';
+    const on = (k) => m === k;
+    return {
+      autoChecked: on('auto'),
+      autoBg: on('auto') ? '#FBE9EA' : '#FFFFFF',
+      autoRing: on('auto') ? '#B3202A' : '#D2C9C8',
+      autoDot: on('auto') ? '#B3202A' : 'transparent',
+      lightChecked: on('light'),
+      lightBg: on('light') ? '#FBE9EA' : '#FFFFFF',
+      lightRing: on('light') ? '#B3202A' : '#D2C9C8',
+      lightDot: on('light') ? '#B3202A' : 'transparent',
+      setAuto: () => this.setState({ mode: 'auto' }),
+      setLight: () => this.setState({ mode: 'light' })
+    };
+  }
+}
+</script>
+</body>
+</html>
