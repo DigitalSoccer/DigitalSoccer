@@ -23,18 +23,18 @@ class InfoBanner extends StatelessWidget {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surfaceMuted,
+        color: context.colors.surfaceMuted,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.textSecondary),
+          Icon(icon, size: 20, color: context.colors.textSecondary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: strong ? AppColors.text : AppColors.textSecondary,
+                color: strong ? context.colors.text : context.colors.textSecondary,
                 fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
               ),
             ),

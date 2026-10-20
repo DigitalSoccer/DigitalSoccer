@@ -40,10 +40,10 @@ class ClubHeroHeader extends StatelessWidget {
       children: [
         Positioned.fill(
           bottom: standing == null ? 0 : _overlap,
-          child: const DecoratedBox(
+          child: DecoratedBox(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border(bottom: BorderSide(color: AppColors.border)),
+              color: context.colors.surface,
+              border: Border(bottom: BorderSide(color: context.colors.border)),
             ),
           ),
         ),
@@ -61,7 +61,7 @@ class ClubHeroHeader extends StatelessWidget {
                 Row(
                   children: [
                     // Ícono genérico: no representa el escudo del club.
-                    const ClubAvatar(size: 60, emphasis: true),
+                    ClubAvatar(size: 60, emphasis: true, clubId: club.id),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
@@ -70,8 +70,8 @@ class ClubHeroHeader extends StatelessWidget {
                           if (eyebrow != null)
                             Text(
                               eyebrow!,
-                              style: AppText.eyebrow.copyWith(
-                                color: AppColors.primary,
+                              style: AppText.eyebrow(context).copyWith(
+                                color: context.colors.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -102,7 +102,7 @@ class ClubHeroHeader extends StatelessWidget {
                   Text(
                     'Sin información en la tabla de posiciones.',
                     style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                     ),
                   ),
               ],

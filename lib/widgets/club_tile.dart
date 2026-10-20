@@ -38,7 +38,7 @@ class ClubTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const ClubAvatar(size: 44),
+          ClubAvatar(size: 44, clubId: club.id),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -74,10 +74,10 @@ class FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.location_on_outlined,
           size: 14,
-          color: AppColors.outline,
+          color: context.colors.outline,
         ),
         const SizedBox(width: 2),
         Flexible(
@@ -87,7 +87,7 @@ class FieldLabel extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+            ).textTheme.bodySmall?.copyWith(color: context.colors.textMuted),
           ),
         ),
       ],
@@ -119,7 +119,7 @@ class FavoriteStarButton extends StatelessWidget {
           isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
           key: ValueKey(isFavorite),
           size: 26,
-          color: isFavorite ? AppColors.favorite : AppColors.outline,
+          color: isFavorite ? context.colors.favorite : context.colors.outline,
         ),
       ),
     );

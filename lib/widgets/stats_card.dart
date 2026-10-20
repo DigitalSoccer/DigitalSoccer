@@ -23,13 +23,13 @@ class StatTile extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label.toUpperCase(), style: AppText.eyebrow),
+        Text(label.toUpperCase(), style: AppText.eyebrow(context)),
         const SizedBox(height: AppSpacing.xs),
         Text(
           value,
           style: valueColor == null
-              ? AppText.metric
-              : AppText.metric.copyWith(color: valueColor),
+              ? AppText.metric(context)
+              : AppText.metric(context).copyWith(color: valueColor),
         ),
       ],
     );
@@ -53,12 +53,12 @@ class StatsCard extends StatelessWidget {
           children: [
             for (var i = 0; i < stats.length; i++) ...[
               if (i > 0)
-                const VerticalDivider(
+                VerticalDivider(
                   width: 1,
                   thickness: 1,
                   indent: AppSpacing.xs,
                   endIndent: AppSpacing.xs,
-                  color: AppColors.borderStrong,
+                  color: context.colors.borderStrong,
                 ),
               Expanded(child: stats[i]),
             ],

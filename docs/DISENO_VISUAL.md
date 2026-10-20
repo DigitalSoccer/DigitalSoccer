@@ -167,3 +167,33 @@ Basado en la maqueta compartida por Diego ("Design 21"):
   rojo e insignia "MI CLUB"; un partido suspendido o reprogramado muestra su estado bajo la hora.
 - **Tabla:** cada fila lleva `ClubCrest` junto al nombre (genérico por ahora; ahí irá el escudo de
   cada club).
+
+## Mockup nuevo — etapa 1 (2026-10-20)
+
+Referencia: `docs/diseno.md` y `docs/mockup/`. Se adopta por etapas; los
+datos de la app no cambian, solo lo visual.
+
+Hecho en esta etapa:
+
+- **Paleta nueva** rojo `#B3202A` sobre fondos cálidos (`#F6F3F2`), con
+  **modo oscuro**. Los colores viven en `AppColors.light` / `AppColors.dark`
+  (un `ThemeExtension`) y en el código se usan con `context.colors.x`, nunca
+  con valores fijos. El contraste AA (4,5:1) se prueba para ambas paletas.
+- **Tipografías** Barlow (texto) y Barlow Condensed (títulos y cifras),
+  incluidas en `assets/fonts/` con su licencia OFL (no se descargan en
+  tiempo de ejecución).
+- **Escudos provisorios**: círculo de color con las iniciales del club
+  (`InitialsShield`). Iniciales y colores vienen de `clubs.json`
+  (`initials`, `color`, `colorDark`) y son los del mockup: **no son los
+  colores oficiales** de cada club. Sin datos se muestra el escudo genérico.
+- **Barra inferior de 5 pestañas**: Inicio · Fixture · Tabla · Noticias ·
+  Clubes.
+- **Noticias**: filtros por tipo y un estado vacío. Las noticias del mockup
+  son de ejemplo y no se cargan.
+- **Ajustes** (botón en Inicio): apariencia Automático / Claro / Oscuro
+  (guardada en el teléfono; por defecto Automático) y "Mi equipo".
+
+Pendiente (etapa 2, pantalla por pantalla): Inicio con chips de serie y
+tarjeta de posición, Fixture, Tabla (#/Club/Pts con fila de mi equipo),
+Clubes, Ficha y la pantalla "Elegir equipo". Los cruces de "Turno" de la
+planilla se mostrarán como **Libre**, como en el mockup.

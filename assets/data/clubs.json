@@ -3,102 +3,139 @@
     "id": "arturo-prat",
     "name": "Arturo Prat",
     "shortName": "A. Prat",
+    "initials": "AP",
+    "color": "#0F766E",
     "field": "Cancha Chiguayante Sur"
   },
   {
     "id": "bdo-ohiggins",
     "name": "Bdo. O'Higgins",
     "shortName": "Bdo. O'Higgins",
+    "initials": "BO",
+    "color": "#1E40AF",
     "field": "Cancha Magallanes"
   },
   {
     "id": "chiguayante-sur",
     "name": "Chiguayante Sur",
     "shortName": "Chiguayante Sur",
+    "initials": "CS",
+    "color": "#0E7490",
     "field": "Cancha Chiguayante Sur"
   },
   {
     "id": "el-tigre",
     "name": "El Tigre",
     "shortName": "El Tigre",
+    "initials": "ET",
+    "color": "#A16207",
     "field": "Cancha Mario Osben"
   },
   {
     "id": "el-valle",
     "name": "El Valle",
     "shortName": "El Valle",
+    "initials": "EV",
+    "color": "#4D7C0F",
     "field": "Cancha Chiguayante Sur"
   },
   {
     "id": "ferrobadminton",
     "name": "Ferrobadminton",
     "shortName": "Ferro",
+    "initials": "FB",
+    "color": "#374151",
+    "colorDark": "#6B7280",
     "field": "Cancha Mario Osben"
   },
   {
     "id": "independiente",
     "name": "Independiente",
     "shortName": "Independiente",
+    "initials": "IN",
+    "color": "#86198F",
     "field": "Cancha Independiente"
   },
   {
     "id": "jackson",
     "name": "Jackson",
     "shortName": "Jackson",
+    "initials": "JA",
+    "color": "#9A3412",
     "field": "Cancha Magallanes"
   },
   {
     "id": "leinenweber",
     "name": "Leinenweber",
     "shortName": "Leinenweber",
+    "initials": "LE",
+    "color": "#BE185D",
     "field": "Cancha Mario Osben"
   },
   {
     "id": "magallanes",
     "name": "Magallanes",
     "shortName": "Magallanes",
+    "initials": "MG",
+    "color": "#166534",
     "field": "Cancha Magallanes"
   },
   {
     "id": "maestranza",
     "name": "Maestranza",
     "shortName": "Maestranza",
+    "initials": "ME",
+    "color": "#3730A3",
     "field": ""
   },
   {
     "id": "nacional",
     "name": "Nacional",
     "shortName": "Nacional",
+    "initials": "NA",
+    "color": "#92400E",
     "field": "Cancha José Vilches"
   },
   {
     "id": "san-pablo",
     "name": "San Pablo",
     "shortName": "San Pablo",
+    "initials": "SP",
+    "color": "#0369A1",
     "field": "Cancha Magallanes"
   },
   {
     "id": "schaub-fc",
     "name": "Schaub F.C.",
     "shortName": "Schaub",
+    "initials": "SF",
+    "color": "#57534E",
+    "colorDark": "#78716C",
     "field": "Cancha Independiente"
   },
   {
     "id": "ul-bolzhauser",
     "name": "U.L. Bolzhauser",
     "shortName": "Bolzhauser",
+    "initials": "UB",
+    "color": "#7E22CE",
     "field": "Cancha Magallanes"
   },
   {
     "id": "ul-carrera",
     "name": "U.L. Carrera",
     "shortName": "Carrera",
+    "initials": "UC",
+    "color": "#1F2937",
+    "colorDark": "#475569",
     "field": "Cancha José Vilches"
   },
   {
     "id": "union-angamos",
     "name": "Union Angamos",
     "shortName": "Angamos",
+    "initials": "UA",
+    "color": "#B45309",
     "field": "Cancha Chiguayante Sur"
   }
 ]

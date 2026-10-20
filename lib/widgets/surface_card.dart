@@ -13,7 +13,8 @@ class SurfaceCard extends StatelessWidget {
   /// Borde destacado (p. ej. Mi Club). Sin valor, el borde es el suave.
   final Color? borderColor;
 
-  final Color color;
+  /// Fondo; sin valor, el `surface` del tema.
+  final Color? color;
   final List<BoxShadow> shadow;
   final double radius;
 
@@ -24,7 +25,7 @@ class SurfaceCard extends StatelessWidget {
     this.padding,
     this.onTap,
     this.borderColor,
-    this.color = AppColors.surface,
+    this.color,
     this.shadow = AppShadows.sm,
     this.radius = AppRadius.lg,
   });
@@ -45,10 +46,10 @@ class SurfaceCard extends StatelessWidget {
       padding: margin,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: color,
+          color: color ?? context.colors.surface,
           borderRadius: borderRadius,
           border: Border.all(
-            color: borderColor ?? AppColors.border,
+            color: borderColor ?? context.colors.border,
             width: borderColor == null ? 1 : 1.5,
           ),
           boxShadow: shadow,

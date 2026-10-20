@@ -1,93 +1,284 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens de la app: rojo deportivo sobre superficies blancas y un
-/// fondo slate neutro (equivalentes a la escala de Tailwind).
+/// Design tokens de la app según `docs/diseno.md` (mockup "ANFA Caupolicán"):
+/// rojo de marca sobre fondo crema, con tema claro y oscuro.
 ///
 /// Es la DIRECCIÓN VISUAL acordada por el equipo, no los colores oficiales
-/// del Club Arturo Prat ni de ANFA Chiguayante (pendientes de confirmación).
-/// Las pantallas no deben usar colores directos: deben tomarlos de aquí o de
-/// `Theme.of(context).colorScheme`.
-class AppColors {
-  AppColors._();
+/// del Club Arturo Prat ni de la asociación (pendientes de confirmación).
+///
+/// Regla: ningún widget usa colores escritos a mano. Todos salen del tema
+/// activo con `context.colors`, así el cambio claro/oscuro funciona solo.
+@immutable
+class AppColors extends ThemeExtension<AppColors> {
+  // Marca.
+  /// Rojo de marca como FONDO (botones, chips, tarjeta de posición). Igual
+  /// en ambos temas; lleva texto blanco encima.
+  final Color primary;
 
-  // Marca. El rojo se usa de forma puntual: navegación activa, acciones,
-  // Mi Club y la etiqueta de la fecha. No se usa como fondo de pantallas.
+  /// Rojo como TEXTO o ÍCONO (enlaces, pestaña activa). En oscuro se aclara
+  /// (#FF7A82) porque #B3202A no contrasta sobre fondo oscuro.
+  final Color primaryText;
 
-  /// Rojo profundo (red-700): elementos interactivos y texto destacado.
-  /// Contraste 6.5:1 con blanco.
-  static const Color primary = Color(0xFFB91C1C);
-  static const Color onPrimary = Colors.white;
+  final Color onPrimary;
 
-  /// Rojo oscuro (red-800): panel "MI CLUB" sobre el encabezado rojo.
-  /// Contraste 8.4:1 con blanco.
-  static const Color primaryDeep = Color(0xFF991B1B);
+  /// Textos secundarios y líneas sobre `primary`.
+  final Color onPrimaryMuted;
+  final Color onPrimaryLine;
 
-  /// Rojo vivo (red-600): solo acentos sin texto (franjas, bordes).
-  static const Color primaryBright = Color(0xFFDC2626);
+  /// Rojo oscuro (encabezado del panel directiva, panel "MI CLUB").
+  final Color primaryDeep;
 
-  /// Rojo muy suave (red-100): insignias y fondos de íconos.
-  static const Color primaryContainer = Color(0xFFFEE2E2);
-  static const Color onPrimaryContainer = Color(0xFF7F1D1D);
+  /// Acentos rojos sin texto (franjas, bordes).
+  final Color primaryBright;
 
-  /// Rojo casi blanco (red-50): fila o tarjeta de Mi Club.
-  static const Color primarySoft = Color(0xFFFEF2F2);
+  /// Fondo suave de selección (`primaryTint`).
+  final Color primaryContainer;
+  final Color onPrimaryContainer;
+  final Color primarySoft;
 
-  /// Píldora translúcida del ítem activo de la barra inferior (12 %).
-  static const Color navIndicator = Color(0x1FB91C1C);
+  /// Fondo de miniatura de noticias (`primaryTint2`).
+  final Color primaryTint2;
 
   // Superficies.
+  final Color background;
+  final Color surface;
 
-  /// Fondo global (slate-50): da contraste a las tarjetas blancas.
-  static const Color background = Color(0xFFF8FAFC);
+  /// Separadores dentro de tarjetas y encabezado de tabla (`lineSoft`).
+  final Color surfaceMuted;
 
-  /// Tarjetas, hojas inferiores y barras (blanco puro).
-  static const Color surface = Colors.white;
+  /// Borde de tarjetas (`line`).
+  final Color border;
 
-  /// Pistas de pestañas, avatares y chips (slate-100).
-  static const Color surfaceMuted = Color(0xFFF1F5F9);
-
-  /// Borde suave de tarjetas y separadores de filas (slate-100).
-  static const Color border = Color(0xFFF1F5F9);
-
-  /// Borde de campos de texto y divisores visibles (slate-200).
-  static const Color borderStrong = Color(0xFFE2E8F0);
+  /// Borde de campos y chips no seleccionados (`border` del mockup).
+  final Color borderStrong;
 
   // Texto.
+  /// Texto principal (`ink`).
+  final Color text;
 
-  /// Títulos y texto principal (slate-900).
-  static const Color text = Color(0xFF0F172A);
+  /// Texto secundario (`muted`).
+  final Color textSecondary;
+  final Color textMuted;
 
-  /// Subtítulos y texto sobre `surfaceMuted` (slate-600).
-  static const Color textSecondary = Color(0xFF475569);
+  /// Íconos decorativos.
+  final Color outline;
 
-  /// Etiquetas y metadatos (slate-500). Solo sobre blanco o `background`:
-  /// sobre `surfaceMuted` no alcanza 4.5:1.
-  static const Color textMuted = Color(0xFF64748B);
-
-  /// Íconos decorativos y controles deshabilitados (slate-400).
-  static const Color outline = Color(0xFF94A3B8);
-
-  /// Manilla de las hojas inferiores (slate-300).
-  static const Color handle = Color(0xFFCBD5E1);
+  /// Manilla de las hojas inferiores y perilla de interruptores.
+  final Color handle;
+  final Color switchThumb;
 
   // Semánticos.
-  static const Color error = Color(0xFFB4443C);
-  static const Color favorite = Color(0xFFF59E0B);
-  static const Color statusNormal = handle;
-  static const Color statusSuspended = error;
-  static const Color statusRescheduled = Color(0xFFB45309);
+  final Color error;
 
-  // Podio de la tabla: píldoras oro, plata y bronce (fondo / texto).
-  static const Color goldBg = Color(0xFFFEF3C7);
-  static const Color goldFg = Color(0xFF92400E);
-  static const Color silverBg = Color(0xFFE2E8F0);
-  static const Color silverFg = Color(0xFF334155);
-  static const Color bronzeBg = Color(0xFFFFEDD5);
-  static const Color bronzeFg = Color(0xFF9A3412);
+  /// Amarillo de acento: posición en la tarjeta roja, estrella de Mi Club.
+  final Color accent;
+  final Color favorite;
 
-  // Tarjetas disciplinarias (íconos de la tabla de jugadores).
-  static const Color cardYellow = Color(0xFFF2C200);
-  static const Color cardRed = Color(0xFFD32F2F);
+  /// Fila o tarjeta del equipo del usuario.
+  final Color ownTeam;
+  final Color ownTeamBorder;
+
+  /// Avisos y estado "Suspendido".
+  final Color noticeBg;
+  final Color noticeText;
+  final Color noticeBody;
+  final Color noticeMeta;
+
+  /// Estado "Programado".
+  final Color tagNeutralBg;
+  final Color tagNeutralText;
+
+  final Color statusNormal;
+  final Color statusSuspended;
+  final Color statusRescheduled;
+
+  // Podio de la tabla (fondo / texto).
+  final Color goldBg;
+  final Color goldFg;
+  final Color silverBg;
+  final Color silverFg;
+  final Color bronzeBg;
+  final Color bronzeFg;
+
+  // Tarjetas disciplinarias.
+  final Color cardYellow;
+  final Color cardRed;
+
+  /// Tinte de las sombras.
+  final Color shadow;
+
+  const AppColors({
+    required this.primary,
+    required this.primaryText,
+    required this.onPrimary,
+    required this.onPrimaryMuted,
+    required this.onPrimaryLine,
+    required this.primaryDeep,
+    required this.primaryBright,
+    required this.primaryContainer,
+    required this.onPrimaryContainer,
+    required this.primarySoft,
+    required this.primaryTint2,
+    required this.background,
+    required this.surface,
+    required this.surfaceMuted,
+    required this.border,
+    required this.borderStrong,
+    required this.text,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.outline,
+    required this.handle,
+    required this.switchThumb,
+    required this.error,
+    required this.accent,
+    required this.favorite,
+    required this.ownTeam,
+    required this.ownTeamBorder,
+    required this.noticeBg,
+    required this.noticeText,
+    required this.noticeBody,
+    required this.noticeMeta,
+    required this.tagNeutralBg,
+    required this.tagNeutralText,
+    required this.statusNormal,
+    required this.statusSuspended,
+    required this.statusRescheduled,
+    required this.goldBg,
+    required this.goldFg,
+    required this.silverBg,
+    required this.silverFg,
+    required this.bronzeBg,
+    required this.bronzeFg,
+    required this.cardYellow,
+    required this.cardRed,
+    required this.shadow,
+  });
+
+  /// Tema claro (valores de `docs/diseno.md`, sección 3).
+  static const light = AppColors(
+    primary: Color(0xFFB3202A),
+    primaryText: Color(0xFFB3202A),
+    onPrimary: Color(0xFFFFFFFF),
+    onPrimaryMuted: Color(0xFFF8D4D6),
+    onPrimaryLine: Color(0xFFD0505A),
+    primaryDeep: Color(0xFF7A1219),
+    primaryBright: Color(0xFFB3202A),
+    primaryContainer: Color(0xFFFBE9EA),
+    onPrimaryContainer: Color(0xFFB3202A),
+    primarySoft: Color(0xFFFBE9EA),
+    primaryTint2: Color(0xFFF6DADC),
+    background: Color(0xFFF6F3F2),
+    surface: Color(0xFFFFFFFF),
+    surfaceMuted: Color(0xFFF1ECEB),
+    border: Color(0xFFE5DEDD),
+    borderStrong: Color(0xFFD2C9C8),
+    text: Color(0xFF1A1112),
+    textSecondary: Color(0xFF625857),
+    textMuted: Color(0xFF625857),
+    outline: Color(0xFF625857),
+    handle: Color(0xFFD2C9C8),
+    switchThumb: Color(0xFFFFFFFF),
+    error: Color(0xFF8A3A00),
+    accent: Color(0xFFF5C400),
+    favorite: Color(0xFFF5C400),
+    ownTeam: Color(0xFFFDF3C4),
+    ownTeamBorder: Color(0xFFE5CF73),
+    noticeBg: Color(0xFFFDEBD9),
+    noticeText: Color(0xFF8A3A00),
+    noticeBody: Color(0xFF4A3019),
+    noticeMeta: Color(0xFF6E4A2B),
+    tagNeutralBg: Color(0xFFF1ECEB),
+    tagNeutralText: Color(0xFF4A3F3E),
+    statusNormal: Color(0xFFD2C9C8),
+    statusSuspended: Color(0xFF8A3A00),
+    statusRescheduled: Color(0xFF8A3A00),
+    goldBg: Color(0xFFFDF3C4),
+    goldFg: Color(0xFF7A5A00),
+    silverBg: Color(0xFFF1ECEB),
+    silverFg: Color(0xFF4A3F3E),
+    bronzeBg: Color(0xFFFDEBD9),
+    bronzeFg: Color(0xFF8A3A00),
+    cardYellow: Color(0xFFF2C200),
+    cardRed: Color(0xFFD32F2F),
+    shadow: Color(0xFF1A1112),
+  );
+
+  /// Tema oscuro (tabla "Modo oscuro" de `docs/diseno.md`).
+  static const dark = AppColors(
+    primary: Color(0xFFB3202A),
+    primaryText: Color(0xFFFF7A82),
+    onPrimary: Color(0xFFFFFFFF),
+    onPrimaryMuted: Color(0xFFF8D4D6),
+    onPrimaryLine: Color(0xFFD0505A),
+    primaryDeep: Color(0xFF7A1219),
+    primaryBright: Color(0xFFB3202A),
+    primaryContainer: Color(0xFF3A1A1D),
+    onPrimaryContainer: Color(0xFFFF7A82),
+    primarySoft: Color(0xFF3A1A1D),
+    primaryTint2: Color(0xFF4A2023),
+    background: Color(0xFF14100F),
+    surface: Color(0xFF1F1918),
+    surfaceMuted: Color(0xFF2A2221),
+    border: Color(0xFF3A302F),
+    borderStrong: Color(0xFF4A3F3E),
+    text: Color(0xFFF4ECEA),
+    textSecondary: Color(0xFFB3A6A4),
+    textMuted: Color(0xFFB3A6A4),
+    outline: Color(0xFFB3A6A4),
+    handle: Color(0xFF4A3F3E),
+    switchThumb: Color(0xFFF4ECEA),
+    error: Color(0xFFFFB27A),
+    accent: Color(0xFFF5C400),
+    favorite: Color(0xFFF5C400),
+    ownTeam: Color(0xFF3D3410),
+    ownTeamBorder: Color(0xFF7A6A1F),
+    noticeBg: Color(0xFF3A2414),
+    noticeText: Color(0xFFFFB27A),
+    noticeBody: Color(0xFFF2D3BC),
+    noticeMeta: Color(0xFFE0B999),
+    tagNeutralBg: Color(0xFF2A2221),
+    tagNeutralText: Color(0xFFD8CCCA),
+    statusNormal: Color(0xFF4A3F3E),
+    statusSuspended: Color(0xFFFFB27A),
+    statusRescheduled: Color(0xFFFFB27A),
+    goldBg: Color(0xFF3D3410),
+    goldFg: Color(0xFFF5D76E),
+    silverBg: Color(0xFF2A2221),
+    silverFg: Color(0xFFD8CCCA),
+    bronzeBg: Color(0xFF3A2414),
+    bronzeFg: Color(0xFFFFB27A),
+    cardYellow: Color(0xFFF2C200),
+    cardRed: Color(0xFFE5484D),
+    shadow: Color(0xFF000000),
+  );
+
+  static AppColors of(BuildContext context) =>
+      Theme.of(context).extension<AppColors>() ?? light;
+
+  @override
+  AppColors copyWith() => this;
+
+  // Cambio de tema sin animación de colores intermedios.
+  @override
+  AppColors lerp(covariant AppColors? other, double t) =>
+      other == null || t < 0.5 ? this : other;
+}
+
+extension AppColorsContext on BuildContext {
+  /// Colores del tema activo (claro u oscuro).
+  AppColors get colors => AppColors.of(this);
+}
+
+/// Familias tipográficas empaquetadas en `assets/fonts` (licencia OFL).
+class AppFonts {
+  AppFonts._();
+
+  /// Cuerpo, etiquetas y botones.
+  static const String body = 'Barlow';
+
+  /// Títulos, números grandes, horas y nombres de sección.
+  static const String display = 'BarlowCondensed';
 }
 
 class AppSpacing {
@@ -97,6 +288,9 @@ class AppSpacing {
   static const double sm = 8;
   static const double md = 12;
   static const double lg = 16;
+
+  /// Margen lateral de pantalla del mockup.
+  static const double screen = 20;
   static const double xl = 24;
   static const double xxl = 32;
 }
@@ -106,190 +300,201 @@ class AppRadius {
 
   static const double sm = 8;
 
-  /// `rounded-xl`: campos, botones y selectores.
+  /// Campos de texto.
   static const double md = 12;
 
-  /// `rounded-2xl`: tarjetas.
+  /// Tarjetas.
   static const double lg = 16;
 
-  /// Esquinas superiores de las hojas inferiores.
-  static const double xl = 24;
+  /// Tarjeta de posición y hojas inferiores.
+  static const double xl = 20;
 
   static const double pill = 999;
 }
 
-/// Sombras difusas equivalentes a `shadow-sm` y `shadow-md` de Tailwind,
-/// teñidas con slate-900 en vez de negro puro.
+/// Sombras suaves teñidas con el color de texto del tema claro.
 class AppShadows {
   AppShadows._();
 
   static const List<BoxShadow> sm = [
-    BoxShadow(color: Color(0x0D0F172A), offset: Offset(0, 1), blurRadius: 2),
+    BoxShadow(color: Color(0x0D1A1112), offset: Offset(0, 1), blurRadius: 2),
   ];
 
   static const List<BoxShadow> md = [
     BoxShadow(
-      color: Color(0x140F172A),
+      color: Color(0x141A1112),
       offset: Offset(0, 4),
       blurRadius: 6,
       spreadRadius: -1,
     ),
     BoxShadow(
-      color: Color(0x0F0F172A),
+      color: Color(0x0F1A1112),
       offset: Offset(0, 2),
       blurRadius: 4,
       spreadRadius: -2,
     ),
   ];
 
-  /// Sombra hacia arriba de la barra de navegación inferior.
-  static const List<BoxShadow> navBar = [
-    BoxShadow(color: Color(0x0F0F172A), offset: Offset(0, -1), blurRadius: 8),
-  ];
+  /// La barra inferior del mockup no tiene sombra: solo borde superior.
+  static const List<BoxShadow> navBar = [];
 }
 
-/// Estilos de texto que no calzan con un rol de `TextTheme`.
+/// Estilos de texto que no calzan con un rol de `TextTheme`. Reciben el
+/// `context` para tomar el color del tema activo.
 class AppText {
   AppText._();
 
-  /// Etiquetas y metadatos: `font-medium text-xs text-slate-500
-  /// tracking-wider`. Se usa con el texto en mayúsculas.
-  static const TextStyle eyebrow = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 0.6,
-    color: AppColors.textMuted,
-  );
+  /// Etiquetas en mayúscula: Barlow 12, w700, espaciado 0.06em, `muted`.
+  static TextStyle eyebrow(BuildContext context) => TextStyle(
+        fontFamily: AppFonts.body,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.72,
+        color: context.colors.textMuted,
+      );
 
-  /// Cifras destacadas (posición, puntos).
-  static const TextStyle metric = TextStyle(
-    fontSize: 28,
-    height: 1.1,
-    fontWeight: FontWeight.w800,
-    color: AppColors.text,
-    fontFeatures: [FontFeature.tabularFigures()],
-  );
+  /// Cifras destacadas (posición, puntos): Barlow Condensed.
+  static TextStyle metric(BuildContext context) => TextStyle(
+        fontFamily: AppFonts.display,
+        fontSize: 36,
+        height: 1,
+        fontWeight: FontWeight.w700,
+        color: context.colors.text,
+        fontFeatures: tabular,
+      );
+
+  /// Títulos de pantalla, sección y horas: Barlow Condensed 700.
+  static TextStyle display(
+    BuildContext context, {
+    double size = 24,
+    Color? color,
+  }) =>
+      TextStyle(
+        fontFamily: AppFonts.display,
+        fontSize: size,
+        height: 1.05,
+        fontWeight: FontWeight.w700,
+        color: color ?? context.colors.text,
+        fontFeatures: tabular,
+      );
 
   /// Números de tabla alineados en columnas.
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 }
 
-ThemeData buildAppTheme() {
-  const colorScheme = ColorScheme(
-    brightness: Brightness.light,
-    primary: AppColors.primary,
-    onPrimary: AppColors.onPrimary,
-    primaryContainer: AppColors.primaryContainer,
-    onPrimaryContainer: AppColors.onPrimaryContainer,
-    secondary: AppColors.primaryBright,
-    onSecondary: AppColors.onPrimary,
-    secondaryContainer: AppColors.primaryContainer,
-    onSecondaryContainer: AppColors.onPrimaryContainer,
-    error: AppColors.error,
-    onError: Colors.white,
-    surface: AppColors.surface,
-    onSurface: AppColors.text,
-    onSurfaceVariant: AppColors.textMuted,
-    surfaceContainerLowest: AppColors.surface,
-    surfaceContainerLow: AppColors.background,
-    surfaceContainer: AppColors.surfaceMuted,
-    surfaceContainerHigh: AppColors.surfaceMuted,
-    surfaceContainerHighest: AppColors.borderStrong,
-    outline: AppColors.outline,
-    outlineVariant: AppColors.border,
+ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
+  final c = brightness == Brightness.dark ? AppColors.dark : AppColors.light;
+
+  final colorScheme = ColorScheme(
+    brightness: brightness,
+    primary: c.primary,
+    onPrimary: c.onPrimary,
+    primaryContainer: c.primaryContainer,
+    onPrimaryContainer: c.onPrimaryContainer,
+    secondary: c.primaryText,
+    onSecondary: c.onPrimary,
+    secondaryContainer: c.primaryContainer,
+    onSecondaryContainer: c.onPrimaryContainer,
+    error: c.error,
+    onError: c.onPrimary,
+    surface: c.surface,
+    onSurface: c.text,
+    onSurfaceVariant: c.textMuted,
+    surfaceContainerLowest: c.surface,
+    surfaceContainerLow: c.background,
+    surfaceContainer: c.surfaceMuted,
+    surfaceContainerHigh: c.surfaceMuted,
+    surfaceContainerHighest: c.borderStrong,
+    outline: c.outline,
+    outlineVariant: c.border,
   );
 
   final base = ThemeData(
+    brightness: brightness,
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: AppColors.background,
+    scaffoldBackgroundColor: c.background,
+    fontFamily: AppFonts.body,
+    extensions: [c],
   );
 
   final text = base.textTheme.apply(
-    bodyColor: AppColors.text,
-    displayColor: AppColors.text,
+    bodyColor: c.text,
+    displayColor: c.text,
   );
+
+  TextStyle? condensed(TextStyle? s) =>
+      s?.copyWith(fontFamily: AppFonts.display, fontWeight: FontWeight.w700);
 
   final fieldBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(AppRadius.md),
-    borderSide: const BorderSide(color: AppColors.borderStrong),
+    borderSide: BorderSide(color: c.borderStrong),
   );
 
   final buttonShape = RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(AppRadius.md),
+    borderRadius: BorderRadius.circular(14),
   );
 
   return base.copyWith(
     textTheme: text.copyWith(
-      headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-      titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+      headlineMedium: condensed(text.headlineMedium),
+      headlineSmall: condensed(text.headlineSmall),
+      titleLarge: condensed(text.titleLarge),
       titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
       titleSmall: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-      labelSmall: AppText.eyebrow,
+      bodyLarge: text.bodyLarge?.copyWith(fontSize: 15),
+      labelSmall: text.labelSmall?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.72,
+        color: c.textMuted,
+      ),
     ),
 
-    // Barra superior compacta y blanca. Se integra con los encabezados
-    // blancos de cada pantalla y muestra una sombra al desplazar.
-    // Barra superior roja (encabezado de marca, como la maqueta de Inicio).
-    // Blanco sobre red-700: contraste 6.5:1.
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.onPrimary,
+    // Barra superior como el mockup: mismo fondo de la pantalla y título
+    // grande en Barlow Condensed, alineado a la izquierda.
+    appBarTheme: AppBarTheme(
+      backgroundColor: c.background,
+      foregroundColor: c.text,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      centerTitle: true,
-      toolbarHeight: 56,
+      centerTitle: false,
+      toolbarHeight: 64,
+      titleSpacing: AppSpacing.screen,
       // Tamaño explícito: `ThemeData.textTheme` aún no incluye tamaños
-      // (Flutter los agrega en Theme.of), y el título quedaba en 14 px.
+      // (Flutter los agrega en Theme.of).
       titleTextStyle: TextStyle(
-        fontSize: 19,
-        fontWeight: FontWeight.w800,
-        color: AppColors.onPrimary,
+        fontFamily: AppFonts.display,
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        color: c.text,
       ),
     ),
 
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.surface,
+      backgroundColor: c.surface,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: AppColors.navIndicator,
-      indicatorShape: const StadiumBorder(),
+      indicatorColor: c.primaryContainer,
       elevation: 0,
-      height: 64,
-      labelTextStyle: WidgetStateProperty.resolveWith(
-        (states) => TextStyle(
-          fontSize: 12,
-          fontWeight: states.contains(WidgetState.selected)
-              ? FontWeight.w700
-              : FontWeight.w500,
-          color: states.contains(WidgetState.selected)
-              ? AppColors.primary
-              : AppColors.textMuted,
-        ),
-      ),
-      iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(
-          size: 24,
-          color: states.contains(WidgetState.selected)
-              ? AppColors.primary
-              : AppColors.textMuted,
-        ),
-      ),
     ),
 
-    // Estilo por defecto de las pestañas: píldora blanca sobre pista gris
-    // (ver `SegmentedTabBar`).
+    // Pestañas píldora (ver `SegmentedTabBar`).
     tabBarTheme: TabBarThemeData(
-      labelColor: AppColors.text,
-      unselectedLabelColor: AppColors.textSecondary,
+      labelColor: c.text,
+      unselectedLabelColor: c.textSecondary,
       dividerColor: Colors.transparent,
       indicatorSize: TabBarIndicatorSize.tab,
       indicator: BoxDecoration(
-        color: AppColors.surface,
+        color: c.surface,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         boxShadow: AppShadows.md,
       ),
-      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      labelStyle: const TextStyle(
+        fontFamily: AppFonts.body,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
       unselectedLabelStyle: const TextStyle(
+        fontFamily: AppFonts.body,
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),
@@ -297,44 +502,44 @@ ThemeData buildAppTheme() {
       splashFactory: NoSplash.splashFactory,
     ),
 
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: AppColors.surface,
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: c.surface,
       surfaceTintColor: Colors.transparent,
-      modalBarrierColor: Color(0x660F172A),
+      modalBarrierColor: const Color(0x661A1112),
       showDragHandle: true,
-      dragHandleColor: AppColors.handle,
-      dragHandleSize: Size(40, 4),
+      dragHandleColor: c.handle,
+      dragHandleSize: const Size(40, 4),
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
     ),
 
-    expansionTileTheme: const ExpansionTileThemeData(
+    expansionTileTheme: ExpansionTileThemeData(
       backgroundColor: Colors.transparent,
       collapsedBackgroundColor: Colors.transparent,
-      iconColor: AppColors.primary,
-      collapsedIconColor: AppColors.outline,
-      shape: Border(),
-      collapsedShape: Border(),
+      iconColor: c.primaryText,
+      collapsedIconColor: c.outline,
+      shape: const Border(),
+      collapsedShape: const Border(),
     ),
 
-    listTileTheme: const ListTileThemeData(
-      iconColor: AppColors.textMuted,
-      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+    listTileTheme: ListTileThemeData(
+      iconColor: c.textMuted,
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
     ),
 
-    dividerTheme: const DividerThemeData(
-      color: AppColors.border,
+    dividerTheme: DividerThemeData(
+      color: c.border,
       thickness: 1,
       space: 1,
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.background,
-      prefixIconColor: AppColors.textMuted,
-      hintStyle: const TextStyle(color: AppColors.textMuted),
+      fillColor: c.surface,
+      prefixIconColor: c.textMuted,
+      hintStyle: TextStyle(color: c.textMuted),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
@@ -342,46 +547,73 @@ ThemeData buildAppTheme() {
       border: fieldBorder,
       enabledBorder: fieldBorder,
       focusedBorder: fieldBorder.copyWith(
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: BorderSide(color: c.primaryText, width: 1.5),
       ),
     ),
 
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
+        backgroundColor: c.primary,
+        foregroundColor: c.onPrimary,
         minimumSize: const Size(0, 48),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(
+          fontFamily: AppFonts.body,
+          fontWeight: FontWeight.w700,
+        ),
         shape: buttonShape,
       ),
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        backgroundColor: AppColors.surface,
+        foregroundColor: c.primaryText,
+        backgroundColor: c.surface,
         minimumSize: const Size(0, 48),
-        side: const BorderSide(color: AppColors.borderStrong),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        side: BorderSide(color: c.borderStrong),
+        textStyle: const TextStyle(
+          fontFamily: AppFonts.body,
+          fontWeight: FontWeight.w700,
+        ),
         shape: buttonShape,
       ),
     ),
 
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        foregroundColor: c.primaryText,
+        textStyle: const TextStyle(
+          fontFamily: AppFonts.body,
+          fontWeight: FontWeight.w700,
+        ),
         shape: buttonShape,
       ),
     ),
 
-    progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: AppColors.primary,
+    radioTheme: RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? c.primaryText
+            : c.borderStrong,
+      ),
+    ),
+
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStatePropertyAll(c.switchThumb),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) =>
+            states.contains(WidgetState.selected) ? c.primary : c.borderStrong,
+      ),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+    ),
+
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: c.primaryText,
     ),
 
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: AppColors.text,
+      backgroundColor: c.text,
+      contentTextStyle: TextStyle(fontFamily: AppFonts.body, color: c.background),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),

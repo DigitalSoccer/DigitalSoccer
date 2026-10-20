@@ -95,3 +95,15 @@ Recomendación: adoptar 3.47.7 para todo el equipo, commitear esos dos archivos 
 - Se cargan las tablas de las 10 series (incluida **Femenina**, que no está en el fixture) y los dos
   subtotales. Menú: Tabla general, Acumulado infantil y juvenil, Acumulado adultos y cada serie.
 - Empates: posición compartida. Se muestra la fuente y la advertencia oficial de la planilla.
+
+## DT-11 — Tema claro/oscuro con ThemeExtension y fuentes incluidas (Propuesta, 2026-10-20)
+
+- Los colores pasan de constantes estáticas a `AppColors` (`ThemeExtension`)
+  con dos instancias, `light` y `dark`. Regla: en widgets se usa
+  `context.colors`; así el modo oscuro funciona sin duplicar pantallas.
+- La apariencia (Automático/Claro/Oscuro) se guarda con
+  `shared_preferences` (ya era dependencia); no se agregan paquetes.
+- Barlow y Barlow Condensed se incluyen como assets (licencia SIL OFL 1.1,
+  `assets/fonts/OFL.txt`) en vez de usar `google_fonts`, para no depender de
+  la red ni sumar una dependencia.
+- Escudos: provisorios con iniciales hasta tener los oficiales autorizados.

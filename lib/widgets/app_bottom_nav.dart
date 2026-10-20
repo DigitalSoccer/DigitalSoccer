@@ -31,15 +31,15 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(top: BorderSide(color: context.colors.border)),
         boxShadow: AppShadows.navBar,
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 72,
           child: Row(
             children: [
               for (var i = 0; i < items.length; i++)
@@ -71,7 +71,8 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.textMuted;
+    final color =
+        selected ? context.colors.primaryText : context.colors.textMuted;
 
     return Semantics(
       button: true,
@@ -85,9 +86,9 @@ class _NavButton extends StatelessWidget {
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 3,
-              width: selected ? 44 : 0,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
+              width: selected ? 28 : 0,
+              decoration: BoxDecoration(
+                color: context.colors.primaryText,
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(3),
                 ),

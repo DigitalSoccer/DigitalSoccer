@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../models/club.dart';
 import '../theme/app_theme.dart';
+import 'clubs_scope.dart';
 
 export 'app_bottom_sheet.dart';
+export 'clubs_scope.dart';
 export 'info_banner.dart';
 export 'segmented_tab_bar.dart';
 export 'stats_card.dart';
@@ -16,24 +19,39 @@ class ClubAvatar extends StatelessWidget {
   /// Versión destacada (fondo rojo suave) para el encabezado del club.
   final bool emphasis;
 
-  const ClubAvatar({super.key, this.size = 40, this.emphasis = false});
+  /// Club a mostrar: con iniciales y color conocidos se dibuja su escudo
+  /// provisorio; si no, el ícono genérico.
+  final String? clubId;
+
+  const ClubAvatar({
+    super.key,
+    this.size = 40,
+    this.emphasis = false,
+    this.clubId,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final club = ClubsScope.clubOf(context, clubId);
+    if (club != null) {
+      final initials = InitialsShield.forClub(context, club, size: size);
+      if (initials != null) return initials;
+    }
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: emphasis ? AppColors.primarySoft : AppColors.surfaceMuted,
+        color: emphasis ? context.colors.primarySoft : context.colors.surfaceMuted,
         shape: BoxShape.circle,
         border: Border.all(
-          color: emphasis ? AppColors.primaryContainer : AppColors.border,
+          color: emphasis ? context.colors.primaryContainer : context.colors.border,
         ),
       ),
       child: Icon(
         Icons.shield_outlined,
         size: size * 0.5,
-        color: emphasis ? AppColors.primary : AppColors.textMuted,
+        color: emphasis ? context.colors.primary : context.colors.textMuted,
         semanticLabel: 'Club (sin escudo)',
       ),
     );
@@ -47,14 +65,14 @@ class PositionBadge extends StatelessWidget {
 
   const PositionBadge({super.key, required this.position});
 
-  static (Color, Color)? podiumColors(int position) {
+  static (Color, Color)? podiumColors(BuildContext context, int position) {
     switch (position) {
       case 1:
-        return (AppColors.goldBg, AppColors.goldFg);
+        return (context.colors.goldBg, context.colors.goldFg);
       case 2:
-        return (AppColors.silverBg, AppColors.silverFg);
+        return (context.colors.silverBg, context.colors.silverFg);
       case 3:
-        return (AppColors.bronzeBg, AppColors.bronzeFg);
+        return (context.colors.bronzeBg, context.colors.bronzeFg);
       default:
         return null;
     }
@@ -62,7 +80,7 @@ class PositionBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final podium = podiumColors(position);
+    final podium = podiumColors(context, position);
 
     return Container(
       width: 30,
@@ -79,7 +97,7 @@ class PositionBadge extends StatelessWidget {
         style: TextStyle(
           fontSize: 13,
           fontWeight: podium == null ? FontWeight.w600 : FontWeight.w800,
-          color: podium?.$2 ?? AppColors.textMuted,
+          color: podium?.$2 ?? context.colors.textMuted,
           fontFeatures: AppText.tabular,
         ),
       ),
@@ -93,14 +111,14 @@ class MatchStatusBadge extends StatelessWidget {
 
   const MatchStatusBadge({super.key, required this.status});
 
-  static Color colorFor(String status) {
+  static Color colorFor(BuildContext context, String status) {
     switch (status) {
       case 'suspendido':
-        return AppColors.statusSuspended;
+        return context.colors.statusSuspended;
       case 'reprogramado':
-        return AppColors.statusRescheduled;
+        return context.colors.statusRescheduled;
       default:
-        return AppColors.statusNormal;
+        return context.colors.statusNormal;
     }
   }
 
@@ -111,7 +129,7 @@ class MatchStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isNotable(status)) return const SizedBox.shrink();
 
-    final color = colorFor(status);
+    final color = colorFor(context, status);
 
     return TagChip(
       label: status[0].toUpperCase() + status.substring(1),
@@ -124,27 +142,37 @@ class MatchStatusBadge extends StatelessWidget {
 /// Chip pequeño en píldora: series en juego, estados, "MI CLUB".
 class TagChip extends StatelessWidget {
   final String label;
-  final Color foreground;
-  final Color background;
+
+  /// Colores; sin valor se usan los neutros del tema (o los de Mi Club).
+  final Color? foreground;
+  final Color? background;
   final bool uppercase;
+  final bool _myClub;
 
   const TagChip({
     super.key,
     required this.label,
-    this.foreground = AppColors.textSecondary,
-    this.background = AppColors.surfaceMuted,
+    this.foreground,
+    this.background,
     this.uppercase = false,
-  });
+  }) : _myClub = false;
 
   /// Insignia roja de Mi Club.
   const TagChip.myClub({super.key})
     : label = 'MI CLUB',
-      foreground = AppColors.primary,
-      background = AppColors.primaryContainer,
-      uppercase = true;
+      foreground = null,
+      background = null,
+      uppercase = true,
+      _myClub = true;
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final background =
+        this.background ?? (_myClub ? c.primaryContainer : c.surfaceMuted);
+    final foreground =
+        this.foreground ?? (_myClub ? c.primaryText : c.textSecondary);
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm + 2,
@@ -183,7 +211,7 @@ class SectionHeader extends StatelessWidget {
         AppSpacing.lg,
         AppSpacing.xs,
       ),
-      child: Text(title.toUpperCase(), style: AppText.eyebrow),
+      child: Text(title.toUpperCase(), style: AppText.eyebrow(context)),
     );
   }
 }
@@ -233,10 +261,10 @@ class CircleIconButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(icon),
       style: IconButton.styleFrom(
-        backgroundColor: AppColors.surfaceMuted,
-        foregroundColor: AppColors.text,
-        disabledBackgroundColor: AppColors.background,
-        disabledForegroundColor: AppColors.handle,
+        backgroundColor: context.colors.surfaceMuted,
+        foregroundColor: context.colors.text,
+        disabledBackgroundColor: context.colors.background,
+        disabledForegroundColor: context.colors.handle,
         fixedSize: const Size(40, 40),
       ),
     );
@@ -290,14 +318,34 @@ class ClubCrest extends StatelessWidget {
   /// Con fondo circular blanco (para usar sobre el encabezado rojo).
   final bool onRed;
 
-  const ClubCrest({super.key, this.size = 32, this.onRed = false});
+  /// Club a mostrar: con iniciales y color conocidos se dibuja su escudo
+  /// provisorio (círculo con iniciales); si no, el escudo genérico.
+  final String? clubId;
+
+  const ClubCrest({
+    super.key,
+    this.size = 32,
+    this.onRed = false,
+    this.clubId,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final club = ClubsScope.clubOf(context, clubId);
+    if (club != null) {
+      final initials = InitialsShield.forClub(
+        context,
+        club,
+        size: size,
+        ring: onRed,
+      );
+      if (initials != null) return initials;
+    }
+
     final shield = Icon(
       Icons.shield_rounded,
       size: onRed ? size * 0.58 : size,
-      color: AppColors.primary,
+      color: context.colors.primary,
       semanticLabel: 'Escudo genérico (sin escudo oficial)',
     );
 
@@ -306,11 +354,84 @@ class ClubCrest extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.colors.surface,
         shape: BoxShape.circle,
       ),
       child: shield,
+    );
+  }
+}
+
+/// Escudo provisorio de un club: círculo de color con sus iniciales en
+/// Barlow Condensed (`ClubShield` en `docs/diseno.md`). Los colores no son
+/// los reales de cada club; se reemplaza por el logo cuando exista.
+class InitialsShield extends StatelessWidget {
+  final String initials;
+  final Color color;
+  final double size;
+
+  /// Borde blanco, para usarlo sobre fondo rojo.
+  final bool ring;
+
+  const InitialsShield({
+    super.key,
+    required this.initials,
+    required this.color,
+    this.size = 32,
+    this.ring = false,
+  });
+
+  /// Escudo del club con el color del tema activo, o `null` si el club no
+  /// tiene iniciales y color.
+  static Widget? forClub(
+    BuildContext context,
+    Club club, {
+    double size = 32,
+    bool ring = false,
+  }) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final color = (dark ? club.colorDark : null) ?? club.color;
+    final initials = club.initials;
+
+    if (color == null || initials == null) return null;
+
+    return InitialsShield(
+      initials: initials,
+      color: color,
+      size: size,
+      ring: ring,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Escudo provisorio $initials',
+      excludeSemantics: true,
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: ring
+              ? Border.all(color: context.colors.onPrimary, width: 2)
+              : null,
+        ),
+        child: Text(
+          initials,
+          maxLines: 1,
+          style: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: size * 0.42,
+            height: 1,
+            fontWeight: FontWeight.w700,
+            color: context.colors.onPrimary,
+          ),
+        ),
+      ),
     );
   }
 }

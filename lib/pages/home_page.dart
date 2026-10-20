@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
             // Panel blanco superior: fecha y buscador. Las pestañas de día
             // (en FixtureView) continúan el mismo panel.
             ColoredBox(
-              color: AppColors.surface,
+              color: context.colors.surface,
               child: ContentWidth(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
@@ -194,8 +194,8 @@ class _RoundSelector extends StatelessWidget {
             children: [
               Text(
                 'FECHA ${round.round}',
-                style: AppText.eyebrow.copyWith(
-                  color: AppColors.primary,
+                style: AppText.eyebrow(context).copyWith(
+                  color: context.colors.primary,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
                 ),
@@ -224,7 +224,7 @@ class _RoundSelector extends StatelessWidget {
                             ? Icons.verified_outlined
                             : Icons.help_outline_rounded,
                         size: 13,
-                        color: AppColors.textMuted,
+                        color: context.colors.textMuted,
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Flexible(
@@ -234,7 +234,7 @@ class _RoundSelector extends StatelessWidget {
                               : 'Fuente sin verificar',
                           overflow: TextOverflow.ellipsis,
                           style: textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
+                            color: context.colors.textMuted,
                           ),
                         ),
                       ),

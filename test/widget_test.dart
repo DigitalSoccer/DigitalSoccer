@@ -73,7 +73,7 @@ void main() {
     );
   });
 
-  testWidgets('la app usa los tokens centralizados (rojo #B91C1C y slate)',
+  testWidgets('la app usa los tokens centralizados (rojo #B3202A y cálidos)',
       (tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -81,11 +81,11 @@ void main() {
     final context = tester.element(find.byType(Scaffold).first);
     final theme = Theme.of(context);
 
-    expect(theme.colorScheme.primary, const Color(0xFFB91C1C));
-    expect(theme.colorScheme.primary, AppColors.primary);
-    expect(theme.scaffoldBackgroundColor, const Color(0xFFF8FAFC));
-    expect(theme.colorScheme.surface, Colors.white);
-    expect(theme.colorScheme.onSurface, AppColors.text);
+    expect(theme.colorScheme.primary, const Color(0xFFB3202A));
+    expect(theme.colorScheme.primary, AppColors.light.primary);
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFF6F3F2));
+    expect(theme.colorScheme.onSurface, AppColors.light.text);
+    expect(context.colors, AppColors.light);
   });
 
   test('los pares de texto y fondo cumplen contraste WCAG AA (4.5:1)', () {
@@ -97,43 +97,44 @@ void main() {
       return (hi + 0.05) / (lo + 0.05);
     }
 
-    final pairs = {
-      'texto / tarjeta': (AppColors.text, AppColors.surface),
-      'texto / fondo': (AppColors.text, AppColors.background),
-      'etiqueta / tarjeta': (AppColors.textMuted, AppColors.surface),
-      'etiqueta / fondo y cabecera de tabla':
-          (AppColors.textMuted, AppColors.background),
-      'texto secundario / pista de pestañas y avisos':
-          (AppColors.textSecondary, AppColors.surfaceMuted),
-      'primario / tarjeta': (AppColors.primary, AppColors.surface),
-      'primario / fondo': (AppColors.primary, AppColors.background),
-      'blanco / botón primario': (AppColors.onPrimary, AppColors.primary),
-      'texto / contenedor primario':
-          (AppColors.onPrimaryContainer, AppColors.primaryContainer),
-      'insignia MI CLUB': (AppColors.primary, AppColors.primaryContainer),
-      'opción elegida en hoja inferior':
-          (AppColors.primary, AppColors.primarySoft),
-      'texto / fila de Mi Club': (AppColors.text, AppColors.primarySoft),
-      'texto secundario / fila de Mi Club':
-          (AppColors.textSecondary, AppColors.primarySoft),
-      'podio oro': (AppColors.goldFg, AppColors.goldBg),
-      'podio plata': (AppColors.silverFg, AppColors.silverBg),
-      'podio bronce': (AppColors.bronzeFg, AppColors.bronzeBg),
-      'error / tarjeta': (AppColors.error, AppColors.surface),
-      // Encabezado rojo de Inicio y barra superior.
-      'blanco / barra y encabezado rojo': (AppColors.onPrimary, AppColors.primary),
-      'blanco / panel MI CLUB': (AppColors.onPrimary, AppColors.primaryDeep),
-      'texto suave / panel MI CLUB':
-          (AppColors.primaryContainer, AppColors.primaryDeep),
-      'rojo / tarjeta (cifras y "Ver tabla")':
-          (AppColors.primary, AppColors.surface),
-      'rojo / fila de Mi Club': (AppColors.primary, AppColors.primarySoft),
-    };
+    for (final (paletteName, c) in [
+      ('claro', AppColors.light),
+      ('oscuro', AppColors.dark),
+    ]) {
+      final pairs = {
+        'texto / tarjeta': (c.text, c.surface),
+        'texto / fondo': (c.text, c.background),
+        'etiqueta / tarjeta': (c.textMuted, c.surface),
+        'etiqueta / fondo': (c.textMuted, c.background),
+        'texto secundario / pista de pestañas':
+            (c.textSecondary, c.surfaceMuted),
+        'texto rojo / tarjeta': (c.primaryText, c.surface),
+        'texto rojo / fondo': (c.primaryText, c.background),
+        'blanco / botón y chip elegido': (c.onPrimary, c.primary),
+        'texto / contenedor primario':
+            (c.onPrimaryContainer, c.primaryContainer),
+        'insignia MI CLUB': (c.primaryText, c.primaryContainer),
+        'opción elegida en hoja inferior': (c.primaryText, c.primarySoft),
+        'texto / fila de Mi Club': (c.text, c.primarySoft),
+        'texto secundario / fila de Mi Club': (c.textSecondary, c.primarySoft),
+        'texto / fila de mi equipo': (c.text, c.ownTeam),
+        'podio oro': (c.goldFg, c.goldBg),
+        'podio plata': (c.silverFg, c.silverBg),
+        'podio bronce': (c.bronzeFg, c.bronzeBg),
+        'error / tarjeta': (c.error, c.surface),
+        'aviso: título': (c.noticeText, c.noticeBg),
+        'aviso: cuerpo': (c.noticeBody, c.noticeBg),
+        'etiqueta neutra': (c.tagNeutralText, c.tagNeutralBg),
+        'blanco / panel rojo oscuro': (c.onPrimary, c.primaryDeep),
+        'texto suave / tarjeta roja': (c.onPrimaryMuted, c.primary),
+        'texto suave / panel rojo oscuro': (c.onPrimaryMuted, c.primaryDeep),
+      };
 
-    pairs.forEach((name, pair) {
-      expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5),
-          reason: name);
-    });
+      pairs.forEach((name, pair) {
+        expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5),
+            reason: '$paletteName: $name');
+      });
+    }
   });
 
   group('Diseño adaptable (sin desbordes)', () {
@@ -157,7 +158,7 @@ void main() {
         await tester.pageBack();
         await tester.pumpAndSettle();
 
-        for (final tab in ['Inicio', 'Tabla', 'Clubes', 'Fixture']) {
+        for (final tab in ['Inicio', 'Tabla', 'Noticias', 'Clubes', 'Fixture']) {
           await tester.tap(find.text(tab).last);
           await tester.pumpAndSettle();
         }

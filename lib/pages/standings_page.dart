@@ -199,12 +199,12 @@ class _StandingsPageState extends State<StandingsPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(top: 1),
                         child: Icon(
                           Icons.info_outline,
                           size: 14,
-                          color: AppColors.textMuted,
+                          color: context.colors.textMuted,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.xs),
@@ -216,7 +216,7 @@ class _StandingsPageState extends State<StandingsPage> {
                             if (data.general.note != null) data.general.note!,
                           ].join(' '),
                           style: textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
+                            color: context.colors.textMuted,
                           ),
                         ),
                       ),
@@ -282,12 +282,12 @@ class _StandingsHeader extends StatelessWidget {
       width: width,
       child: Tooltip(
         message: tooltip,
-        child: Text(label, textAlign: TextAlign.center, style: AppText.eyebrow),
+        child: Text(label, textAlign: TextAlign.center, style: AppText.eyebrow(context)),
       ),
     );
 
     return Container(
-      color: AppColors.background,
+      color: context.colors.background,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md + _stripeWidth,
         AppSpacing.md,
@@ -298,7 +298,7 @@ class _StandingsHeader extends StatelessWidget {
         children: [
           column('POS', _positionWidth, 'Posición'),
           const SizedBox(width: AppSpacing.md),
-          const Expanded(child: Text('CLUB', style: AppText.eyebrow)),
+          Expanded(child: Text('CLUB', style: AppText.eyebrow(context))),
           column('PJ', _statWidth, 'Partidos jugados'),
           column('DIF', _statWidth, 'Diferencia de goles'),
           column('PTS', _pointsWidth, 'Puntos'),
@@ -326,8 +326,8 @@ class _StandingRow extends StatelessWidget {
     // Sobre el fondo rojo suave de Mi Club, el gris secundario más oscuro
     // mantiene el contraste.
     final statColor = isFavorite
-        ? AppColors.textSecondary
-        : AppColors.textMuted;
+        ? context.colors.textSecondary
+        : context.colors.textMuted;
 
     Widget stat(String value) => SizedBox(
       width: _statWidth,
@@ -343,11 +343,11 @@ class _StandingRow extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isFavorite ? AppColors.primarySoft : null,
+        color: isFavorite ? context.colors.primarySoft : null,
         border: Border(
-          top: const BorderSide(color: AppColors.border),
+          top: BorderSide(color: context.colors.border),
           left: BorderSide(
-            color: isFavorite ? AppColors.primaryBright : Colors.transparent,
+            color: isFavorite ? context.colors.primaryBright : Colors.transparent,
             width: _stripeWidth,
           ),
         ),
@@ -368,7 +368,7 @@ class _StandingRow extends StatelessWidget {
               child: Row(
                 children: [
                   // Escudo genérico por ahora; aquí irá el de cada club.
-                  const ClubCrest(size: 22),
+                  ClubCrest(size: 22, clubId: standing.clubId),
                   const SizedBox(width: AppSpacing.sm),
                   Flexible(
                     child: Text(
@@ -383,10 +383,10 @@ class _StandingRow extends StatelessWidget {
                   ),
                   if (isFavorite) ...[
                     const SizedBox(width: AppSpacing.xs),
-                    const Icon(
+                    Icon(
                       Icons.star_rounded,
                       size: 16,
-                      color: AppColors.favorite,
+                      color: context.colors.favorite,
                       semanticLabel: 'Mi Club',
                     ),
                   ],
@@ -402,7 +402,7 @@ class _StandingRow extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: AppColors.text,
+                  color: context.colors.text,
                   fontFeatures: AppText.tabular,
                 ),
               ),

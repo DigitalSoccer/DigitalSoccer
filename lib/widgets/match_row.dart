@@ -83,7 +83,7 @@ class _MatchRowState extends State<MatchRow> {
             width: 3,
             height: 20,
             decoration: BoxDecoration(
-              color: MatchStatusBadge.colorFor(widget.status),
+              color: MatchStatusBadge.colorFor(context, widget.status),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
           ),
@@ -96,7 +96,7 @@ class _MatchRowState extends State<MatchRow> {
               widget.time,
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary,
+                color: context.colors.primary,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -111,7 +111,7 @@ class _MatchRowState extends State<MatchRow> {
                 Text(
                   widget.category,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.text,
+                    color: context.colors.text,
                   ),
                 ),
                 MatchStatusBadge(status: widget.status),
@@ -130,8 +130,8 @@ class _MatchRowState extends State<MatchRow> {
                   : Icons.star_border,
               size: 20,
               color: isFavorite
-                  ? AppColors.favorite
-                  : AppColors.outline,
+                  ? context.colors.favorite
+                  : context.colors.outline,
             ),
             onPressed: toggleFavorite,
           ),

@@ -67,9 +67,9 @@ class FixtureView extends StatelessWidget {
       child: Column(
         children: [
           DecoratedBox(
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              border: Border(bottom: BorderSide(color: AppColors.border)),
+            decoration: BoxDecoration(
+              color: context.colors.surface,
+              border: Border(bottom: BorderSide(color: context.colors.border)),
             ),
             child: ContentWidth(
               child: Padding(

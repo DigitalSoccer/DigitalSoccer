@@ -77,7 +77,7 @@ Future<T?> showSelectionSheet<T>({
               AppSpacing.xl,
               AppSpacing.xs,
             ),
-            child: Text(section.title!.toUpperCase(), style: AppText.eyebrow),
+            child: Text(section.title!.toUpperCase(), style: AppText.eyebrow(context)),
           ),
         for (final option in section.options)
           SheetOptionTile(
@@ -112,7 +112,7 @@ class SheetOptionTile extends StatelessWidget {
         vertical: 2,
       ),
       child: Material(
-        color: selected ? AppColors.primarySoft : Colors.transparent,
+        color: selected ? context.colors.primarySoft : Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -129,15 +129,15 @@ class SheetOptionTile extends StatelessWidget {
                     label,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                      color: selected ? AppColors.primary : AppColors.text,
+                      color: selected ? context.colors.primary : context.colors.text,
                     ),
                   ),
                 ),
                 if (selected)
-                  const Icon(
+                  Icon(
                     Icons.check_rounded,
                     size: 20,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                   ),
               ],
             ),
@@ -175,18 +175,18 @@ class SelectorField extends StatelessWidget {
           Container(
             width: 36,
             height: 36,
-            decoration: const BoxDecoration(
-              color: AppColors.primarySoft,
+            decoration: BoxDecoration(
+              color: context.colors.primarySoft,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: AppColors.primary),
+            child: Icon(icon, size: 20, color: context.colors.primary),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label.toUpperCase(), style: AppText.eyebrow),
+                Text(label.toUpperCase(), style: AppText.eyebrow(context)),
                 const SizedBox(height: 2),
                 Text(
                   value,
@@ -196,9 +196,9 @@ class SelectorField extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: AppColors.textMuted,
+            color: context.colors.textMuted,
           ),
         ],
       ),

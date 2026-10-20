@@ -39,7 +39,7 @@ class _Header extends StatelessWidget {
         );
 
     return Container(
-      color: AppColors.background,
+      color: context.colors.background,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
@@ -51,8 +51,8 @@ class _Header extends StatelessWidget {
           Expanded(child: Text('JUGADOR', style: style)),
           stat(Text('PJ', style: style)),
           stat(Text('G', style: style)),
-          stat(const DisciplineCard(color: AppColors.cardYellow)),
-          stat(const DisciplineCard(color: AppColors.cardRed)),
+          stat(DisciplineCard(color: context.colors.cardYellow)),
+          stat(DisciplineCard(color: context.colors.cardRed)),
         ],
       ),
     );
@@ -76,15 +76,15 @@ class _PlayerRow extends StatelessWidget {
             textAlign: TextAlign.center,
             style: textTheme.bodyMedium?.copyWith(
               fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
-              color: strong ? AppColors.primary : AppColors.text,
+              color: strong ? context.colors.primary : context.colors.text,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         );
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: context.colors.border)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -98,7 +98,7 @@ class _PlayerRow extends StatelessWidget {
               child: Text(
                 player.number == null ? '–' : '${player.number}',
                 style: textTheme.titleSmall?.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ),
             ),
@@ -128,7 +128,7 @@ class SquadLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: AppColors.textMuted,
+          color: context.colors.textMuted,
         );
 
     return Padding(
@@ -148,14 +148,14 @@ class SquadLegend extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const DisciplineCard(color: AppColors.cardYellow),
+              DisciplineCard(color: context.colors.cardYellow),
               Text(' amarillas', style: style),
             ],
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const DisciplineCard(color: AppColors.cardRed),
+              DisciplineCard(color: context.colors.cardRed),
               Text(' rojas', style: style),
             ],
           ),

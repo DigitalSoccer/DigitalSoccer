@@ -27,7 +27,7 @@ class ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return _StateMessage(
       icon: Icons.cloud_off_outlined,
-      iconColor: AppColors.error,
+      iconColor: context.colors.error,
       message: message,
       action: onRetry == null
           ? null
@@ -54,7 +54,7 @@ class EmptyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return _StateMessage(
       icon: icon,
-      iconColor: AppColors.textMuted,
+      iconColor: context.colors.textMuted,
       message: message,
     );
   }
@@ -84,8 +84,8 @@ class _StateMessage extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceMuted,
+              decoration: BoxDecoration(
+                color: context.colors.surfaceMuted,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -101,7 +101,7 @@ class _StateMessage extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                     ),
               ),
             ),

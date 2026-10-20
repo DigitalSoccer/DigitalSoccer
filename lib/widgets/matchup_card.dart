@@ -33,12 +33,12 @@ class MatchupCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final showHeader = dayLabel != null || roundLabel != null || highlighted;
 
-    Widget team(String name) => Expanded(
+    Widget team(String name, String clubId) => Expanded(
           child: Column(
             children: [
               // Escudo genérico: no representa el escudo oficial del club.
-              const ClubCrest(size: 36),
-              const SizedBox(height: AppSpacing.xs),
+              ClubCrest(size: 36, clubId: clubId),
+              SizedBox(height: AppSpacing.xs),
               Text(
                 name,
                 textAlign: TextAlign.center,
@@ -53,16 +53,16 @@ class MatchupCard extends StatelessWidget {
         );
 
     return SurfaceCard(
-      margin: const EdgeInsets.fromLTRB(
+      margin: EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.md,
         AppSpacing.lg,
         0,
       ),
       shadow: AppShadows.md,
-      borderColor: highlighted ? AppColors.primary : null,
+      borderColor: highlighted ? context.colors.primary : null,
       onTap: onTap,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
           if (showHeader) ...[
@@ -78,7 +78,7 @@ class MatchupCard extends StatelessWidget {
                 if (roundLabel != null)
                   Text(
                     roundLabel!,
-                    style: AppText.eyebrow.copyWith(color: AppColors.primary),
+                    style: AppText.eyebrow(context).copyWith(color: context.colors.primary),
                   ),
               ],
             ),
@@ -87,14 +87,14 @@ class MatchupCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              team(matchup.home),
+              team(matchup.home, matchup.homeId),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.sm,
                 ),
                 child: _Kickoff(matchup: matchup),
               ),
-              team(matchup.away),
+              team(matchup.away, matchup.awayId),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -102,7 +102,7 @@ class MatchupCard extends StatelessWidget {
             matchup.fieldNames.join(' · '),
             textAlign: TextAlign.center,
             style: textTheme.bodySmall?.copyWith(
-              color: AppColors.textMuted,
+              color: context.colors.textMuted,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -111,7 +111,7 @@ class MatchupCard extends StatelessWidget {
             matchup.categories.join(' · '),
             textAlign: TextAlign.center,
             style: textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -139,10 +139,10 @@ class _Kickoff extends StatelessWidget {
       children: [
         Text(
           matchup.firstTime,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: AppColors.text,
+            color: context.colors.text,
             fontFeatures: AppText.tabular,
           ),
         ),
@@ -152,7 +152,7 @@ class _Kickoff extends StatelessWidget {
         else
           Text(
             count == 1 ? '1 partido' : '$count partidos',
-            style: AppText.eyebrow,
+            style: AppText.eyebrow(context),
           ),
       ],
     );

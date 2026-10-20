@@ -105,11 +105,11 @@ class _InicioPageState extends State<InicioPage> {
           ClubTile(
             club: club,
             trailing: club.id == data.club?.id
-                ? const Padding(
+                ? Padding(
                     padding: EdgeInsets.only(right: AppSpacing.sm),
                     child: Icon(
                       Icons.check_circle_rounded,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                   )
                 : null,
@@ -160,9 +160,9 @@ class _ChooseClub extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
         DecoratedBox(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            border: Border(bottom: BorderSide(color: AppColors.border)),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            border: Border(bottom: BorderSide(color: context.colors.border)),
           ),
           child: ContentWidth(
             child: Padding(
@@ -177,14 +177,14 @@ class _ChooseClub extends StatelessWidget {
                   Container(
                     width: 64,
                     height: 64,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primarySoft,
+                    decoration: BoxDecoration(
+                      color: context.colors.primarySoft,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.sports_soccer_rounded,
                       size: 32,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -199,7 +199,7 @@ class _ChooseClub extends StatelessWidget {
                     'posición en la tabla.',
                     textAlign: TextAlign.center,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -221,11 +221,11 @@ class _ChooseClub extends StatelessWidget {
             ContentWidth(
               child: ClubTile(
                 club: club,
-                trailing: const Padding(
+                trailing: Padding(
                   padding: EdgeInsets.only(right: AppSpacing.sm),
                   child: Icon(
                     Icons.chevron_right_rounded,
-                    color: AppColors.outline,
+                    color: context.colors.outline,
                   ),
                 ),
                 onTap: () => onSelected(club),
@@ -386,9 +386,9 @@ class _RedHeader extends StatelessWidget {
       children: [
         Positioned.fill(
           bottom: _overlap,
-          child: const DecoratedBox(
+          child: DecoratedBox(
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: context.colors.primary,
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(AppRadius.xl),
               ),
@@ -410,12 +410,12 @@ class _RedHeader extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryDeep,
+                    color: context.colors.primaryDeep,
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   child: Row(
                     children: [
-                      const ClubCrest(size: 52, onRed: true),
+                      ClubCrest(size: 52, onRed: true, clubId: club.id),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Column(
@@ -423,15 +423,15 @@ class _RedHeader extends StatelessWidget {
                           children: [
                             Text(
                               'MI CLUB',
-                              style: AppText.eyebrow.copyWith(
-                                color: AppColors.primaryContainer,
+                              style: AppText.eyebrow(context).copyWith(
+                                color: context.colors.primaryContainer,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             Text(
                               club.name,
                               style: textTheme.titleLarge?.copyWith(
-                                color: AppColors.onPrimary,
+                                color: context.colors.onPrimary,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -441,7 +441,7 @@ class _RedHeader extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: textTheme.bodySmall?.copyWith(
-                                  color: AppColors.primaryContainer,
+                                  color: context.colors.primaryContainer,
                                 ),
                               ),
                           ],
@@ -451,8 +451,8 @@ class _RedHeader extends StatelessWidget {
                       FilledButton.icon(
                         onPressed: onChangeClub,
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.surface,
-                          foregroundColor: AppColors.primary,
+                          backgroundColor: context.colors.surface,
+                          foregroundColor: context.colors.primary,
                           shape: const StadiumBorder(),
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.md,
@@ -516,7 +516,7 @@ class _MetricCard extends StatelessWidget {
       child: StatTile(
         label: label,
         value: value,
-        valueColor: AppColors.primary,
+        valueColor: context.colors.primary,
       ),
     );
   }
@@ -555,7 +555,7 @@ class _StandingsPreview extends StatelessWidget {
           child: Text(
             '···',
             textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(color: AppColors.outline),
+            style: textTheme.bodySmall?.copyWith(color: context.colors.outline),
           ),
         ),
         _PreviewRow(
@@ -622,7 +622,7 @@ class _PreviewRow extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: isMyClub ? AppColors.primarySoft : null,
+        color: isMyClub ? context.colors.primarySoft : null,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -633,11 +633,11 @@ class _PreviewRow extends StatelessWidget {
               '$rank',
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: isMyClub ? AppColors.primary : AppColors.text,
+                color: isMyClub ? context.colors.primary : context.colors.text,
               ),
             ),
           ),
-          const ClubCrest(size: 22),
+          ClubCrest(size: 22, clubId: standing.clubId),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

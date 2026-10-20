@@ -32,3 +32,22 @@ flutter:
     - assets/data/standings.json
     - assets/data/clubs.json
     - assets/data/categories.json
+  # Barlow y Barlow Condensed (licencia SIL OFL 1.1, ver assets/fonts/OFL.txt),
+  # empaquetadas para funcionar sin internet.
+  fonts:
+    - family: Barlow
+      fonts:
+        - asset: assets/fonts/Barlow-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Barlow-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Barlow-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Barlow-Bold.ttf
+          weight: 700
+    - family: BarlowCondensed
+      fonts:
+        - asset: assets/fonts/BarlowCondensed-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/BarlowCondensed-Bold.ttf
+          weight: 700

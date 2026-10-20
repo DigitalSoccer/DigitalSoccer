@@ -25,7 +25,7 @@ class SegmentedTabBar extends StatelessWidget {
       height: height,
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
-        color: AppColors.surfaceMuted,
+        color: context.colors.surfaceMuted,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: TabBar(

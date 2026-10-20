@@ -24,15 +24,15 @@ class MatchupDetailPage extends StatelessWidget {
     final allNormal = matchup.entries.every((e) => e.match.status == 'normal');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Partido')),
+      appBar: AppBar(title: Text('Partido')),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+        padding: EdgeInsets.only(bottom: AppSpacing.xl),
         children: [
           ContentWidth(
             child: SurfaceCard(
-              margin: const EdgeInsets.all(AppSpacing.lg),
+              margin: EdgeInsets.all(AppSpacing.lg),
               shadow: AppShadows.md,
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 children: [
                   Row(
@@ -42,7 +42,7 @@ class MatchupDetailPage extends StatelessWidget {
                           subtitle,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: AppColors.textMuted,
+                                color: context.colors.textMuted,
                                 fontWeight: FontWeight.w500,
                               ),
                         ),
@@ -56,7 +56,7 @@ class MatchupDetailPage extends StatelessWidget {
                     avatarSize: 64,
                     center: Text(
                       'VS',
-                      style: AppText.eyebrow.copyWith(
+                      style: AppText.eyebrow(context).copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.5,
@@ -99,11 +99,11 @@ class MatchupScoreline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget team(String name) {
+    Widget team(String name, String clubId) {
       return Expanded(
         child: Column(
           children: [
-            ClubAvatar(size: avatarSize),
+            ClubAvatar(size: avatarSize, clubId: clubId),
             const SizedBox(height: AppSpacing.sm),
             Text(
               name,
@@ -122,7 +122,7 @@ class MatchupScoreline extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        team(matchup.home),
+        team(matchup.home, matchup.homeId),
         Padding(
           padding: EdgeInsets.only(
             top: avatarSize * 0.12,
@@ -131,7 +131,7 @@ class MatchupScoreline extends StatelessWidget {
           ),
           child: center,
         ),
-        team(matchup.away),
+        team(matchup.away, matchup.awayId),
       ],
     );
   }
@@ -169,14 +169,14 @@ class _FieldMatches extends StatelessWidget {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primarySoft,
+                  decoration: BoxDecoration(
+                    color: context.colors.primarySoft,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.stadium_outlined,
                     size: 18,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -192,15 +192,15 @@ class _FieldMatches extends StatelessWidget {
                   entries.length == 1
                       ? '1 partido'
                       : '${entries.length} partidos',
-                  style: AppText.eyebrow,
+                  style: AppText.eyebrow(context),
                 ),
               ],
             ),
           ),
           for (final entry in entries)
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.border)),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: context.colors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),

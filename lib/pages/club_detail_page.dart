@@ -186,8 +186,8 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return const ColoredBox(
-      color: AppColors.background,
+    return ColoredBox(
+      color: context.colors.background,
       child: ContentWidth(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -251,14 +251,14 @@ class _SquadTab extends StatelessWidget {
                     leading: Container(
                       width: 36,
                       height: 36,
-                      decoration: const BoxDecoration(
-                        color: AppColors.surfaceMuted,
+                      decoration: BoxDecoration(
+                        color: context.colors.surfaceMuted,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.groups_outlined,
                         size: 20,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     title: Text(
@@ -272,7 +272,7 @@ class _SquadTab extends StatelessWidget {
                           ? 'Plantel aún no disponible'
                           : '${players.length} jugadores',
                       style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
+                        color: context.colors.textMuted,
                       ),
                     ),
                     children: [
@@ -287,7 +287,7 @@ class _SquadTab extends StatelessWidget {
                           child: Text(
                             'El plantel de $category aún no está disponible.',
                             style: textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textMuted,
+                              color: context.colors.textMuted,
                             ),
                           ),
                         )
