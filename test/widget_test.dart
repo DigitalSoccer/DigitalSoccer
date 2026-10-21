@@ -32,16 +32,6 @@ Widget wrap(Widget child, AssetBundle bundle) {
 Club club(String id, String name) =>
     Club(id: id, name: name, shortName: name, field: '');
 
-/// Dato destacado visible con su etiqueta (p. ej. "POSICIÓN" / "17").
-Finder stat(String label, String value) {
-  return find.descendant(
-    of: find.byWidgetPredicate(
-      (w) => w is StatTile && w.label == label && w.value == value,
-    ),
-    matching: find.text(value),
-  );
-}
-
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -180,58 +170,60 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
-        expect(stat('Puntos', '110'), findsOneWidget);
+        expect(find.text('110'), findsOneWidget);
       });
     }
   });
 
   group('Detalle de club', () {
-    testWidgets('Arturo Prat muestra su posición y puntos', (tester) async {
-      await tester.pumpWidget(wrap(
-        ClubDetailPage(club: club('arturo-prat', 'Arturo Prat')),
-        realDataBundle(),
-      ));
+    Future<void> pump(WidgetTester tester, Club c) async {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(wrap(ClubDetailPage(club: c), realDataBundle()));
       await tester.pumpAndSettle();
+    }
 
-      expect(stat('Posición', '17'), findsOneWidget);
-      expect(stat('Puntos', '110'), findsOneWidget);
+    testWidgets('Arturo Prat muestra posición, puntos y distancia al líder',
+        (tester) async {
+      await pump(tester, club('arturo-prat', 'Arturo Prat'));
+
+      // Tabla general: 17°, 110 puntos, líder con 394.
+      expect(find.text('17°'), findsOneWidget);
+      expect(find.text('110'), findsOneWidget);
+      expect(find.text('\u2212284'), findsOneWidget);
     });
 
     testWidgets("Bdo. O'Higgins muestra su posición y puntos",
         (tester) async {
-      await tester.pumpWidget(wrap(
-        ClubDetailPage(club: club('bdo-ohiggins', "Bdo. O'Higgins")),
-        realDataBundle(),
-      ));
-      await tester.pumpAndSettle();
+      await pump(tester, club('bdo-ohiggins', "Bdo. O'Higgins"));
 
-      expect(stat('Posición', '5'), findsOneWidget);
-      expect(stat('Puntos', '258'), findsOneWidget);
+      expect(find.text('5°'), findsOneWidget);
+      expect(find.text('258'), findsOneWidget);
+      expect(find.text('\u2212136'), findsOneWidget);
+    });
+
+    testWidgets('el líder lo indica en "Del líder"', (tester) async {
+      await pump(tester, club('chiguayante-sur', 'Chiguayante Sur'));
+
+      expect(find.text('1°'), findsOneWidget);
+      expect(find.text('Líder'), findsOneWidget);
     });
 
     testWidgets('un club fuera de la tabla no inventa posición',
         (tester) async {
-      await tester.pumpWidget(wrap(
-        ClubDetailPage(club: club('club-nuevo', 'Club Nuevo')),
-        realDataBundle(),
-      ));
-      await tester.pumpAndSettle();
+      await pump(tester, club('club-nuevo', 'Club Nuevo'));
 
-      expect(find.byType(StatTile), findsNothing);
       expect(
-        find.text('Sin información en la tabla de posiciones.'),
+        find.text('Sin datos de este club en la tabla General.'),
         findsOneWidget,
       );
       expect(
         find.text('Este club no tiene series en las fechas cargadas.'),
         findsOneWidget,
       );
-
-      await tester.tap(find.text('Próximas fechas'));
-      await tester.pumpAndSettle();
-
       expect(
-        find.text('Este club no tiene partidos en la fecha cargada.'),
+        find.text('Este club no tiene partidos en la fecha 21.'),
         findsOneWidget,
       );
     });
@@ -429,9 +421,6 @@ void main() {
         ClubDetailPage(club: club('independiente', 'Independiente')),
         realDataBundle(),
       ));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Próximas fechas'));
       await tester.pumpAndSettle();
 
       expect(find.text('Libre en la fecha 21.'), findsOneWidget);

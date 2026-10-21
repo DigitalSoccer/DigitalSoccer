@@ -258,3 +258,25 @@ Pedido del equipo: los chips se ven bien y hacen más amigable la app.
   quiero mirar" lleva al Fixture sin guardar equipo. Aún no se pueden
   seguir varios equipos (el mockup lo menciona; queda pendiente).
 - Ajustes muestra "Mi equipo" con su serie ("Honor · Cambiar").
+
+## Ficha del club (2026-10-21)
+
+Según `docs/mockup/Club.dc.html`, en una sola vista (sin pestañas):
+
+- Volver y la estrella para marcar el club como mi equipo; escudo de 92,
+  nombre, "ANFA Caupolicán · Chiguayante" y la cancha.
+- Los mismos chips de serie que el resto de la app (elección compartida).
+- Tres tarjetas: **Posición** (roja, número en amarillo), **Puntos** y
+  **Del líder** ("−13", o "Líder"). Sin datos en la tabla elegida se
+  avisa en vez de inventar posición.
+- **Próximos partidos**: filas con el día (SÁB 10), "vs Rival", hora,
+  cancha y serie (o "N partidos"), y la etiqueta de la fecha. Siguen la
+  serie elegida. Sin fechas futuras, se muestra la última programada y
+  se avisa.
+- **Plantel**: con una serie elegida, la tabla de jugadores (PJ, goles y
+  tarjetas, pedida por el equipo); con General o un total, la lista de
+  series del club, y tocar una la elige.
+- El mockup muestra la posición del jugador ("Arquero"); no la tenemos y
+  no se inventa. Tampoco hay jugadores cargados aún.
+- Se eliminan widgets sin uso: `ClubHeroHeader`, `SegmentedTabBar` y
+  `StatTile`/`StatsCard`.

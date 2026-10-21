@@ -7,8 +7,6 @@ import 'clubs_scope.dart';
 export 'app_bottom_sheet.dart';
 export 'clubs_scope.dart';
 export 'info_banner.dart';
-export 'segmented_tab_bar.dart';
-export 'stats_card.dart';
 export 'surface_card.dart';
 
 /// Avatar circular de club. NO es un escudo: los escudos oficiales aún no

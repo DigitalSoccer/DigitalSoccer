@@ -7,6 +7,7 @@ import 'package:anfa_chiguayante/pages/club_detail_page.dart';
 import 'package:anfa_chiguayante/pages/matchup_detail_page.dart';
 import 'package:anfa_chiguayante/services/club_data_service.dart';
 import 'package:anfa_chiguayante/services/squad_service.dart';
+import 'package:anfa_chiguayante/services/standings_catalog.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -110,35 +111,35 @@ void main() {
     });
   });
 
-  group('Ficha del club: pestaña Plantel', () {
-    void tall(WidgetTester tester) {
-      tester.view.physicalSize = const Size(800, 3000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-    }
+  void tall(WidgetTester tester) {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+  }
 
-    Future<void> pumpDetail(WidgetTester tester, AssetBundle bundle) async {
-      await tester.pumpWidget(wrap(
-        ClubDetailPage(club: prat, today: DateTime(2026, 10, 15)),
-        bundle,
-      ));
-      await tester.pumpAndSettle();
-    }
+  Future<void> pumpDetail(
+    WidgetTester tester,
+    AssetBundle bundle, {
+    DateTime? today,
+  }) async {
+    await tester.pumpWidget(wrap(
+      ClubDetailPage(club: prat, today: today ?? DateTime(2026, 10, 15)),
+      bundle,
+    ));
+    await tester.pumpAndSettle();
+  }
 
-    testWidgets('muestra las dos pestañas y las series desplegables',
-        (tester) async {
+  group('Ficha del club: plantel', () {
+    testWidgets('con General lista las series del club', (tester) async {
       tall(tester);
       await pumpDetail(tester, realDataBundle());
 
       expect(find.text('Plantel'), findsOneWidget);
-      expect(find.text('Próximas fechas'), findsOneWidget);
 
-      // Series de Arturo Prat en las fechas 11 y 21, de menor a mayor.
-      final series = tester
-          .widgetList<ExpansionTile>(find.byType(ExpansionTile))
-          .map((t) => (t.title as Text).data)
-          .toList();
-      expect(series, [
+      // Series de Arturo Prat en las fechas 11 y 21, de menor a mayor
+      // (la última aparición de cada nombre es la fila del plantel; antes
+      // están los chips).
+      const series = [
         '1° Infantil',
         'Juveniles',
         'S. Senior',
@@ -146,83 +147,82 @@ void main() {
         'Primera',
         'Senior',
         'Honor',
-      ]);
+      ];
+      final ys = [
+        for (final name in series) tester.getTopLeft(find.text(name).last).dy,
+      ];
+      for (var i = 1; i < ys.length; i++) {
+        expect(ys[i], greaterThan(ys[i - 1]), reason: series[i]);
+      }
       expect(find.text('Plantel aún no disponible'), findsNWidgets(7));
 
-      await tester.tap(find.text('Honor'));
+      // Tocar una serie la elige en los chips.
+      await tester.tap(find.text('Honor').last);
       await tester.pumpAndSettle();
 
+      expect(find.text('Plantel · Honor'), findsOneWidget);
       expect(
         find.text('El plantel de Honor aún no está disponible.'),
         findsOneWidget,
       );
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(StandingsCatalog.prefsKey), 'serie:Honor');
     });
 
-    testWidgets('al desplegar una serie con jugadores muestra la tabla',
+    testWidgets('con una serie con jugadores muestra la tabla',
+        (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        StandingsCatalog.prefsKey: 'serie:Honor',
+      });
+      await pumpDetail(tester, bundleWithExamples());
+
+      expect(find.text('Plantel · Honor'), findsOneWidget);
+      expect(find.text('JUGADOR'), findsOneWidget);
+      expect(find.text('Jugador Ejemplo Uno'), findsOneWidget);
+      expect(find.text('18'), findsOneWidget);
+      expect(find.text('PJ: partidos jugados'), findsOneWidget);
+    });
+
+    testWidgets('con General cuenta los jugadores de cada serie',
         (tester) async {
       tall(tester);
       await pumpDetail(tester, bundleWithExamples());
 
       expect(find.text('2 jugadores'), findsOneWidget);
       expect(find.text('Jugador Ejemplo Uno'), findsNothing);
-
-      await tester.tap(find.text('Honor'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('JUGADOR'), findsOneWidget);
-      expect(find.text('Jugador Ejemplo Uno'), findsOneWidget);
-      expect(find.text('18'), findsOneWidget);
-      expect(find.text('11'), findsOneWidget);
-      // Sin número de camiseta se muestra un guion.
-      expect(find.text('–'), findsOneWidget);
-      expect(find.text('PJ: partidos jugados'), findsOneWidget);
     });
 
     testWidgets('sin desbordes a 320 px con la tabla abierta', (tester) async {
-      tester.view.physicalSize = const Size(320, 1400);
+      tester.view.physicalSize = const Size(320, 1800);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
+      SharedPreferences.setMockInitialValues({
+        StandingsCatalog.prefsKey: 'serie:Honor',
+      });
 
       await pumpDetail(tester, bundleWithExamples());
-      await tester.tap(find.text('Honor'));
-      await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
       expect(find.text('Jugador Ejemplo Uno'), findsOneWidget);
     });
   });
 
-  group('Ficha del club: pestaña Próximas fechas', () {
-    void tall(WidgetTester tester) {
-      tester.view.physicalSize = const Size(800, 3000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-    }
-
-    Future<void> openUpcoming(WidgetTester tester, DateTime today) async {
-      await tester.pumpWidget(wrap(
-        ClubDetailPage(club: prat, today: today),
-        realDataBundle(),
-      ));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Próximas fechas'));
-      await tester.pumpAndSettle();
-    }
-
+  group('Ficha del club: próximos partidos', () {
     testWidgets('sin fechas futuras avisa y muestra la última programada',
         (tester) async {
       tall(tester);
       // La fecha 21 se jugó el 10 y 11 de octubre.
-      await openUpcoming(tester, DateTime(2026, 10, 15));
+      await pumpDetail(tester, realDataBundle());
 
       expect(
         find.textContaining('Aún no hay próximas fechas cargadas'),
         findsOneWidget,
       );
-      expect(find.text('FECHA 21 · SÁB 10 – DOM 11 OCT 2026'), findsOneWidget);
-      expect(find.text('Maestranza'), findsOneWidget);
+      expect(find.text('vs Maestranza'), findsOneWidget);
+      expect(find.text('Fecha 21'), findsNWidgets(3));
 
-      await tester.tap(find.text('Maestranza'));
+      await tester.tap(find.text('vs Maestranza'));
       await tester.pumpAndSettle();
 
       expect(find.byType(MatchupDetailPage), findsOneWidget);
@@ -230,15 +230,29 @@ void main() {
 
     testWidgets('con una fecha futura la muestra sin aviso', (tester) async {
       tall(tester);
-      await openUpcoming(tester, DateTime(2026, 10, 1));
+      await pumpDetail(tester, realDataBundle(), today: DateTime(2026, 10, 1));
 
       expect(
         find.textContaining('Aún no hay próximas fechas cargadas'),
         findsNothing,
       );
-      expect(find.text('FECHA 21 · SÁB 10 – DOM 11 OCT 2026'), findsOneWidget);
       // Sábado y domingo vs Bdo. O'Higgins, y domingo vs Maestranza.
-      expect(find.text("Bdo. O'Higgins"), findsNWidgets(2));
+      expect(find.text("vs Bdo. O'Higgins"), findsNWidgets(2));
+      expect(find.text('SÁB'), findsOneWidget);
+      expect(find.text('DOM'), findsNWidgets(2));
+    });
+
+    testWidgets('con una serie elegida muestra solo sus partidos',
+        (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        StandingsCatalog.prefsKey: 'serie:Honor',
+      });
+      await pumpDetail(tester, realDataBundle());
+
+      // Cada fila es un solo partido y nombra la serie.
+      expect(find.textContaining('· Honor'), findsWidgets);
+      expect(find.textContaining(RegExp(r'\d+ partidos')), findsNothing);
     });
   });
 }

@@ -477,7 +477,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       elevation: 0,
     ),
 
-    // Pestañas píldora (ver `SegmentedTabBar`).
+    // Pestañas píldora (TabBar de Material).
     tabBarTheme: TabBarThemeData(
       labelColor: c.text,
       unselectedLabelColor: c.textSecondary,
