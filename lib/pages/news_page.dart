@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/serie_chips.dart';
 
@@ -27,25 +28,54 @@ class _NewsPageState extends State<NewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.xs,
-        bottom: AppSpacing.xl,
+    final c = context.colors;
+
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+        children: [
+          ContentWidth(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                AppSpacing.lg,
+                AppSpacing.screen,
+                AppSpacing.md,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Noticias',
+                      style: AppText.display(context, size: 36),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Lo que pasa en la ANFA Caupolicán',
+                    style: TextStyle(fontSize: 14, color: c.textMuted),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          PillChips(
+            options: NewsPage.types,
+            selected: _type,
+            onSelected: (type) => setState(() => _type = type),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          EmptyView(
+            icon: Icons.newspaper_outlined,
+            message: _type == NewsPage.types.first
+                ? 'Aún no hay noticias publicadas.'
+                : 'Aún no hay noticias de tipo "$_type".',
+          ),
+        ],
       ),
-      children: [
-        PillChips(
-          options: NewsPage.types,
-          selected: _type,
-          onSelected: (type) => setState(() => _type = type),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-        EmptyView(
-          icon: Icons.newspaper_outlined,
-          message: _type == NewsPage.types.first
-              ? 'Aún no hay noticias publicadas.'
-              : 'Aún no hay noticias de tipo "$_type".',
-        ),
-      ],
     );
   }
 }

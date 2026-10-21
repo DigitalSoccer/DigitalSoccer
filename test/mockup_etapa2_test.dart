@@ -1,5 +1,7 @@
 import 'package:anfa_chiguayante/main.dart';
 import 'package:anfa_chiguayante/pages/club_detail_page.dart';
+import 'package:anfa_chiguayante/pages/clubs_page.dart';
+import 'package:anfa_chiguayante/pages/home_page.dart';
 import 'package:anfa_chiguayante/pages/inicio_page.dart';
 import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
@@ -216,7 +218,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('TU PARTIDO · FECHA 21'));
       await tester.pumpAndSettle();
-      expect(find.text('FECHA 21'), findsWidgets);
+      expect(find.text('Fecha 21'), findsOneWidget);
     });
 
     for (final size in const [Size(320, 640), Size(1280, 800)]) {
@@ -414,6 +416,74 @@ void main() {
         await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
         await tester.pumpAndSettle();
 
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+  group('Clubes', () {
+    testWidgets('muestra el conteo y la lista con "Plantel y partidos"',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const ClubsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Clubes'), findsOneWidget);
+      expect(find.text('17 clubes · ANFA Caupolicán'), findsOneWidget);
+      expect(find.text('Plantel y partidos'), findsNWidgets(17));
+    });
+
+    testWidgets('el buscador filtra y avisa si no hay coincidencias',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const ClubsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'prat');
+      await tester.pumpAndSettle();
+      expect(find.text('Arturo Prat'), findsOneWidget);
+      expect(find.text('Plantel y partidos'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'zzz');
+      await tester.pumpAndSettle();
+      expect(find.text('Ningún club coincide con "zzz".'), findsOneWidget);
+    });
+
+    testWidgets('mi equipo va resaltado y abre su ficha', (tester) async {
+      tall(tester);
+      await favorite('arturo-prat');
+      await tester.pumpWidget(wrap(const ClubsPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tu equipo · Plantel y partidos'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.text('Arturo Prat'),
+          matching: find.byWidgetPredicate(
+            (w) => w is Material && w.color == AppColors.light.ownTeam,
+          ),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Arturo Prat'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ClubDetailPage), findsOneWidget);
+    });
+
+    for (final size in const [Size(320, 640), Size(1280, 800)]) {
+      testWidgets('Clubes y Fixture sin desbordes a ${size.width.toInt()} px',
+          (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await favorite('arturo-prat');
+        await tester.pumpWidget(wrap(const ClubsPage(), realDataBundle()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       });
     }

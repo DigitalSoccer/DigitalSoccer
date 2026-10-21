@@ -147,6 +147,9 @@ class TagChip extends StatelessWidget {
   final Color? foreground;
   final Color? background;
   final bool uppercase;
+
+  /// Texto en negrita (etiquetas de estado de las tarjetas de partido).
+  final bool bold;
   final bool _myClub;
 
   const TagChip({
@@ -155,6 +158,7 @@ class TagChip extends StatelessWidget {
     this.foreground,
     this.background,
     this.uppercase = false,
+    this.bold = false,
   }) : _myClub = false;
 
   /// Insignia roja de Mi Club.
@@ -163,6 +167,7 @@ class TagChip extends StatelessWidget {
       foreground = null,
       background = null,
       uppercase = true,
+      bold = false,
       _myClub = true;
 
   @override
@@ -187,7 +192,8 @@ class TagChip extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: uppercase ? 10.5 : 12,
-          fontWeight: uppercase ? FontWeight.w700 : FontWeight.w500,
+          fontWeight:
+              uppercase || bold ? FontWeight.w700 : FontWeight.w500,
           letterSpacing: uppercase ? 0.6 : 0,
           color: foreground,
         ),

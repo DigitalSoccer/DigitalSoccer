@@ -9,6 +9,7 @@ import 'settings_page.dart';
 import 'standings_page.dart';
 
 /// Navegación principal: barra inferior de 5 pestañas (`docs/diseno.md` 2).
+/// Cada pestaña lleva su propio título, como el mockup (sin barra superior).
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -22,21 +23,10 @@ class _MainPageState extends State<MainPage> {
   static const int standingsIndex = 2;
   static const int newsIndex = 3;
 
-  /// Pestañas con encabezado propio (como el mockup), sin barra superior.
-  static const Set<int> selfHeaded = {inicioIndex, standingsIndex};
-
   int _selectedIndex = inicioIndex;
 
   /// Cambia al volver de Ajustes con otro equipo, para recargar Inicio.
   int _inicioVersion = 0;
-
-  final List<String> _titles = [
-    'ANFA Chiguayante',
-    'Fixture',
-    'Tabla de posiciones',
-    'Noticias',
-    'Clubes',
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -79,9 +69,6 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: selfHeaded.contains(_selectedIndex)
-          ? null
-          : AppBar(title: Text(_titles[_selectedIndex])),
       body: _page(_selectedIndex),
       bottomNavigationBar: AppBottomNav(
         selectedIndex: _selectedIndex,

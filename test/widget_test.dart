@@ -1,10 +1,12 @@
 import 'package:anfa_chiguayante/main.dart';
 import 'package:anfa_chiguayante/models/club.dart';
+import 'package:anfa_chiguayante/models/match.dart';
 import 'package:anfa_chiguayante/pages/club_detail_page.dart';
 import 'package:anfa_chiguayante/pages/home_page.dart';
 import 'package:anfa_chiguayante/pages/matchup_detail_page.dart';
 import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
+import 'package:anfa_chiguayante/services/data_service.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
 import 'package:anfa_chiguayante/widgets/app_components.dart';
 import 'package:anfa_chiguayante/widgets/match_row.dart';
@@ -59,16 +61,16 @@ void main() {
     await tester.tap(find.text('Fixture'));
     await tester.pumpAndSettle();
 
-    // Abre en la fecha más reciente, con el formato de la planilla.
-    expect(find.text('FECHA 21'), findsWidgets);
+    // Abre en la fecha más reciente, con los cruces agrupados por día.
+    expect(find.text('Fecha 21'), findsOneWidget);
     expect(find.text('Sáb 10 – Dom 11 oct 2026'), findsOneWidget);
-    expect(find.text('Sábado 10'), findsOneWidget);
+    expect(find.text('SÁBADO 10 OCT'), findsOneWidget);
     // El primer cruce del sábado (10:00) es Leinenweber vs Nacional.
-    expect(find.text('Leinenweber'), findsOneWidget);
+    expect(find.text('Leinenweber'), findsWidgets);
     // Ese cruce se juega en dos canchas; la tarjeta muestra ambas.
     expect(
       find.text('Cancha José Vilches · Cancha Chiguayante Sur'),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
@@ -289,10 +291,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'zzz');
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('No hay partidos para mostrar el Sábado.'),
-        findsOneWidget,
-      );
+      expect(find.text('Ningún partido coincide con "zzz".'), findsOneWidget);
     });
 
   });
@@ -319,13 +318,16 @@ void main() {
       tallView(tester);
       await pumpHome(tester);
 
-      // Sábado: U.L. Carrera vs San Pablo juega 4 series en dos turnos;
-      // la lista lo muestra una sola vez, desde las 13:00.
-      expect(find.text('U.L. Carrera'), findsOneWidget);
-      expect(
-        find.text('1° Infantil · Juveniles · H. Ortiz · S. Senior'),
-        findsOneWidget,
+      // Un cruce por local y visita en cada día de la fecha 21.
+      final round = await tester.runAsync(
+        () => DataService.loadData(realDataBundle()),
       );
+      final expected = round!.days
+          .map((d) => Matchup.fromDay(d).length)
+          .fold<int>(0, (a, b) => a + b);
+      expect(find.byType(MatchupCard), findsNWidgets(expected));
+      // Sábado: U.L. Carrera vs San Pablo juega 4 series en dos turnos.
+      expect(find.text('4 partidos'), findsWidgets);
       // La lista ya no muestra filas de horario: están en el detalle.
       expect(find.byType(MatchRow), findsNothing);
     });
@@ -335,7 +337,7 @@ void main() {
       tallView(tester);
       await pumpHome(tester);
 
-      await tester.tap(find.text('U.L. Carrera'));
+      await tester.tap(find.text('U.L. Carrera').first);
       await tester.pumpAndSettle();
 
       expect(find.byType(MatchupDetailPage), findsOneWidget);
@@ -357,13 +359,11 @@ void main() {
     testWidgets('muestra el club libre de la fecha', (tester) async {
       await pumpHome(tester);
 
-      await tester.dragUntilVisible(
-        find.text('Libre: Independiente'),
-        find.byType(ListView).first,
-        const Offset(0, -300),
+      expect(
+        find.text('Libre: Independiente', findRichText: true),
+        findsOneWidget,
       );
-
-      expect(find.text('Libre: Independiente'), findsOneWidget);
+      expect(find.text('No juega en esta fecha'), findsOneWidget);
     });
 
     testWidgets('resalta Mi Club sin ocultar al resto', (tester) async {
@@ -374,30 +374,54 @@ void main() {
       tallView(tester);
       await pumpHome(tester);
 
-      // Sábado: Arturo Prat juega un solo cruce (vs Bdo. O'Higgins).
-      expect(find.text('MI CLUB'), findsOneWidget);
+      // Arturo Prat: sábado y domingo vs Bdo. O'Higgins, domingo vs
+      // Maestranza.
+      expect(find.text('Tu equipo'), findsNWidgets(3));
       // Los demás cruces siguen visibles.
-      expect(find.text('U.L. Carrera'), findsOneWidget);
-      expect(find.text('Jackson'), findsOneWidget);
+      expect(find.text('U.L. Carrera'), findsWidgets);
+      expect(find.text('Jackson'), findsWidgets);
+    });
+
+    testWidgets('"Solo mis partidos" deja solo los cruces propios',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        ClubService.favoriteClubIdKey: 'arturo-prat',
+      });
+
+      tallView(tester);
+      await pumpHome(tester);
+
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MatchupCard), findsNWidgets(3));
+      expect(find.text('U.L. Carrera'), findsNothing);
+    });
+
+    testWidgets('sin equipo elegido no ofrece "Solo mis partidos"',
+        (tester) async {
+      await pumpHome(tester);
+
+      expect(find.text('Solo mis partidos'), findsNothing);
     });
 
     testWidgets('permite volver a la fecha anterior', (tester) async {
       await pumpHome(tester);
 
-      expect(find.text('FECHA 21'), findsWidgets);
+      expect(find.text('Fecha 21'), findsOneWidget);
       expect(find.text('Fuente: planilla de la asociación'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Fecha anterior'));
       await tester.pumpAndSettle();
 
-      expect(find.text('FECHA 11'), findsWidgets);
+      expect(find.text('Fecha 11'), findsOneWidget);
       // La fecha 11 no tiene origen verificado y se avisa.
       expect(find.text('Fuente sin verificar'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Fecha siguiente'));
       await tester.pumpAndSettle();
 
-      expect(find.text('FECHA 21'), findsWidgets);
+      expect(find.text('Fecha 21'), findsOneWidget);
     });
 
     testWidgets('el detalle del club libre lo indica', (tester) async {
@@ -421,7 +445,7 @@ void main() {
       addTearDown(tester.view.reset);
     }
 
-    testWidgets('el Fixture usa la tarjeta de Inicio (día, fecha, escudos)',
+    testWidgets('el Fixture agrupa por día y lleva escudos en cada cruce',
         (tester) async {
       tall(tester);
       SharedPreferences.setMockInitialValues({
@@ -431,15 +455,15 @@ void main() {
       await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      // Sábado: 12 cruces, cada uno con el día en su encabezado.
-      expect(find.text('Sábado 10 oct'), findsWidgets);
+      // Los cruces van bajo el título de su día.
+      expect(find.text('SÁBADO 10 OCT'), findsOneWidget);
       // Dos escudos genéricos por tarjeta.
       expect(
         find.byType(ClubCrest),
         findsNWidgets(2 * tester.widgetList(find.byType(MatchupCard)).length),
       );
-      // El cruce de Mi Club lleva su insignia.
-      expect(find.text('MI CLUB'), findsOneWidget);
+      // Los cruces de mi equipo llevan su etiqueta.
+      expect(find.text('Tu equipo'), findsNWidgets(3));
     });
 
     testWidgets('la tabla muestra un escudo junto a cada club',

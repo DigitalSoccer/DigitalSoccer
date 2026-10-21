@@ -4,20 +4,25 @@ import '../models/match.dart';
 import '../theme/app_theme.dart';
 import 'app_components.dart';
 
-/// Tarjeta de un cruce (formato de la maqueta de Inicio, usado en toda la
-/// app): día y número de fecha arriba, los dos equipos con escudo y la hora
-/// al centro; abajo, cancha y series. Al tocarla se abre el detalle.
+/// Tarjeta de un cruce (`MatchCard` en `docs/diseno.md` 5): hora a la
+/// izquierda, separador, los dos equipos con escudo y, abajo, la cancha y
+/// una etiqueta de estado. Un cruce agrupa todas las series de un mismo
+/// local contra un mismo visitante; al tocarlo se abre el detalle.
 class MatchupCard extends StatelessWidget {
   final Matchup matchup;
 
-  /// Cruce de Mi Club: borde rojo e insignia "MI CLUB".
+  /// Cruce de mi equipo: fondo amarillo y etiqueta "Tu equipo".
   final bool highlighted;
 
   final VoidCallback onTap;
 
-  /// Encabezado opcional, p. ej. "Sábado 10 oct" y "FECHA 21".
+  /// Encabezado opcional, p. ej. "Sábado 10 oct" y "FECHA 21" (se usa
+  /// fuera del Fixture, donde la tarjeta no está bajo el título del día).
   final String? dayLabel;
   final String? roundLabel;
+
+  /// Club propio, que va en negrita.
+  final String? myClubId;
 
   const MatchupCard({
     super.key,
@@ -26,92 +31,105 @@ class MatchupCard extends StatelessWidget {
     required this.onTap,
     this.dayLabel,
     this.roundLabel,
+    this.myClubId,
   });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final showHeader = dayLabel != null || roundLabel != null || highlighted;
+    final c = context.colors;
+    final header = [dayLabel, roundLabel].whereType<String>().join(' · ');
 
-    Widget team(String name, String clubId) => Expanded(
-          child: Column(
-            children: [
-              // Escudo genérico: no representa el escudo oficial del club.
-              ClubCrest(size: 36, clubId: clubId),
-              SizedBox(height: AppSpacing.xs),
-              Text(
+    Widget team(String name, String clubId) => Row(
+          children: [
+            ClubCrest(size: 26, clubId: clubId),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
                 name,
-                textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight:
+                      clubId == myClubId ? FontWeight.w700 : FontWeight.w600,
+                  color: c.text,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
 
     return SurfaceCard(
-      margin: EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
         0,
+        AppSpacing.screen,
+        10,
       ),
-      shadow: AppShadows.md,
-      borderColor: highlighted ? context.colors.primary : null,
+      radius: 14,
+      shadow: const [],
+      color: highlighted ? c.ownTeam : null,
       onTap: onTap,
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (showHeader) ...[
-            Row(
+          if (header.isNotEmpty) ...[
+            Text(header.toUpperCase(), style: AppText.eyebrow(context)),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: Text(dayLabel ?? '', style: textTheme.titleMedium),
-                ),
-                if (highlighted) ...[
-                  const TagChip.myClub(),
-                  if (roundLabel != null) const SizedBox(width: AppSpacing.sm),
-                ],
-                if (roundLabel != null)
-                  Text(
-                    roundLabel!,
-                    style: AppText.eyebrow(context).copyWith(color: context.colors.primary),
+                SizedBox(
+                  width: 58,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        matchup.firstTime,
+                        style: AppText.display(context, size: 28),
+                      ),
+                    ),
                   ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                VerticalDivider(width: 1, thickness: 1, color: c.border),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      team(matchup.home, matchup.homeId),
+                      const SizedBox(height: AppSpacing.sm),
+                      team(matchup.away, matchup.awayId),
+                    ],
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              team(matchup.home, matchup.homeId),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                ),
-                child: _Kickoff(matchup: matchup),
-              ),
-              team(matchup.away, matchup.awayId),
-            ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            matchup.fieldNames.join(' · '),
-            textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(
-              color: context.colors.textMuted,
-              fontWeight: FontWeight.w500,
+          Container(
+            margin: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(top: AppSpacing.sm),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: c.border)),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            matchup.categories.join(' · '),
-            textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(
-              color: context.colors.textSecondary,
+            child: Row(
+              children: [
+                Icon(Icons.place_outlined, size: 16, color: c.textMuted),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    matchup.fieldNames.join(' · '),
+                    style: TextStyle(fontSize: 13, color: c.textMuted),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _StatusTag(matchup: matchup, highlighted: highlighted),
+              ],
             ),
           ),
         ],
@@ -120,41 +138,46 @@ class MatchupCard extends StatelessWidget {
   }
 }
 
-/// Columna central: hora del primer partido y estado (cantidad de partidos,
-/// o "Suspendido"/"Reprogramado" si corresponde).
-class _Kickoff extends StatelessWidget {
+/// Etiqueta del pie: Suspendido/Reprogramado si corresponde, "Tu equipo"
+/// en el cruce propio y, si no, cuántos partidos (series) tiene el cruce.
+class _StatusTag extends StatelessWidget {
   final Matchup matchup;
+  final bool highlighted;
 
-  const _Kickoff({required this.matchup});
+  const _StatusTag({required this.matchup, required this.highlighted});
 
   @override
   Widget build(BuildContext context) {
-    final count = matchup.entries.length;
+    final c = context.colors;
     final notable = matchup.entries
         .map((e) => e.match.status)
         .where(MatchStatusBadge.isNotable)
         .firstOrNull;
 
-    return Column(
-      children: [
-        Text(
-          matchup.firstTime,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: context.colors.text,
-            fontFeatures: AppText.tabular,
-          ),
-        ),
-        const SizedBox(height: 2),
-        if (notable != null)
-          MatchStatusBadge(status: notable)
-        else
-          Text(
-            count == 1 ? '1 partido' : '$count partidos',
-            style: AppText.eyebrow(context),
-          ),
-      ],
+    if (notable != null) {
+      return TagChip(
+        label: notable[0].toUpperCase() + notable.substring(1),
+        foreground: c.noticeText,
+        background: c.noticeBg,
+        bold: true,
+      );
+    }
+
+    if (highlighted) {
+      return TagChip(
+        label: 'Tu equipo',
+        foreground: c.onPrimary,
+        background: c.primary,
+        bold: true,
+      );
+    }
+
+    final count = matchup.entries.length;
+    return TagChip(
+      label: count == 1 ? '1 partido' : '$count partidos',
+      foreground: c.tagNeutralText,
+      background: c.tagNeutralBg,
+      bold: true,
     );
   }
 }

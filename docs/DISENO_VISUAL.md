@@ -216,3 +216,25 @@ planilla se mostrarán como **Libre**, como en el mockup.
   comparten Inicio y Tabla.
 - Las tablas se leen desde `StandingsCatalog` (capa de datos), no desde
   las pantallas.
+
+## Mockup nuevo — etapa 2: Fixture, Clubes y Noticias (2026-10-21)
+
+- **Sin barra superior**: cada pestaña lleva su título en Barlow Condensed
+  (36), como el mockup.
+- **Fixture**: buscador, selector de fecha con flechas (la fuente se
+  explica al tocarlo), "Solo mis partidos" (si hay equipo elegido),
+  tarjeta "Libre" y los cruces de **todos los días** de la fecha en una
+  sola lista, agrupados por día y ordenados por hora.
+  - Se mantiene la tarjeta **por cruce** (local contra visita, con todas
+    sus series), que pidió el equipo; al tocarla se abre el detalle con
+    canchas y horarios. La tarjeta sigue el `MatchCard` del mockup: hora a
+    la izquierda, equipos con escudo, cancha y etiqueta (Tu equipo,
+    Suspendido o "N partidos").
+  - **Sin chips de serie** en el Fixture: el equipo pidió quitar el filtro
+    por serie, y cada cruce ya agrupa todas las series.
+  - El club que descansa se muestra como **Libre**, no como "Turno": la
+    planilla no confirma que quien descansa sea quien anota resultados.
+- **Clubes**: título con conteo, buscador y la lista en una tarjeta;
+  mi equipo resaltado ("Tu equipo · Plantel y partidos"). La estrella para
+  elegir equipo queda en la ficha del club, en Inicio y en Ajustes.
+- **Noticias**: título y subtítulo del mockup.
