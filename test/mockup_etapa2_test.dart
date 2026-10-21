@@ -7,6 +7,7 @@ import 'package:anfa_chiguayante/pages/standings_page.dart';
 import 'package:anfa_chiguayante/services/club_service.dart';
 import 'package:anfa_chiguayante/services/standings_catalog.dart';
 import 'package:anfa_chiguayante/theme/app_theme.dart';
+import 'package:anfa_chiguayante/widgets/matchup_card.dart';
 import 'package:anfa_chiguayante/widgets/serie_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,24 +58,62 @@ void main() {
   }
 
   group('Inicio', () {
-    testWidgets('sin club invita a elegirlo y luego muestra su posición',
+    testWidgets('sin club pide elegir club y luego muestra su posición',
         (tester) async {
       tall(tester);
       await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
-      expect(find.text('¡Bienvenido!'), findsOneWidget);
+      expect(find.text('¿Cuál es tu equipo?'), findsOneWidget);
+      // Sin club elegido no se puede continuar.
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
 
       await tester.tap(find.text('Arturo Prat'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
 
-      expect(find.text('¡Bienvenido!'), findsNothing);
+      expect(find.text('¿Cuál es tu equipo?'), findsNothing);
       expect(find.text('POSICIÓN · GENERAL'), findsOneWidget);
       expect(find.text('17°'), findsOneWidget);
       expect(find.text('de 17 equipos'), findsOneWidget);
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString(ClubService.favoriteClubIdKey), 'arturo-prat');
+    });
+
+    testWidgets('elegir club y serie da el enfoque de la app', (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const InicioPage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Arturo Prat'));
+      await tester.tap(find.text('Honor'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('POSICIÓN · HONOR'), findsOneWidget);
+      expect(find.text('9°'), findsOneWidget);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(StandingsCatalog.prefsKey), 'serie:Honor');
+    });
+
+    testWidgets('"Solo quiero mirar" lleva al Fixture sin elegir equipo',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(const MyApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Solo quiero mirar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fecha 21'), findsOneWidget);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(ClubService.favoriteClubIdKey), isNull);
     });
 
     testWidgets('la tarjeta de posición calcula la distancia al líder y al 3°',
@@ -178,7 +217,13 @@ void main() {
 
       await tester.tap(find.byTooltip('Cambiar de equipo'));
       await tester.pumpAndSettle();
+      expect(find.text('¿Cuál es tu equipo?'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'indep');
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Independiente'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
 
       expect(find.text('Libre en esta fecha'), findsOneWidget);
@@ -233,6 +278,8 @@ void main() {
 
         await tester.tap(find.text('Arturo Prat'));
         await tester.pumpAndSettle();
+        await tester.tap(find.text('Continuar'));
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.text('17°'), findsOneWidget);
       });
@@ -258,14 +305,13 @@ void main() {
       expect(find.text('Chiguayante Sur'), findsOneWidget);
     });
 
-    testWidgets('ofrece general, series de mayor a menor y acumulados',
+    testWidgets('ofrece series de mayor a menor, acumulados y al final general',
         (tester) async {
       tall(tester);
       await tester.pumpWidget(wrap(const StandingsPage(), realDataBundle()));
       await tester.pumpAndSettle();
 
       expect(chipLabels(tester), [
-        'General',
         'Honor',
         'Primera',
         'Segunda',
@@ -278,6 +324,8 @@ void main() {
         '2° Infantil',
         'Total infantil y juvenil',
         'Total adultos',
+        // La general va al final, aunque es la elegida por defecto.
+        'General',
       ]);
     });
 
@@ -420,6 +468,53 @@ void main() {
       });
     }
   });
+  group('Fixture: chips de serie', () {
+    testWidgets('por defecto muestra todas las series', (tester) async {
+      tall(tester);
+      await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<PillChips>(find.byType(PillChips)).selected,
+          'General');
+      expect(find.text('4 partidos'), findsWidgets);
+    });
+
+    testWidgets('una serie deja solo sus partidos y se comparte',
+        (tester) async {
+      tall(tester);
+      await favorite('arturo-prat');
+      await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      await tapChip(tester, 'Honor');
+
+      // Cada cruce queda con un partido, el de Honor.
+      final cards = tester.widgetList<MatchupCard>(find.byType(MatchupCard));
+      expect(cards, isNotEmpty);
+      for (final card in cards) {
+        expect(card.matchup.categories, ['Honor']);
+      }
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(StandingsCatalog.prefsKey), 'serie:Honor');
+    });
+
+    testWidgets('abre con la serie elegida en otra pantalla', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        StandingsCatalog.prefsKey: 'serie:Primera',
+      });
+      await tester.pumpWidget(wrap(const HomePage(), realDataBundle()));
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<PillChips>(find.byType(PillChips)).selected,
+          'Primera');
+      for (final card
+          in tester.widgetList<MatchupCard>(find.byType(MatchupCard))) {
+        expect(card.matchup.categories, ['Primera']);
+      }
+    });
+  });
+
   group('Clubes', () {
     testWidgets('muestra el conteo y la lista con "Plantel y partidos"',
         (tester) async {

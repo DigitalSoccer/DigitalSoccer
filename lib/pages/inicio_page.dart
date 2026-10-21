@@ -13,11 +13,11 @@ import '../services/standings_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
-import '../widgets/club_tile.dart';
 import '../widgets/serie_chips.dart';
+import 'choose_team_page.dart';
 
-/// Pestaña de inicio (`docs/diseno.md` 6.2). Sin club elegido, invita a
-/// elegir uno; con club, muestra su posición en la serie elegida, su
+/// Pestaña de inicio (`docs/diseno.md` 6.2). Sin club elegido, muestra
+/// "Elegir equipo" (club y serie); con club, muestra su posición en la serie elegida, su
 /// partido de la fecha, una mini tabla y las últimas noticias.
 class InicioPage extends StatefulWidget {
   /// Abren otras pestañas y Ajustes (los provee la navegación principal).
@@ -94,12 +94,6 @@ class _InicioPageState extends State<InicioPage> {
     });
   }
 
-  Future<void> _choose(Club club) async {
-    await ClubService.setFavoriteClubId(club.id);
-    if (!mounted) return;
-    _reload();
-  }
-
   void _selectTable(String key) {
     setState(() {
       _tableKey = key;
@@ -107,30 +101,12 @@ class _InicioPageState extends State<InicioPage> {
     StandingsCatalog.setSelectedKey(key);
   }
 
-  Future<void> _changeClub(_InicioData data) async {
-    final chosen = await showAppBottomSheet<Club>(
-      context: context,
-      title: 'Cambiar de equipo',
-      initialSize: 0.8,
-      builder: (context) => [
-        for (final club in data.clubs)
-          ClubTile(
-            club: club,
-            trailing: club.id == data.club?.id
-                ? Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.sm),
-                    child: Icon(
-                      Icons.check_circle_rounded,
-                      color: context.colors.primaryText,
-                    ),
-                  )
-                : null,
-            onTap: () => Navigator.pop(context, club),
-          ),
-      ],
+  Future<void> _changeTeam() async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const ChooseTeamPage()),
     );
-
-    if (chosen != null) await _choose(chosen);
+    if (saved == true && mounted) _reload();
   }
 
   @override
@@ -144,10 +120,10 @@ class _InicioPageState extends State<InicioPage> {
           final club = data.club;
 
           if (club == null) {
-            return _ChooseClub(
-              clubs: data.clubs,
-              onSelected: _choose,
-              onOpenSettings: widget.onOpenSettings,
+            return ChooseTeamPage(
+              embedded: true,
+              onSaved: _reload,
+              onJustLook: widget.onOpenFixture,
             );
           }
 
@@ -160,7 +136,7 @@ class _InicioPageState extends State<InicioPage> {
                 child: _Header(
                   club: club,
                   onOpenSettings: widget.onOpenSettings,
-                  onChangeClub: () => _changeClub(data),
+                  onChangeClub: _changeTeam,
                 ),
               ),
               ContentWidth(
@@ -179,6 +155,7 @@ class _InicioPageState extends State<InicioPage> {
                 child: _RoundMatchCard(
                   round: data.round,
                   club: club,
+                  series: StandingsCatalog.seriesOf(option.key),
                   onTap: widget.onOpenFixture,
                 ),
               ),
@@ -447,11 +424,15 @@ class _PositionCard extends StatelessWidget {
 class _RoundMatchCard extends StatelessWidget {
   final FixtureRound round;
   final Club club;
+
+  /// Serie elegida en los chips, o `null` para todas.
+  final String? series;
   final VoidCallback? onTap;
 
   const _RoundMatchCard({
     required this.round,
     required this.club,
+    required this.series,
     required this.onTap,
   });
 
@@ -460,7 +441,8 @@ class _RoundMatchCard extends StatelessWidget {
       final matchups = Matchup.fromDay(
         day,
         map: OverrideService.apply,
-        where: (m) => m.involves(club.id),
+        where: (m) =>
+            m.involves(club.id) && (series == null || m.category == series),
       );
       if (matchups.isEmpty) continue;
 
@@ -473,7 +455,10 @@ class _RoundMatchCard extends StatelessWidget {
     }
 
     final isBye = round.days.any((d) => d.byeClubIds.contains(club.id));
-    return isBye ? 'Libre en esta fecha' : 'Sin partidos en esta fecha';
+    if (isBye) return 'Libre en esta fecha';
+    return series == null
+        ? 'Sin partidos en esta fecha'
+        : 'Sin partido de $series en esta fecha';
   }
 
   @override
@@ -762,99 +747,6 @@ class _LatestNews extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Primera vez: bienvenida y lista de clubes para elegir.
-class _ChooseClub extends StatelessWidget {
-  final List<Club> clubs;
-  final ValueChanged<Club> onSelected;
-  final VoidCallback? onOpenSettings;
-
-  const _ChooseClub({
-    required this.clubs,
-    required this.onSelected,
-    required this.onOpenSettings,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      children: [
-        ContentWidth(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screen,
-              AppSpacing.lg,
-              AppSpacing.screen,
-              0,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'ANFA Chiguayante',
-                    style: AppText.display(context, size: 28),
-                  ),
-                ),
-                _RoundButton(
-                  icon: Icons.tune_rounded,
-                  tooltip: 'Ajustes y apariencia',
-                  onPressed: onOpenSettings,
-                ),
-              ],
-            ),
-          ),
-        ),
-        ContentWidth(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screen,
-              AppSpacing.lg,
-              AppSpacing.screen,
-              AppSpacing.sm,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('¡Bienvenido!', style: AppText.display(context, size: 24)),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Elige tu club para ver su posición en la tabla y su '
-                  'partido de la fecha.',
-                  style: TextStyle(fontSize: 15, color: c.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (clubs.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(top: AppSpacing.xl),
-            child: EmptyView(
-              icon: Icons.shield_outlined,
-              message: 'No hay clubes registrados.',
-            ),
-          )
-        else ...[
-          const ContentWidth(child: SectionHeader('Clubes')),
-          for (final club in clubs)
-            ContentWidth(
-              child: ClubTile(
-                club: club,
-                trailing: Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: Icon(Icons.chevron_right_rounded, color: c.outline),
-                ),
-                onTap: () => onSelected(club),
-              ),
-            ),
-        ],
-      ],
     );
   }
 }

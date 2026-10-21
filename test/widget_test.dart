@@ -55,8 +55,8 @@ void main() {
     expect(find.text('Inicio'), findsOneWidget);
     expect(find.text('Fixture'), findsOneWidget);
     expect(find.text('Tabla'), findsOneWidget);
-    // Sin club elegido, Inicio invita a elegir uno.
-    expect(find.text('¡Bienvenido!'), findsOneWidget);
+    // Sin club elegido, Inicio pide elegir club y serie.
+    expect(find.text('¿Cuál es tu equipo?'), findsOneWidget);
 
     await tester.tap(find.text('Fixture'));
     await tester.pumpAndSettle();

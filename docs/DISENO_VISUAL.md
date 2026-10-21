@@ -238,3 +238,23 @@ planilla se mostrarán como **Libre**, como en el mockup.
   mi equipo resaltado ("Tu equipo · Plantel y partidos"). La estrella para
   elegir equipo queda en la ficha del club, en Inicio y en Ajustes.
 - **Noticias**: título y subtítulo del mockup.
+
+## Chips de serie en toda la app y Elegir equipo (2026-10-21)
+
+Pedido del equipo: los chips se ven bien y hacen más amigable la app.
+
+- **Mismos chips en Inicio, Fixture y Tabla**, con la misma elección
+  guardada: al elegir una serie en una pantalla, las otras abren en ella.
+  Orden: series de mayor a menor, acumulados y **General al final** (sigue
+  siendo la elegida por defecto). La fila se desplaza sola hasta el chip
+  elegido.
+- **Fixture con chips** (reemplaza la decisión anterior de no tenerlos):
+  con una serie, cada cruce muestra solo ese partido (su hora y su serie
+  en la etiqueta); General y los acumulados muestran todas las series.
+  La línea "Tu partido" de Inicio también sigue la serie elegida.
+- **Elegir equipo** (`ChooseTeamPage`, `docs/mockup/Main.dc.html`): club
+  con buscador y serie; "Continuar" guarda ambos. Aparece en Inicio la
+  primera vez y se abre al cambiar de equipo (Inicio y Ajustes). "Solo
+  quiero mirar" lleva al Fixture sin guardar equipo. Aún no se pueden
+  seguir varios equipos (el mockup lo menciona; queda pendiente).
+- Ajustes muestra "Mi equipo" con su serie ("Honor · Cambiar").

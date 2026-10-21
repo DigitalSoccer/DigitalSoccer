@@ -139,7 +139,7 @@ class MatchupCard extends StatelessWidget {
 }
 
 /// Etiqueta del pie: Suspendido/Reprogramado si corresponde, "Tu equipo"
-/// en el cruce propio y, si no, cuántos partidos (series) tiene el cruce.
+/// en el cruce propio y, si no, la serie o cuántos partidos tiene el cruce.
 class _StatusTag extends StatelessWidget {
   final Matchup matchup;
   final bool highlighted;
@@ -172,9 +172,12 @@ class _StatusTag extends StatelessWidget {
       );
     }
 
+    // Un solo partido (p. ej. al filtrar por serie): se nombra su serie.
     final count = matchup.entries.length;
     return TagChip(
-      label: count == 1 ? '1 partido' : '$count partidos',
+      label: count == 1
+          ? matchup.entries.first.match.category
+          : '$count partidos',
       foreground: c.tagNeutralText,
       background: c.tagNeutralBg,
       bold: true,

@@ -51,11 +51,20 @@ class StandingsCatalog {
 
   const StandingsCatalog({required this.options, this.source, this.note});
 
-  /// La opción con esa clave, o la primera (tabla general) si no existe.
+  /// La opción con esa clave o, si no existe, la tabla general (va al
+  /// final de los chips, pero es la elección por defecto).
   TableOption byKey(String? key) => options.firstWhere(
         (o) => o.key == key,
-        orElse: () => options.first,
+        orElse: () => options.firstWhere(
+          (o) => o.key == generalKey,
+          orElse: () => options.first,
+        ),
       );
+
+  /// Serie del fixture que corresponde a una opción, o `null` si la opción
+  /// abarca todas las series (General y acumulados).
+  static String? seriesOf(String key) =>
+      key.startsWith('serie:') ? key.substring('serie:'.length) : null;
 
   /// Arma el catálogo. La tabla general es obligatoria; si las tablas por
   /// serie no cargan, se muestra igual la general.
@@ -79,12 +88,8 @@ class StandingsCatalog {
     return StandingsCatalog(
       source: general.source,
       note: general.note,
+      // Orden de los chips: series, acumulados y al final la general.
       options: [
-        TableOption(
-          key: generalKey,
-          label: 'General',
-          standings: general.standings,
-        ),
         for (final name in seriesNames)
           if (tables.series[name]!.isNotEmpty)
             TableOption(
@@ -99,6 +104,11 @@ class StandingsCatalog {
               label: 'Total ${entry.key.toLowerCase()}',
               standings: entry.value,
             ),
+        TableOption(
+          key: generalKey,
+          label: 'General',
+          standings: general.standings,
+        ),
       ],
     );
   }

@@ -4,10 +4,11 @@ import '../models/club.dart';
 import '../services/appearance_service.dart';
 import '../services/club_data_service.dart';
 import '../services/club_service.dart';
+import '../services/standings_catalog.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
-import '../widgets/club_tile.dart';
+import 'choose_team_page.dart';
 
 /// Ajustes (`docs/diseno.md` 6.8): apariencia de la app y "Mi equipo".
 /// Devuelve `true` al cerrar si cambió el club elegido.
@@ -19,10 +20,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsData {
-  final List<Club> clubs;
   final Club? club;
 
-  _SettingsData(this.clubs, this.club);
+  /// Serie que sigue (etiqueta del chip, p. ej. "Honor").
+  final String serie;
+
+  _SettingsData(this.club, this.serie);
 }
 
 class _SettingsPageState extends State<SettingsPage> {
@@ -36,10 +39,19 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<_SettingsData> _load() async {
-    final clubs =
-        await ClubDataService.loadClubs(DefaultAssetBundle.of(context));
+    final bundle = DefaultAssetBundle.of(context);
+    final results = await Future.wait<Object>([
+      ClubDataService.loadClubs(bundle),
+      StandingsCatalog.load(bundle),
+    ]);
+    final clubs = results[0] as List<Club>;
+    final catalog = results[1] as StandingsCatalog;
     final id = await ClubService.getFavoriteClubId(clubs);
-    return _SettingsData(clubs, ClubDataService.findById(clubs, id));
+
+    return _SettingsData(
+      ClubDataService.findById(clubs, id),
+      catalog.byKey(await StandingsCatalog.getSelectedKey()).label,
+    );
   }
 
   void _reload() {
@@ -48,34 +60,15 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  Future<void> _changeTeam(_SettingsData data) async {
-    final chosen = await showAppBottomSheet<Club>(
-      context: context,
-      title: 'Elegir mi equipo',
-      initialSize: 0.8,
-      builder: (context) => [
-        for (final club in data.clubs)
-          ClubTile(
-            club: club,
-            trailing: club.id == data.club?.id
-                ? Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.sm),
-                    child: Icon(
-                      Icons.check_circle_rounded,
-                      color: context.colors.primaryText,
-                    ),
-                  )
-                : null,
-            onTap: () => Navigator.pop(context, club),
-          ),
-      ],
+  Future<void> _changeTeam() async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const ChooseTeamPage()),
     );
 
-    if (chosen == null || chosen.id == data.club?.id) return;
-
-    await ClubService.setFavoriteClubId(chosen.id);
+    if (saved != true || !mounted) return;
     _teamChanged = true;
-    if (mounted) _reload();
+    _reload();
   }
 
   @override
@@ -129,7 +122,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     onRetry: _reload,
                     builder: (context, data) => _TeamTile(
                       club: data.club,
-                      onTap: () => _changeTeam(data),
+                      serie: data.serie,
+                      onTap: _changeTeam,
                     ),
                   ),
                 ],
@@ -279,9 +273,14 @@ class _AppearanceTile extends StatelessWidget {
 
 class _TeamTile extends StatelessWidget {
   final Club? club;
+  final String serie;
   final VoidCallback onTap;
 
-  const _TeamTile({required this.club, required this.onTap});
+  const _TeamTile({
+    required this.club,
+    required this.serie,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -307,13 +306,24 @@ class _TeamTile extends StatelessWidget {
                     color: c.text,
                   ),
                 ),
-                Text(
-                  club == null ? 'Elegir' : 'Cambiar',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: c.primaryText,
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      if (club != null)
+                        TextSpan(
+                          text: '$serie · ',
+                          style: TextStyle(color: c.textMuted),
+                        ),
+                      TextSpan(
+                        text: club == null ? 'Elegir' : 'Cambiar',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: c.primaryText,
+                        ),
+                      ),
+                    ],
                   ),
+                  style: const TextStyle(fontSize: 13),
                 ),
               ],
             ),

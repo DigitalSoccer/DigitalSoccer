@@ -62,6 +62,9 @@ void main() {
 
   testWidgets('elegir Oscuro en Ajustes cambia el tema y se guarda',
       (tester) async {
+    SharedPreferences.setMockInitialValues({
+      ClubService.favoriteClubIdKey: 'arturo-prat',
+    });
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
@@ -93,26 +96,42 @@ void main() {
 
   testWidgets('cambiar Mi equipo en Ajustes lo guarda y recarga Inicio',
       (tester) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({
+      ClubService.favoriteClubIdKey: 'arturo-prat',
+    });
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
     await openSettings(tester);
-    expect(find.text('Sin equipo elegido'), findsOneWidget);
+    // Muestra el club y la serie que sigue.
+    expect(find.text('Arturo Prat'), findsWidgets);
+    expect(find.text('General · Cambiar', findRichText: true), findsOneWidget);
 
-    await tester.tap(find.text('Sin equipo elegido'));
+    await tester.tap(find.text('General · Cambiar', findRichText: true));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Arturo Prat').last);
+    expect(find.text('¿Cuál es tu equipo?'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'indep');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Independiente'));
+    await tester.tap(find.text('Honor'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Cambiar'), findsOneWidget);
+    expect(find.text('Honor · Cambiar', findRichText: true), findsOneWidget);
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString(ClubService.favoriteClubIdKey), 'arturo-prat');
+    expect(prefs.getString(ClubService.favoriteClubIdKey), 'independiente');
 
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    // Inicio ya no invita a elegir club.
-    expect(find.text('¡Bienvenido!'), findsNothing);
+    // Inicio se recarga con el nuevo equipo y su serie.
+    expect(find.text('POSICIÓN · HONOR'), findsOneWidget);
+    expect(find.text('Independiente'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 

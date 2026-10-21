@@ -7,15 +7,18 @@ import '../services/club_data_service.dart';
 import '../services/club_service.dart';
 import '../services/data_service.dart';
 import '../services/override_service.dart';
+import '../services/standings_catalog.dart';
 import '../theme/app_theme.dart';
 import '../utils/fecha_format.dart';
 import '../widgets/app_components.dart';
 import '../widgets/async_views.dart';
 import '../widgets/matchup_card.dart';
 import '../widgets/search_field.dart';
+import '../widgets/serie_chips.dart';
 import 'matchup_detail_page.dart';
 
-/// Pestaña Fixture (`docs/diseno.md` 6.3): buscador, selector de fecha,
+/// Pestaña Fixture (`docs/diseno.md` 6.3): buscador, chips de serie,
+/// selector de fecha,
 /// "Solo mis partidos", el club libre y los cruces agrupados por día y
 /// ordenados por hora.
 class HomePage extends StatefulWidget {
@@ -29,13 +32,18 @@ class _HomeData {
   final List<FixtureRound> rounds;
   final List<Club> clubs;
   final String? favoriteClubId;
+  final StandingsCatalog catalog;
 
-  _HomeData(this.rounds, this.clubs, this.favoriteClubId);
+  _HomeData(this.rounds, this.clubs, this.favoriteClubId, this.catalog);
 }
 
 class _HomePageState extends State<HomePage> {
   String _query = '';
   bool _onlyMine = false;
+
+  /// Chip elegido (compartido con Inicio y Tabla). Con una serie se ven
+  /// solo sus partidos; General y los acumulados muestran todas.
+  String? _tableKey;
 
   /// Posición en la lista de fechas (0 = la más reciente).
   int _roundIndex = 0;
@@ -52,17 +60,20 @@ class _HomePageState extends State<HomePage> {
   Future<_HomeData> _load() async {
     final bundle = DefaultAssetBundle.of(context);
 
-    final results = await Future.wait([
+    final results = await Future.wait<Object>([
       DataService.loadRounds(bundle),
       ClubDataService.loadClubs(bundle),
+      StandingsCatalog.load(bundle),
     ]);
 
     final clubs = results[1] as List<Club>;
+    _tableKey = await StandingsCatalog.getSelectedKey();
 
     return _HomeData(
       results[0] as List<FixtureRound>,
       clubs,
       await ClubService.getFavoriteClubId(clubs),
+      results[2] as StandingsCatalog,
     );
   }
 
@@ -74,7 +85,9 @@ class _HomePageState extends State<HomePage> {
 
   // Los filtros aplican a todas las series de un cruce por igual, así que
   // cada tarjeta conserva el cruce completo.
-  bool _matchesFilter(Match match, String? myClubId) {
+  bool _matchesFilter(Match match, String? myClubId, String? series) {
+    if (series != null && match.category != series) return false;
+
     if (_onlyMine && myClubId != null && !match.involves(myClubId)) {
       return false;
     }
@@ -95,6 +108,8 @@ class _HomePageState extends State<HomePage> {
         onRetry: _retry,
         builder: (context, data) {
           final myClubId = data.favoriteClubId;
+          final option = data.catalog.byKey(_tableKey);
+          final series = StandingsCatalog.seriesOf(option.key);
           final names = {for (final club in data.clubs) club.id: club.name};
 
           final children = <Widget>[
@@ -123,6 +138,20 @@ class _HomePageState extends State<HomePage> {
                 child: SearchField(
                   onChanged: (value) => setState(() => _query = value),
                 ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            ContentWidth(
+              child: PillChips(
+                options: [for (final o in data.catalog.options) o.label],
+                selected: option.label,
+                onSelected: (label) {
+                  final key = data.catalog.options
+                      .firstWhere((o) => o.label == label)
+                      .key;
+                  setState(() => _tableKey = key);
+                  StandingsCatalog.setSelectedKey(key);
+                },
               ),
             ),
           ];
@@ -184,7 +213,7 @@ class _HomePageState extends State<HomePage> {
             final matchups = Matchup.fromDay(
               day,
               map: OverrideService.apply,
-              where: (m) => _matchesFilter(m, myClubId),
+              where: (m) => _matchesFilter(m, myClubId, series),
             );
             if (matchups.isEmpty) continue;
             shown += matchups.length;
@@ -245,8 +274,12 @@ class _HomePageState extends State<HomePage> {
                   message: _query.trim().isNotEmpty
                       ? 'Ningún partido coincide con "${_query.trim()}".'
                       : _onlyMine
-                          ? 'Tu equipo no juega en la fecha ${round.round}.'
-                          : 'No hay partidos programados.',
+                          ? 'Tu equipo no juega en la fecha ${round.round}'
+                              '${series == null ? '' : ' en $series'}.'
+                          : series != null
+                              ? 'No hay partidos de $series en la fecha '
+                                  '${round.round}.'
+                              : 'No hay partidos programados.',
                 ),
               ),
             );
