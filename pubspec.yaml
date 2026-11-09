@@ -1,5 +1,5 @@
 name: anfa_chiguayante
-description: "A new Flutter project."
+description: "Liga SUR: app de la Asociación de Fútbol Caupolicán (Chiguayante)."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -23,31 +23,21 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Datos de la app: UN solo archivo de datos de muestra (DUMMY, salvo los
+  # campos marcados como reales). Se genera con tool/generate_sample_data.dart.
   assets:
-    - assets/data/fechas.json
-    - assets/data/fecha_21.json
-    - assets/data/fixture.json
-    - assets/data/planteles.json
-    - assets/data/tablas_series.json
-    - assets/data/standings.json
-    - assets/data/clubs.json
-    - assets/data/categories.json
-  # Barlow y Barlow Condensed (licencia SIL OFL 1.1, ver assets/fonts/OFL.txt),
-  # empaquetadas para funcionar sin internet.
+    - assets/data/sample_data.json
+
+  # Montserrat (licencia SIL OFL 1.1, ver assets/fonts/montserrat/OFL.txt),
+  # empaquetada para funcionar sin internet.
   fonts:
-    - family: Barlow
+    - family: Montserrat
       fonts:
-        - asset: assets/fonts/Barlow-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Barlow-Medium.ttf
+        - asset: assets/fonts/montserrat/Montserrat-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Barlow-SemiBold.ttf
+        - asset: assets/fonts/montserrat/Montserrat-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Barlow-Bold.ttf
+        - asset: assets/fonts/montserrat/Montserrat-Bold.ttf
           weight: 700
-    - family: BarlowCondensed
-      fonts:
-        - asset: assets/fonts/BarlowCondensed-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/BarlowCondensed-Bold.ttf
-          weight: 700
+        - asset: assets/fonts/montserrat/Montserrat-ExtraBold.ttf
+          weight: 800

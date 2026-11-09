@@ -1,0 +1,43 @@
+import 'dart:io';
+
+import 'package:anfa_chiguayante/core/config.dart';
+import 'package:anfa_chiguayante/data/league_repository.dart';
+import 'package:anfa_chiguayante/main.dart';
+import 'package:anfa_chiguayante/shared/sample_data_badge.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Lee los assets desde el disco (en las pruebas no hay rootBundle real).
+class DiskBundle extends CachingAssetBundle {
+  @override
+  Future<ByteData> load(String key) async =>
+      ByteData.sublistView(Uint8List.fromList(File(key).readAsBytesSync()));
+}
+
+void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('la app carga los datos de muestra y muestra la etiqueta',
+      (tester) async {
+    await tester.runAsync(() async {
+      await tester.pumpWidget(
+        LigaSurApp(repository: SampleLeagueRepository(DiskBundle())),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    });
+    await tester.pump();
+
+    expect(find.text('Liga SUR'), findsWidgets);
+    expect(kUsingSampleData, isTrue);
+    expect(find.text('Datos de ejemplo'), findsOneWidget);
+  });
+
+  testWidgets('la etiqueta se apaga con la bandera', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: SampleDataBadge(enabled: false, child: Text('contenido')),
+    ));
+    expect(find.text('Datos de ejemplo'), findsNothing);
+  });
+}

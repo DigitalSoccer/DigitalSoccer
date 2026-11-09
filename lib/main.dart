@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 
-import 'pages/main_page.dart';
-import 'services/appearance_service.dart';
-import 'theme/app_theme.dart';
-import 'widgets/clubs_scope.dart';
+import 'core/appearance.dart';
+import 'core/theme.dart';
+import 'data/league_repository.dart';
+import 'data/league_scope.dart';
+import 'features/base_preview_page.dart';
+import 'shared/sample_data_badge.dart';
+import 'shared/skeleton.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(LigaSurApp(repository: SampleLeagueRepository()));
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class LigaSurApp extends StatefulWidget {
+  final LeagueRepository repository;
+
+  const LigaSurApp({super.key, required this.repository});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<LigaSurApp> createState() => _LigaSurAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _LigaSurAppState extends State<LigaSurApp> {
   // Por defecto, automático (sigue el modo del teléfono).
   final _appearance = AppearanceController();
 
@@ -37,18 +42,22 @@ class _MyAppState extends State<MyApp> {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: _appearance,
       builder: (context, mode, _) => MaterialApp(
-        title: 'ANFA Chiguayante',
+        title: 'Liga SUR',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(Brightness.light),
         darkTheme: buildAppTheme(Brightness.dark),
         themeMode: mode,
-        // Sobre el Navigator: disponible también en pantallas abiertas
-        // con Navigator.push (detalle, ficha, Ajustes).
         builder: (context, child) => AppearanceScope(
           controller: _appearance,
-          child: ClubsLoader(child: child ?? const SizedBox.shrink()),
+          child: SampleDataBadge(child: child ?? const SizedBox.shrink()),
         ),
-        home: const MainPage(),
+        home: LeagueLoader(
+          repository: widget.repository,
+          loading: const Scaffold(
+            body: SafeArea(child: SkeletonList(rows: 8)),
+          ),
+          child: const BasePreviewPage(),
+        ),
       ),
     );
   }
