@@ -18,7 +18,8 @@ Marca: amarillo `#FFC700`, negro `#111111`, Montserrat (incluida, OFL).
 
 1. **Base y tema** (hecha): tema claro/oscuro, Montserrat, datos de muestra
    y repositorio, componentes compartidos, etiqueta "Datos de ejemplo".
-2. Navegación y perfiles (ingreso simulado, barra de 5 pestañas, "Más").
+2. **Navegación y perfiles** (hecha): ingreso simulado, visitante que elige
+   club, barra de 5 pestañas y "Más" según el perfil.
 3. Pantallas públicas.
 4. Turno y papeleta.
 5. Administrador.
@@ -57,6 +58,30 @@ Marca: amarillo `#FFC700`, negro `#111111`, Montserrat (incluida, OFL).
   (El Tigre tiene 0 y Shaub F.C. 3, y se enfrentan dos veces), así que esos
   **2 partidos quedan suspendidos**.
 - Senior: El Tigre (0 puntos) juega y pierde todos sus partidos.
+
+## Navegación y perfiles (etapa 2)
+
+- **Ingreso simulado** con RUT y clave contra las cuentas de prueba del
+  archivo de muestra (sección `usuarios`: suscriptor, jugador sin
+  suscripción, turno y administrador). No hay autenticación real.
+- **Visitante**: "Entrar como visitante" abre, dentro de la misma tarjeta,
+  el paso "Elige tu club" (cambio pedido; sin pantalla nueva). Se puede
+  entrar sin club y cambiarlo después desde Más → "Mi club".
+- "Regístrate" y "¿Olvidaste tu contraseña?" muestran un aviso (el mockup no
+  tiene esas pantallas). TODO.
+- La sesión (perfil, club y "ver como") se guarda en el teléfono.
+- **Más varía según el perfil**:
+  - Visitante: Mi club, Noticias, Reglamento; botón "Iniciar sesión".
+  - Jugador sin suscripción: Mi perfil, "Hazte suscriptor por $1.000",
+    Noticias, Reglamento.
+  - Suscriptor: Mi perfil, Suscripción (plan), Noticias, Reglamento.
+  - Turno: Panel del turno, Mi perfil (si es jugador), Noticias, Reglamento.
+  - Administrador: Panel de administración, Panel del turno, Noticias,
+    Reglamento.
+- **"Ver la app como"** (Suscriptor / Turno / Administrador) es el modo
+  demostración del mockup; aparece solo con cuenta.
+- Las pestañas Inicio, Partidos, Tabla y Equipos y las pantallas de Más
+  muestran un marcador temporal hasta su etapa.
 
 ## Preguntas abiertas con la asociación (TODO en el código)
 

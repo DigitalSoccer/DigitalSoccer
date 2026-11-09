@@ -17,16 +17,17 @@ class SampleDataBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!(enabled ?? kUsingSampleData)) return child;
     final c = context.colors;
-    final bottom = MediaQuery.paddingOf(context).bottom;
+    final top = MediaQuery.paddingOf(context).top;
 
     return Stack(
       children: [
         child,
-        // Sobre la barra inferior (72) y sin bloquear toques.
+        // Arriba al centro (las cabeceras tienen el logo a la izquierda y
+        // los botones a la derecha), sin bloquear toques.
         Positioned(
           left: 0,
           right: 0,
-          bottom: bottom + 80,
+          top: top + 4,
           child: IgnorePointer(
             child: Center(
               child: Container(

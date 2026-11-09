@@ -52,8 +52,9 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color cardYellow;
   final Color cardRed;
 
-  /// Azul de la asociación (insignia ANFA del ingreso).
+  /// Azul y dorado de la insignia ANFA del ingreso.
   final Color anfaBlue;
+  final Color anfaGold;
 
   final Color shadow;
 
@@ -81,6 +82,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.cardYellow,
     required this.cardRed,
     required this.anfaBlue,
+    required this.anfaGold,
     required this.shadow,
   });
 
@@ -108,6 +110,7 @@ class AppColors extends ThemeExtension<AppColors> {
     cardYellow: Color(0xFFFFC700),
     cardRed: Color(0xFFC62828),
     anfaBlue: Color(0xFF1B2A7A),
+    anfaGold: Color(0xFFFFE27A),
     shadow: Color(0x1A111111),
   );
 
@@ -135,6 +138,7 @@ class AppColors extends ThemeExtension<AppColors> {
     cardYellow: Color(0xFFFFC700),
     cardRed: Color(0xFFE53935),
     anfaBlue: Color(0xFF2A3C9E),
+    anfaGold: Color(0xFFFFE27A),
     shadow: Color(0x66000000),
   );
 
@@ -172,6 +176,7 @@ class AppColors extends ThemeExtension<AppColors> {
       cardYellow: l(cardYellow, other.cardYellow),
       cardRed: l(cardRed, other.cardRed),
       anfaBlue: l(anfaBlue, other.anfaBlue),
+      anfaGold: l(anfaGold, other.anfaGold),
       shadow: l(shadow, other.shadow),
     );
   }
@@ -359,11 +364,15 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: BorderSide(color: c.borderStrong),
+        borderSide: BorderSide(color: c.borderStrong, width: 1.5),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: BorderSide(color: c.borderStrong),
+        borderSide: BorderSide(color: c.borderStrong, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        borderSide: BorderSide(color: c.danger, width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
